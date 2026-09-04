@@ -13,8 +13,12 @@ export class StorageService {
   private static uploadDir = path.join(process.cwd(), 'uploads');
 
   static ensureUploadDirExists() {
-    if (!fs.existsSync(this.uploadDir)) {
-      fs.mkdirSync(this.uploadDir, { recursive: true });
+    try {
+      if (!fs.existsSync(this.uploadDir)) {
+        fs.mkdirSync(this.uploadDir, { recursive: true });
+      }
+    } catch (err) {
+      // Ignore directory creation errors in read-only serverless environments like Vercel
     }
   }
 

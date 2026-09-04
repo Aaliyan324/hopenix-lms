@@ -89,6 +89,7 @@ router.get('/me', authenticateToken, async (req: AuthenticatedRequest, res: Resp
 
     return res.json({ user });
   } catch (error) {
+    console.error('Auth /me error:', error);
     return res.status(500).json({ error: 'Failed to fetch user session.' });
   }
 });
