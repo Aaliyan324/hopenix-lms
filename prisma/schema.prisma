@@ -1,0 +1,134 @@
+// Prisma Schema for Hopenix LMS (Dev: SQLite, Prod: Neon PostgreSQL)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String                   @id @default(uuid())
+  name         String
+  email        String                   @unique
+  passwordHash String
+  role         String                   @default("STUDENT") // ADMIN, EDITOR, STUDENT
+  avatar       String?
+  isActive     Boolean                  @default(true)
+  createdAt    DateTime                 @default(now())
+  updatedAt    DateTime                 @updatedAt
+  permissions  LessonEditorPermission[]
+  courseAccess CourseAccess[]
+  auditLogs    AuditLog[]
+  progress     LessonProgress[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model Course {
+  id           String         @id @default(uuid())
+  title        String
+  slug         String         @unique
+  description  String
+  thumbnail    String?
+  published    Boolean        @default(false)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  lessons      Lesson[]
+  courseAccess CourseAccess[]
+
+  @@index([slug])
+  @@index([published])
+}
+
+model Lesson {
+  id          String                   @id @default(uuid())
+  courseId    String
+  course      Course                   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title       String
+  slug        String
+  description String?
+  content     String?
+  order       Int                      @default(0)
+  published   Boolean                  @default(false)
+  createdAt   DateTime                 @default(now())
+  updatedAt   DateTime                 @updatedAt
+  media       Media[]
+  permissions LessonEditorPermission[]
+  progress    LessonProgress[]
+
+  @@unique([courseId, slug])
+  @@index([courseId])
+  @@index([published])
+}
+
+model Media {
+  id        String   @id @default(uuid())
+  lessonId  String
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  type      String   // IMAGE, VIDEO, PDF
+  url       String
+  name      String
+  size      Int
+  mimeType  String
+  createdAt DateTime @default(now())
+
+  @@index([lessonId])
+}
+
+model LessonEditorPermission {
+  id        String   @id @default(uuid())
+  lessonId  String
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([lessonId, userId])
+  @@index([userId])
+  @@index([lessonId])
+}
+
+model CourseAccess {
+  id        String   @id @default(uuid())
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([courseId, userId])
+  @@index([userId])
+  @@index([courseId])
+}
+
+model LessonProgress {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId  String
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completed Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, lessonId])
+  @@index([userId])
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action     String
+  entityType String
+  entityId   String?
+  metadata   String?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([entityType])
+  @@index([createdAt])
+}
