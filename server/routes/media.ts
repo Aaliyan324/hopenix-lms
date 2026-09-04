@@ -45,7 +45,7 @@ router.post(
       StorageService.validateFile(file.size, file.mimetype, mediaType);
 
       // Save via StorageService abstraction
-      const uploadResult = await StorageService.saveLocalFile(file.buffer, file.originalname, file.mimetype);
+      const uploadResult = await StorageService.uploadFile(file.buffer, file.originalname, file.mimetype);
 
       // Save Media record in DB
       const media = await prisma.media.create({
@@ -98,7 +98,7 @@ router.delete('/:id', authenticateToken, async (req: AuthenticatedRequest, res: 
     }
 
     // Delete file from storage
-    await StorageService.deleteLocalFile(media.url);
+    await StorageService.deleteFile(media.url);
 
     // Delete record from DB
     await prisma.media.delete({ where: { id } });

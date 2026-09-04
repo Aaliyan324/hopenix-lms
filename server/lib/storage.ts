@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { put, del } from '@vercel/blob';
 
 export interface UploadedFileResult {
   url: string;
@@ -17,14 +18,47 @@ export class StorageService {
     }
   }
 
+  /**
+   * Universal upload handler:
+   * Uses Vercel Blob when BLOB_READ_WRITE_TOKEN is set in environment (Production / Vercel),
+   * otherwise falls back to local disk storage (Development).
+   */
+  static async uploadFile(
+    fileBuffer: Buffer,
+    originalName: string,
+    mimeType: string
+  ): Promise<UploadedFileResult> {
+    const isVercelBlobEnabled = Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+
+    if (isVercelBlobEnabled) {
+      const ext = path.extname(originalName);
+      const baseName = path.basename(originalName, ext).replace(/[^a-zA-Z0-9]/g, '_');
+      const pathname = `lms-media/${Date.now()}_${baseName}${ext}`;
+
+      const blob = await put(pathname, fileBuffer, {
+        access: 'public',
+        contentType: mimeType,
+      });
+
+      return {
+        url: blob.url,
+        name: originalName,
+        size: fileBuffer.length,
+        mimeType,
+      };
+    }
+
+    // Local Disk Fallback
+    return this.saveLocalFile(fileBuffer, originalName, mimeType);
+  }
+
   static async saveLocalFile(
     fileBuffer: Buffer,
     originalName: string,
     mimeType: string
   ): Promise<UploadedFileResult> {
     this.ensureUploadDirExists();
-    
-    // Sanitize filename
+
     const ext = path.extname(originalName);
     const baseName = path.basename(originalName, ext).replace(/[^a-zA-Z0-9]/g, '_');
     const fileName = `${Date.now()}_${baseName}${ext}`;
@@ -40,17 +74,25 @@ export class StorageService {
     };
   }
 
-  static async deleteLocalFile(fileUrl: string): Promise<boolean> {
+  static async deleteFile(fileUrl: string): Promise<boolean> {
     try {
-      if (!fileUrl.startsWith('/uploads/')) return false;
-      const fileName = path.basename(fileUrl);
-      const filePath = path.join(this.uploadDir, fileName);
-      if (fs.existsSync(filePath)) {
-        await fs.promises.unlink(filePath);
+      // Vercel Blob URL check
+      if (fileUrl.includes('vercel-storage.com') || process.env.BLOB_READ_WRITE_TOKEN) {
+        await del(fileUrl);
         return true;
       }
+
+      // Local Disk Delete
+      if (fileUrl.startsWith('/uploads/')) {
+        const fileName = path.basename(fileUrl);
+        const filePath = path.join(this.uploadDir, fileName);
+        if (fs.existsSync(filePath)) {
+          await fs.promises.unlink(filePath);
+          return true;
+        }
+      }
     } catch (err) {
-      console.error('Error deleting file:', err);
+      console.error('Error deleting file from storage:', err);
     }
     return false;
   }
