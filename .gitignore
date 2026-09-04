@@ -11,10 +11,10 @@ node_modules/
 dist/
 build/
 
-# Local SQLite Database & Uploads
+# Local SQLite Database & Root Uploads Directory
 *.db
 *.db-journal
-uploads/
+/uploads/
 
 # Logs
 *.log
