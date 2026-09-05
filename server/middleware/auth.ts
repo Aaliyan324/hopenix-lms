@@ -29,6 +29,26 @@ export const authenticateToken = (req: AuthenticatedRequest, res: Response, next
   next();
 };
 
+export const optionalAuthenticateToken = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  let token = req.cookies?.auth_token;
+
+  if (!token && req.headers.authorization) {
+    const authHeader = req.headers.authorization;
+    if (authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    }
+  }
+
+  if (token) {
+    const payload = verifyToken(token);
+    if (payload) {
+      req.user = payload;
+    }
+  }
+
+  next();
+};
+
 export const requireRole = (...allowedRoles: Array<'ADMIN' | 'EDITOR' | 'STUDENT'>) => {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     if (!req.user) {

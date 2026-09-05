@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { apiFetch } from '../../lib/api';
-import { User, Course, Lesson } from '../../types';
+import { User, Book, Lesson } from '../../types';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { Badge } from '../../components/ui/Badge';
 import { useToast } from '../../components/ui/Toast';
-import { Key, Shield, Check, X, Search, Layers } from 'lucide-react';
+import { Key, Shield, Check, X, Search, Layers, BookOpen } from 'lucide-react';
 
 export const AdminPermissionsPage: React.FC = () => {
   const { toast } = useToast();
   const [editors, setEditors] = useState<User[]>([]);
-  const [courses, setCourses] = useState<Course[]>([]);
+  const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
 
   useEffect(() => {
     fetchData();
@@ -20,20 +19,20 @@ export const AdminPermissionsPage: React.FC = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [usersData, coursesData] = await Promise.all([
+      const [usersData, booksData] = await Promise.all([
         apiFetch<{ users: User[] }>('/users?role=EDITOR&limit=100'),
-        apiFetch<{ courses: Course[] }>('/courses'),
+        apiFetch<{ books: Book[] }>('/books'),
       ]);
       setEditors(usersData.users);
 
-      // Fetch full lesson list for each course
-      const coursesWithLessons = await Promise.all(
-        coursesData.courses.map(async (c) => {
-          const detail = await apiFetch<{ course: Course }>(`/courses/${c.id}`);
-          return detail.course;
+      // Fetch full lesson list for each book
+      const booksWithLessons = await Promise.all(
+        booksData.books.map(async (b) => {
+          const detail = await apiFetch<{ book: Book }>(`/books/${b.id}`);
+          return detail.book;
         })
       );
-      setCourses(coursesWithLessons);
+      setBooks(booksWithLessons);
     } catch (err) {
       toast('Failed to load permission matrix.', 'error');
     } finally {
@@ -43,7 +42,6 @@ export const AdminPermissionsPage: React.FC = () => {
 
   const togglePermission = async (lessonId: string, editorId: string, currentlyAssigned: boolean) => {
     try {
-      // Fetch current editor list for lesson
       const res = await apiFetch<{ editors: User[] }>(`/lessons/${lessonId}/editors`);
       let currentIds = res.editors.map((e) => e.id);
 
@@ -67,7 +65,7 @@ export const AdminPermissionsPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 max-w-7xl mx-auto">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-96 w-full rounded-2xl" />
       </div>
@@ -75,7 +73,7 @@ export const AdminPermissionsPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 max-w-7xl mx-auto pb-16">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-white flex items-center gap-2">
@@ -83,24 +81,24 @@ export const AdminPermissionsPage: React.FC = () => {
           Editor Lesson Permissions Matrix
         </h1>
         <p className="text-sm text-slate-400">
-          Granularly assign specific editors edit privileges for specific course lessons. Editors can ONLY edit assigned lessons.
+          Granularly assign specific editors edit privileges for specific book lessons. Editors can ONLY edit assigned lessons.
         </p>
       </div>
 
-      {/* Permission Grid by Course */}
+      {/* Permission Grid by Book */}
       <div className="space-y-6">
-        {courses.map((course) => (
-          <div key={course.id} className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+        {books.map((book) => (
+          <div key={book.id} className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
             <div className="px-6 py-4 bg-slate-950/80 border-b border-slate-800 flex items-center justify-between">
               <div>
                 <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <Layers className="w-4 h-4 text-brand-400" />
-                  {course.title}
+                  <BookOpen className="w-4 h-4 text-brand-400" />
+                  {book.title}
                 </h3>
-                <p className="text-xs text-slate-400">{course.lessons?.length || 0} Lessons in this course</p>
+                <p className="text-xs text-slate-400">{book.lessons?.length || 0} Lessons in this book</p>
               </div>
-              <Badge variant={course.published ? 'success' : 'slate'} size="sm">
-                {course.published ? 'Published' : 'Draft'}
+              <Badge variant={book.published ? 'success' : 'slate'} size="sm">
+                {book.published ? 'Published' : 'Draft'}
               </Badge>
             </div>
 
@@ -124,10 +122,10 @@ export const AdminPermissionsPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60 text-xs">
-                  {course.lessons?.map((lesson) => (
+                  {book.lessons?.map((lesson) => (
                     <tr key={lesson.id} className="hover:bg-slate-800/30 transition-colors">
                       <td className="px-6 py-3.5 font-medium text-slate-200">
-                        <span className="font-mono text-brand-400 mr-2">#{lesson.order}</span>
+                        <span className="font-mono text-brand-400 mr-2">L{lesson.lessonNumber || lesson.order}</span>
                         {lesson.title}
                       </td>
 

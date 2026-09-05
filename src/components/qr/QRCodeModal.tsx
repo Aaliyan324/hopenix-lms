@@ -1,15 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import QRCode from 'qrcode';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { useToast } from '../ui/Toast';
 import { apiFetch } from '../../lib/api';
-import { QrCode, Download, Copy, RefreshCw, ExternalLink, Check } from 'lucide-react';
+import {
+  QrCode,
+  Download,
+  Copy,
+  RefreshCw,
+  Image as ImageIcon,
+  Check,
+  Upload,
+  Trash2,
+  Sliders,
+} from 'lucide-react';
 
 interface QRCodeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  courseId: string;
-  courseTitle: string;
+  courseId: string; // bookId
+  courseTitle: string; // bookTitle
 }
 
 export const QRCodeModal: React.FC<QRCodeModalProps> = ({
@@ -19,111 +30,260 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
   courseTitle,
 }) => {
   const { toast } = useToast();
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [qrData, setQrData] = useState<{
-    courseUrl: string;
-    qrDataUrl: string;
-    svgData: string;
-  } | null>(null);
+  const [bookUrl, setBookUrl] = useState('');
+  
+  // Customization Settings
+  const [fgColor, setFgColor] = useState('#0f172a');
+  const [bgColor, setBgColor] = useState('#ffffff');
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [logoSize, setLogoSize] = useState<'small' | 'medium' | 'large'>('medium');
+  const [qrWidth, setQrWidth] = useState<number>(400);
 
   useEffect(() => {
     if (isOpen && courseId) {
-      fetchQRCode();
+      fetchQRDetails();
     }
   }, [isOpen, courseId]);
 
-  const fetchQRCode = async () => {
+  useEffect(() => {
+    if (bookUrl && canvasRef.current) {
+      renderQRWithLogo();
+    }
+  }, [bookUrl, fgColor, bgColor, logoUrl, logoSize, qrWidth]);
+
+  const fetchQRDetails = async () => {
     try {
       setLoading(true);
-      const data = await apiFetch(`/courses/${courseId}/qr`);
-      setQrData(data);
+      const data = await apiFetch<{ bookUrl?: string; courseUrl?: string; qrLogo?: string }>(`/books/${courseId}/qr`);
+      const url = data.bookUrl || data.courseUrl || `${window.location.origin}/books/${courseId}`;
+      setBookUrl(url);
+
+      if (data.qrLogo) {
+        setLogoUrl(data.qrLogo);
+      }
     } catch (err: any) {
-      toast('Failed to generate QR code.', 'error');
+      toast('Failed to generate QR details.', 'error');
     } finally {
       setLoading(false);
     }
   };
 
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setLogoUrl(reader.result as string);
+      toast('Logo uploaded for QR code!', 'success');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const renderQRWithLogo = async () => {
+    const canvas = canvasRef.current;
+    if (!canvas || !bookUrl) return;
+
+    try {
+      // 1. Generate base QR on canvas with Error Correction H
+      await QRCode.toCanvas(canvas, bookUrl, {
+        width: qrWidth,
+        margin: 2,
+        errorCorrectionLevel: 'H',
+        color: {
+          dark: fgColor,
+          light: bgColor,
+        },
+      });
+
+      // 2. If Logo is present, draw centered logo with safe background padding
+      if (logoUrl) {
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.src = logoUrl;
+
+        img.onload = () => {
+          const canvasSize = canvas.width;
+          let logoPercent = 0.22; // medium
+          if (logoSize === 'small') logoPercent = 0.16;
+          if (logoSize === 'large') logoPercent = 0.28;
+
+          const logoDimension = canvasSize * logoPercent;
+          const center = canvasSize / 2;
+          const x = center - logoDimension / 2;
+          const y = center - logoDimension / 2;
+
+          const padding = 6;
+          const bgX = x - padding;
+          const bgY = y - padding;
+          const bgSize = logoDimension + padding * 2;
+
+          // Draw white/bg protective rounded rect
+          ctx.save();
+          ctx.fillStyle = bgColor;
+          ctx.beginPath();
+          ctx.roundRect ? ctx.roundRect(bgX, bgY, bgSize, bgSize, 10) : ctx.rect(bgX, bgY, bgSize, bgSize);
+          ctx.fill();
+          ctx.restore();
+
+          // Draw centered logo
+          ctx.drawImage(img, x, y, logoDimension, logoDimension);
+        };
+      }
+    } catch (err) {
+      console.error('Render QR error:', err);
+    }
+  };
+
   const copyLink = async () => {
-    if (!qrData) return;
-    await navigator.clipboard.writeText(qrData.courseUrl);
+    if (!bookUrl) return;
+    await navigator.clipboard.writeText(bookUrl);
     setCopied(true);
-    toast('Course link copied to clipboard!', 'success');
+    toast('Public book URL copied to clipboard!', 'success');
     setTimeout(() => setCopied(false), 2000);
   };
 
   const downloadPNG = () => {
-    if (!qrData) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const dataUrl = canvas.toDataURL('image/png');
     const a = document.createElement('a');
-    a.href = qrData.qrDataUrl;
+    a.href = dataUrl;
     a.download = `${courseTitle.replace(/[^a-zA-Z0-9]/g, '_')}_QR.png`;
     a.click();
-    toast('PNG QR code downloaded!', 'success');
-  };
-
-  const downloadSVG = () => {
-    if (!qrData) return;
-    const blob = new Blob([qrData.svgData], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${courseTitle.replace(/[^a-zA-Z0-9]/g, '_')}_QR.svg`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast('SVG QR code downloaded!', 'success');
+    toast('High-resolution PNG downloaded!', 'success');
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Course Access QR Code" maxWidth="md">
-      <div className="space-y-6 text-center">
-        {loading ? (
-          <div className="flex flex-col items-center justify-center p-12 space-y-3">
-            <RefreshCw className="w-8 h-8 text-brand-500 animate-spin" />
-            <p className="text-sm text-slate-400">Generating course QR code...</p>
+    <Modal isOpen={isOpen} onClose={onClose} title="Book QR Code Studio" maxWidth="lg">
+      <div className="space-y-6">
+        <div className="text-center space-y-1">
+          <h4 className="text-base font-semibold text-white">{courseTitle}</h4>
+          <p className="text-xs text-brand-400 font-mono truncate max-w-md mx-auto">{bookUrl}</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+          {/* Live Preview Canvas Container */}
+          <div className="flex flex-col items-center justify-center p-6 bg-slate-950 rounded-2xl border border-slate-800 space-y-3">
+            <div className="p-3 bg-white rounded-2xl shadow-2xl inline-block">
+              <canvas ref={canvasRef} className="w-56 h-56 object-contain" />
+            </div>
+            <p className="text-[11px] text-slate-400 text-center">
+              Scans directly to public book page. No login required.
+            </p>
           </div>
-        ) : qrData ? (
-          <>
-            <div>
-              <h4 className="text-base font-semibold text-white mb-1">{courseTitle}</h4>
-              <p className="text-xs text-slate-400 truncate max-w-sm mx-auto">{qrData.courseUrl}</p>
+
+          {/* Controls & Customization */}
+          <div className="space-y-4 text-xs text-slate-300">
+            <div className="space-y-2">
+              <label className="font-semibold text-white flex items-center gap-1.5">
+                <ImageIcon className="w-4 h-4 text-brand-400" />
+                Center QR Logo
+              </label>
+              <div className="flex items-center gap-2">
+                <label className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl cursor-pointer text-slate-200 font-semibold transition-colors">
+                  <Upload className="w-4 h-4 text-brand-400" />
+                  <span>Upload Logo</span>
+                  <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                </label>
+
+                {logoUrl && (
+                  <button
+                    onClick={() => setLogoUrl(null)}
+                    className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 transition-colors"
+                    title="Remove Logo"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
             </div>
 
-            {/* QR Code Container */}
-            <div className="inline-block p-4 bg-white rounded-2xl shadow-xl ring-1 ring-slate-800">
-              <img src={qrData.qrDataUrl} alt="Course QR Code" className="w-56 h-56 mx-auto object-contain" />
-            </div>
+            {logoUrl && (
+              <div className="space-y-1.5">
+                <label className="font-semibold text-slate-300">Logo Size</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(['small', 'medium', 'large'] as const).map((sz) => (
+                    <button
+                      key={sz}
+                      onClick={() => setLogoSize(sz)}
+                      className={`py-1.5 rounded-lg border font-semibold capitalize transition-all ${
+                        logoSize === sz
+                          ? 'bg-brand-600 text-white border-brand-500'
+                          : 'bg-slate-900 text-slate-400 border-slate-800'
+                      }`}
+                    >
+                      {sz}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
-            {/* Action Controls */}
+            {/* Colors */}
             <div className="grid grid-cols-2 gap-3">
-              <Button variant="outline" size="sm" onClick={downloadPNG} icon={<Download className="w-4 h-4" />}>
-                PNG Image
-              </Button>
-              <Button variant="outline" size="sm" onClick={downloadSVG} icon={<Download className="w-4 h-4" />}>
-                SVG Vector
-              </Button>
+              <div>
+                <label className="font-semibold text-slate-300 block mb-1">Foreground</label>
+                <input
+                  type="color"
+                  value={fgColor}
+                  onChange={(e) => setFgColor(e.target.value)}
+                  className="w-full h-9 bg-slate-900 border border-slate-800 rounded-xl cursor-pointer p-1"
+                />
+              </div>
+
+              <div>
+                <label className="font-semibold text-slate-300 block mb-1">Background</label>
+                <input
+                  type="color"
+                  value={bgColor}
+                  onChange={(e) => setBgColor(e.target.value)}
+                  className="w-full h-9 bg-slate-900 border border-slate-800 rounded-xl cursor-pointer p-1"
+                />
+              </div>
             </div>
 
-            <div className="flex items-center gap-2 pt-2 border-t border-slate-800">
+            {/* Action buttons */}
+            <div className="pt-2 space-y-2">
               <Button
-                variant="secondary"
+                variant="primary"
                 size="sm"
-                className="flex-1"
-                onClick={copyLink}
-                icon={copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                className="w-full shadow-lg shadow-brand-500/20"
+                onClick={downloadPNG}
+                icon={<Download className="w-4 h-4" />}
               >
-                {copied ? 'Copied!' : 'Copy Direct URL'}
+                Download PNG QR Code
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={fetchQRCode}
-                icon={<RefreshCw className="w-4 h-4" />}
-                title="Regenerate QR Code"
-              />
+
+              <div className="flex gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="flex-1"
+                  onClick={copyLink}
+                  icon={copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                >
+                  {copied ? 'Copied Link!' : 'Copy Book URL'}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={renderQRWithLogo}
+                  icon={<RefreshCw className="w-4 h-4" />}
+                  title="Regenerate Preview"
+                />
+              </div>
             </div>
-          </>
-        ) : null}
+          </div>
+        </div>
       </div>
     </Modal>
   );

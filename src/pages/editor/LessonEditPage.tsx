@@ -80,7 +80,7 @@ export const LessonEditPage: React.FC = () => {
     );
   }
 
-  const backUrl = isAdmin ? `/admin/courses/${lesson.courseId}` : '/editor';
+  const backUrl = isAdmin ? `/admin/books/${lesson.courseId}/edit` : '/editor';
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto pb-12">
@@ -90,7 +90,7 @@ export const LessonEditPage: React.FC = () => {
           to={backUrl}
           className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+          <ArrowLeft className="w-4 h-4" /> Back to Book Editor
         </Link>
 
         <Button onClick={handleSave} variant="primary" loading={saving} icon={<Save className="w-4 h-4" />}>
@@ -104,8 +104,8 @@ export const LessonEditPage: React.FC = () => {
         <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl">
           <div className="flex items-center justify-between border-b border-slate-800 pb-4">
             <div>
-              <span className="text-xs font-semibold text-brand-400">Course: {lesson.course?.title}</span>
-              <h1 className="text-2xl font-extrabold text-white mt-1">Lesson Studio & Content Editor</h1>
+              <span className="text-xs font-semibold text-brand-400">Book: {lesson.course?.title}</span>
+              <h1 className="text-2xl font-extrabold text-white mt-1">Lesson Content Studio</h1>
             </div>
             <Badge variant={published ? 'success' : 'slate'}>
               {published ? 'Published' : 'Draft'}

@@ -38,10 +38,13 @@ export interface LessonEditorPermission {
 export interface Lesson {
   id: string;
   courseId: string;
+  bookId?: string;
   title: string;
   slug: string;
   description?: string | null;
   content?: string | null;
+  lessonNumber: number;
+  readingTime?: string | null;
   order: number;
   published: boolean;
   createdAt: string;
@@ -49,7 +52,14 @@ export interface Lesson {
   media?: Media[];
   permissions?: LessonEditorPermission[];
   completed?: boolean;
+  isBookmarked?: boolean;
   course?: {
+    id: string;
+    title: string;
+    slug: string;
+    published?: boolean;
+  };
+  book?: {
     id: string;
     title: string;
     slug: string;
@@ -57,26 +67,42 @@ export interface Lesson {
   };
 }
 
-export interface Course {
+export interface Book {
   id: string;
   title: string;
   slug: string;
   description: string;
+  shortDescription?: string | null;
+  author?: string | null;
+  coverImage?: string | null;
   thumbnail?: string | null;
+  category?: string | null;
+  publicationYear?: number | null;
+  isbn?: string | null;
+  language?: string | null;
+  readingLevel?: string | null;
+  featured?: boolean;
   published: boolean;
+  qrLogo?: string | null;
+  readingTime?: string | null;
   createdAt: string;
   updatedAt: string;
   lessons?: Lesson[];
   progressPercent?: number;
   completedLessons?: number;
   totalLessons?: number;
+  isBookmarked?: boolean;
   _count?: {
     lessons?: number;
     courseAccess?: number;
+    bookmarks?: number;
   };
 }
 
-export interface CourseAccess {
+// Alias for backward compatibility
+export type Course = Book;
+
+export interface BookAccess {
   id: string;
   courseId: string;
   userId: string;
@@ -96,10 +122,12 @@ export interface AuditLog {
 }
 
 export interface DashboardStats {
-  totalCourses: number;
+  totalBooks: number;
   totalLessons: number;
   totalStudents: number;
   totalEditors: number;
-  publishedCourses: number;
+  publishedBooks: number;
   publishedLessons: number;
+  totalCourses?: number;
+  publishedCourses?: number;
 }

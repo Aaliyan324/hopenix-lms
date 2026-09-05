@@ -62,7 +62,7 @@ export const EditorDashboardPage: React.FC = () => {
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-semibold text-brand-400 flex items-center gap-1">
                     <Layers className="w-3.5 h-3.5" />
-                    {lesson.course?.title || 'Course'}
+                    {lesson.course?.title || lesson.book?.title || 'Book'}
                   </span>
                   <Badge variant={lesson.published ? 'success' : 'slate'} size="sm">
                     {lesson.published ? 'Published' : 'Draft'}
@@ -70,7 +70,7 @@ export const EditorDashboardPage: React.FC = () => {
                 </div>
 
                 <h3 className="font-bold text-lg text-white mb-1">
-                  #{lesson.order} {lesson.title}
+                  Lesson #{lesson.lessonNumber || lesson.order}: {lesson.title}
                 </h3>
                 {lesson.description && (
                   <p className="text-xs text-slate-400 line-clamp-2">{lesson.description}</p>

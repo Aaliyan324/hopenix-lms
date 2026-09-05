@@ -1,0 +1,411 @@
+import React, { useState, useEffect } from 'react';
+import { apiFetch } from '../../lib/api';
+import { Book } from '../../types';
+import { Button } from '../../components/ui/Button';
+import { Badge } from '../../components/ui/Badge';
+import { Modal } from '../../components/ui/Modal';
+import { Input } from '../../components/ui/Input';
+import { Skeleton } from '../../components/ui/Skeleton';
+import { EmptyState } from '../../components/ui/EmptyState';
+import { useToast } from '../../components/ui/Toast';
+import { QRCodeModal } from '../../components/qr/QRCodeModal';
+import {
+  BookOpen,
+  Plus,
+  Edit,
+  Trash2,
+  QrCode,
+  Search,
+  Layers,
+} from 'lucide-react';
+import { Link } from 'react-router-dom';
+
+export const AdminBooksPage: React.FC = () => {
+  const { toast } = useToast();
+
+  const [books, setBooks] = useState<Book[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+
+  // Modal states
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  // Selected QR Code Modal
+  const [qrModalBook, setQrModalBook] = useState<{ id: string; title: string } | null>(null);
+
+  // Form inputs
+  const [title, setTitle] = useState('');
+  const [author, setAuthor] = useState('');
+  const [description, setDescription] = useState('');
+  const [shortDescription, setShortDescription] = useState('');
+  const [category, setCategory] = useState('Computer Science');
+  const [readingLevel, setReadingLevel] = useState('Beginner');
+  const [language, setLanguage] = useState('English');
+  const [publicationYear, setPublicationYear] = useState('2026');
+  const [isbn, setIsbn] = useState('');
+  const [coverImage, setCoverImage] = useState('');
+  const [published, setPublished] = useState(true);
+
+  useEffect(() => {
+    fetchBooks();
+  }, []);
+
+  const fetchBooks = async (searchQuery = search) => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (searchQuery) params.set('search', searchQuery);
+      const data = await apiFetch<{ books: Book[] }>(`/books?${params.toString()}`);
+      setBooks(data.books || []);
+    } catch (err: any) {
+      toast('Failed to fetch books list.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateBook = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title || !description) {
+      toast('Title and description are required.', 'error');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      await apiFetch('/books', {
+        method: 'POST',
+        body: JSON.stringify({
+          title,
+          author,
+          description,
+          shortDescription,
+          category,
+          readingLevel,
+          language,
+          publicationYear,
+          isbn,
+          coverImage,
+          published,
+        }),
+      });
+
+      toast('New digital book created successfully!', 'success');
+      setIsCreateModalOpen(false);
+      resetForm();
+      fetchBooks();
+    } catch (err: any) {
+      toast(err.message || 'Failed to create book.', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteBook = async (bookId: string, bookTitle: string) => {
+    if (!window.confirm(`Are you sure you want to delete "${bookTitle}"? This will remove all associated lessons and bookmarks.`)) {
+      return;
+    }
+
+    try {
+      await apiFetch(`/books/${bookId}`, { method: 'DELETE' });
+      toast('Book deleted successfully.', 'success');
+      setBooks((prev) => prev.filter((b) => b.id !== bookId));
+    } catch (err: any) {
+      toast('Failed to delete book.', 'error');
+    }
+  };
+
+  const resetForm = () => {
+    setTitle('');
+    setAuthor('');
+    setDescription('');
+    setShortDescription('');
+    setCategory('Computer Science');
+    setReadingLevel('Beginner');
+    setLanguage('English');
+    setPublicationYear('2026');
+    setIsbn('');
+    setCoverImage('');
+    setPublished(true);
+  };
+
+  return (
+    <div className="space-y-8 max-w-7xl mx-auto pb-16">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+            <BookOpen className="w-6 h-6 text-brand-400" />
+            Digital Books Catalog Management
+          </h1>
+          <p className="text-sm text-slate-400">Publish, manage lessons, and generate QR codes for e-books.</p>
+        </div>
+
+        <Button
+          variant="primary"
+          onClick={() => setIsCreateModalOpen(true)}
+          icon={<Plus className="w-4 h-4" />}
+          className="shadow-lg shadow-brand-500/20"
+        >
+          Create New Book
+        </Button>
+      </div>
+
+      {/* Search & Actions Bar */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <form
+          onSubmit={(e: React.FormEvent) => {
+            e.preventDefault();
+            fetchBooks(search);
+          }}
+          className="relative w-full sm:w-80"
+        >
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            placeholder="Search books..."
+            value={search}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
+            className="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 outline-none"
+          />
+        </form>
+
+        <span className="text-xs text-slate-400">Total Books: <strong className="text-white">{books.length}</strong></span>
+      </div>
+
+      {/* Books Table / Grid */}
+      {loading ? (
+        <div className="space-y-3">
+          {[...Array(5)].map((_, i) => (
+            <Skeleton key={i} className="h-20 w-full rounded-2xl" />
+          ))}
+        </div>
+      ) : books.length === 0 ? (
+        <EmptyState
+          title="No books found"
+          description="Click 'Create New Book' to add your first digital book to the e-book portal."
+          actionText="Create Book"
+          onAction={() => setIsCreateModalOpen(true)}
+        />
+      ) : (
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-slate-300">
+              <thead className="bg-slate-950 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                <tr>
+                  <th className="px-6 py-4">Book Details</th>
+                  <th className="px-4 py-4">Category / Level</th>
+                  <th className="px-4 py-4">Lessons</th>
+                  <th className="px-4 py-4">Status</th>
+                  <th className="px-6 py-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800/80">
+                {books.map((book) => (
+                  <tr key={book.id} className="hover:bg-slate-950/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={book.coverImage || book.thumbnail || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=300&q=80'}
+                          alt={book.title}
+                          className="w-10 h-12 object-cover rounded-lg border border-slate-800 shrink-0"
+                        />
+                        <div>
+                          <Link
+                            to={`/admin/books/${book.id}/edit`}
+                            className="font-semibold text-white text-sm hover:text-brand-400 transition-colors line-clamp-1"
+                          >
+                            {book.title}
+                          </Link>
+                          <p className="text-[11px] text-slate-400">By {book.author || 'Hopenix'}</p>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className="px-4 py-4">
+                      <div className="space-y-1">
+                        <Badge variant="brand" size="sm">
+                          {book.category || 'General'}
+                        </Badge>
+                        <p className="text-[11px] text-slate-400">{book.readingLevel || 'Beginner'}</p>
+                      </div>
+                    </td>
+
+                    <td className="px-4 py-4 font-semibold text-white">
+                      <span className="inline-flex items-center gap-1">
+                        <Layers className="w-3.5 h-3.5 text-brand-400" />
+                        {book._count?.lessons ?? book.totalLessons ?? 0} Lessons
+                      </span>
+                    </td>
+
+                    <td className="px-4 py-4">
+                      <Badge variant={book.published ? 'success' : 'warning'} size="sm">
+                        {book.published ? 'Published' : 'Draft'}
+                      </Badge>
+                    </td>
+
+                    <td className="px-6 py-4 text-right space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setQrModalBook({ id: book.id, title: book.title })}
+                        icon={<QrCode className="w-3.5 h-3.5 text-brand-400" />}
+                        title="Generate QR Code"
+                      />
+                      <Link to={`/admin/books/${book.id}/edit`}>
+                        <Button variant="outline" size="sm" icon={<Edit className="w-3.5 h-3.5" />}>
+                          Edit
+                        </Button>
+                      </Link>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-rose-400 hover:bg-rose-500/10"
+                        onClick={() => handleDeleteBook(book.id, book.title)}
+                        icon={<Trash2 className="w-3.5 h-3.5" />}
+                        title="Delete Book"
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Create Book Modal */}
+      <Modal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        title="Create New Digital Book"
+        maxWidth="lg"
+      >
+        <form onSubmit={handleCreateBook} className="space-y-4 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input
+              label="Book Title *"
+              placeholder="e.g. Introduction to Web Development"
+              value={title}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
+              required
+            />
+            <Input
+              label="Author Name"
+              placeholder="e.g. Hopenix Editorial"
+              value={author}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAuthor(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label className="block font-semibold text-slate-300 mb-1">Book Description / Overview *</label>
+            <textarea
+              rows={3}
+              placeholder="Detailed description of the e-book..."
+              value={description}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
+              className="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 rounded-xl p-3 text-xs text-white placeholder-slate-500 outline-none"
+              required
+            />
+          </div>
+
+          <div>
+            <Input
+              label="Short Summary"
+              placeholder="1-2 sentences for book card preview..."
+              value={shortDescription}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setShortDescription(e.target.value)}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block font-semibold text-slate-300 mb-1">Category</label>
+              <select
+                value={category}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCategory(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 rounded-xl px-3 py-2 text-xs text-white outline-none"
+              >
+                <option value="Computer Science">Computer Science</option>
+                <option value="Programming">Programming</option>
+                <option value="Design">Design</option>
+                <option value="Mathematics">Mathematics</option>
+                <option value="Science">Science</option>
+                <option value="General">General</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block font-semibold text-slate-300 mb-1">Reading Level</label>
+              <select
+                value={readingLevel}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setReadingLevel(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 rounded-xl px-3 py-2 text-xs text-white outline-none"
+              >
+                <option value="Beginner">Beginner</option>
+                <option value="Intermediate">Intermediate</option>
+                <option value="Advanced">Advanced</option>
+              </select>
+            </div>
+
+            <Input
+              label="Language"
+              value={language}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLanguage(e.target.value)}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input
+              label="Cover Image URL"
+              placeholder="https://..."
+              value={coverImage}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCoverImage(e.target.value)}
+            />
+
+            <Input
+              label="ISBN (Optional)"
+              placeholder="978-3-16-148410-0"
+              value={isbn}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setIsbn(e.target.value)}
+            />
+          </div>
+
+          <div className="flex items-center gap-2 pt-2">
+            <input
+              type="checkbox"
+              id="published-toggle"
+              checked={published}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPublished(e.target.checked)}
+              className="w-4 h-4 rounded border-slate-800 text-brand-600 focus:ring-brand-500 bg-slate-950"
+            />
+            <label htmlFor="published-toggle" className="text-xs text-slate-300 font-semibold cursor-pointer">
+              Publish immediately (visible in public library)
+            </label>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+            <Button variant="outline" type="button" onClick={() => setIsCreateModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" type="submit" loading={saving}>
+              Create E-Book
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* QR Code Modal */}
+      {qrModalBook && (
+        <QRCodeModal
+          isOpen={Boolean(qrModalBook)}
+          onClose={() => setQrModalBook(null)}
+          courseId={qrModalBook.id}
+          courseTitle={qrModalBook.title}
+        />
+      )}
+    </div>
+  );
+};

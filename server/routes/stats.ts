@@ -7,11 +7,11 @@ const router = Router();
 router.get('/dashboard', authenticateToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
   try {
     const [
-      totalCourses,
+      totalBooks,
       totalLessons,
       totalStudents,
       totalEditors,
-      publishedCourses,
+      publishedBooks,
       publishedLessons,
       recentLogs,
     ] = await Promise.all([
@@ -32,12 +32,14 @@ router.get('/dashboard', authenticateToken, requireRole('ADMIN'), async (req: Au
 
     return res.json({
       stats: {
-        totalCourses,
+        totalBooks,
         totalLessons,
         totalStudents,
         totalEditors,
-        publishedCourses,
+        publishedBooks,
         publishedLessons,
+        totalCourses: totalBooks, // backward compatible fallback
+        publishedCourses: publishedBooks,
       },
       recentLogs,
     });

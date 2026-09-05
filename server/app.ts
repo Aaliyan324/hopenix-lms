@@ -5,7 +5,8 @@ import path from 'path';
 
 import authRoutes from './routes/auth.js';
 import userRoutes from './routes/users.js';
-import courseRoutes from './routes/courses.js';
+import bookRoutes from './routes/books.js';
+import bookmarkRoutes from './routes/bookmarks.js';
 import lessonRoutes from './routes/lessons.js';
 import mediaRoutes from './routes/media.js';
 import statsRoutes from './routes/stats.js';
@@ -32,7 +33,9 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/courses', courseRoutes);
+app.use('/api/books', bookRoutes);
+app.use('/api/courses', bookRoutes); // alias for backward compatibility
+app.use('/api/bookmarks', bookmarkRoutes);
 app.use('/api/lessons', lessonRoutes);
 app.use('/api/media', mediaRoutes);
 app.use('/api/stats', statsRoutes);

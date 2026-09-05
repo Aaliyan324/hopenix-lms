@@ -9,7 +9,9 @@ import {
   QrCode,
   History,
   CheckSquare,
-  GraduationCap,
+  Bookmark,
+  Library,
+  Sparkles,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -20,9 +22,13 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
   const { role } = useAuth().user || {};
 
+  const publicNav = [
+    { label: 'Digital Library', path: '/books', icon: Library },
+  ];
+
   const adminNav = [
     { label: 'Dashboard', path: '/admin', icon: LayoutDashboard },
-    { label: 'Courses', path: '/admin/courses', icon: BookOpen },
+    { label: 'Books', path: '/admin/books', icon: BookOpen },
     { label: 'Users & Roles', path: '/admin/users', icon: Users },
     { label: 'Editor Permissions', path: '/admin/permissions', icon: Key },
     { label: 'QR Code Studio', path: '/admin/qr-codes', icon: QrCode },
@@ -30,11 +36,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
   ];
 
   const editorNav = [
-    { label: 'My Assigned Lessons', path: '/editor', icon: CheckSquare },
+    { label: 'My Assigned Books', path: '/editor', icon: CheckSquare },
   ];
 
   const studentNav = [
-    { label: 'My Enrolled Courses', path: '/student', icon: GraduationCap },
+    { label: 'Library Catalog', path: '/books', icon: Library },
+    { label: 'Student Dashboard', path: '/student', icon: LayoutDashboard },
   ];
 
   const navItems = role === 'ADMIN' ? adminNav : role === 'EDITOR' ? editorNav : studentNav;
@@ -47,7 +54,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
     >
       <div className="p-4 space-y-6">
         <div className="px-3 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider">
-          {role} Workspace
+          {role ? `${role} Workspace` : 'Digital Portal'}
         </div>
 
         <nav className="space-y-1">
@@ -57,7 +64,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
               <NavLink
                 key={item.path}
                 to={item.path}
-                end={item.path === '/admin' || item.path === '/editor' || item.path === '/student'}
+                end={item.path === '/admin' || item.path === '/editor' || item.path === '/student' || item.path === '/books'}
                 onClick={onClose}
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-150 ${
@@ -76,8 +83,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
       </div>
 
       <div className="p-4 border-t border-slate-900 text-xs text-slate-500 text-center">
-        <p className="font-semibold text-slate-400">Hopenix LMS v1.0</p>
-        <p>Production Vercel Ready</p>
+        <p className="font-semibold text-slate-400">Hopenix E-Book Portal v2.0</p>
+        <p>Production Ready</p>
       </div>
     </aside>
   );

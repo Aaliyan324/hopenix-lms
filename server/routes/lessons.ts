@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import prisma from '../lib/prisma.js';
 import {
   authenticateToken,
+  optionalAuthenticateToken,
   requireRole,
   requireLessonEditPermission,
   AuthenticatedRequest,
@@ -44,14 +45,18 @@ router.get('/editor/assigned', authenticateToken, requireRole('EDITOR'), async (
   }
 });
 
-// Get lesson by ID
-router.get('/:id', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+// PUBLIC / AUTH Get lesson by ID or by Book slug + Lesson number
+router.get('/:idOrSlug', optionalAuthenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { id } = req.params;
-    const { role, userId } = req.user!;
+    const { idOrSlug } = req.params;
+    const user = req.user;
+    const role = user?.role;
+    const userId = user?.userId;
 
-    const lesson = await prisma.lesson.findUnique({
-      where: { id },
+    const lesson = await prisma.lesson.findFirst({
+      where: {
+        OR: [{ id: idOrSlug }, { slug: idOrSlug }],
+      },
       include: {
         course: {
           select: { id: true, title: true, slug: true, published: true },
@@ -77,8 +82,8 @@ router.get('/:id', authenticateToken, async (req: AuthenticatedRequest, res: Res
       }
     }
 
-    // Check Student access
-    if (role === 'STUDENT') {
+    // Check Guest & Student access: must be published
+    if (!role || role === 'STUDENT') {
       if (!lesson.published || !lesson.course.published) {
         return res.status(403).json({ error: 'This lesson is currently unpublished.' });
       }
@@ -88,18 +93,45 @@ router.get('/:id', authenticateToken, async (req: AuthenticatedRequest, res: Res
     const siblingLessons = await prisma.lesson.findMany({
       where: {
         courseId: lesson.courseId,
-        published: role === 'STUDENT' ? true : undefined,
+        published: (!role || role === 'STUDENT') ? true : undefined,
       },
-      select: { id: true, title: true, slug: true, order: true },
-      orderBy: { order: 'asc' },
+      select: { id: true, title: true, slug: true, lessonNumber: true, order: true },
+      orderBy: [{ lessonNumber: 'asc' }, { order: 'asc' }],
     });
 
     const currentIndex = siblingLessons.findIndex((l) => l.id === lesson.id);
     const prevLesson = currentIndex > 0 ? siblingLessons[currentIndex - 1] : null;
     const nextLesson = currentIndex < siblingLessons.length - 1 ? siblingLessons[currentIndex + 1] : null;
 
+    let completed = false;
+    let isBookmarked = false;
+
+    if (userId) {
+      const [progress, bookmark] = await Promise.all([
+        prisma.lessonProgress.findUnique({
+          where: { userId_lessonId: { userId, lessonId: lesson.id } },
+        }),
+        prisma.lessonBookmark.findUnique({
+          where: { userId_lessonId: { userId, lessonId: lesson.id } },
+        }),
+      ]);
+      completed = Boolean(progress?.completed);
+      isBookmarked = Boolean(bookmark);
+
+      // Record recent activity timestamp for logged in student
+      await prisma.lessonProgress.upsert({
+        where: { userId_lessonId: { userId, lessonId: lesson.id } },
+        update: { lastReadAt: new Date() },
+        create: { userId, lessonId: lesson.id, completed: false, lastReadAt: new Date() },
+      }).catch(() => {});
+    }
+
     return res.json({
-      lesson,
+      lesson: {
+        ...lesson,
+        completed,
+        isBookmarked,
+      },
       navigation: {
         prevLesson,
         nextLesson,
@@ -115,30 +147,31 @@ router.get('/:id', authenticateToken, async (req: AuthenticatedRequest, res: Res
 // Create Lesson (ADMIN)
 router.post('/', authenticateToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { courseId, title, description, content, published } = req.body;
+    const { courseId, bookId, title, description, content, published, lessonNumber, readingTime } = req.body;
+    const targetBookId = bookId || courseId;
 
-    if (!courseId || !title) {
-      return res.status(400).json({ error: 'Course ID and lesson title are required.' });
+    if (!targetBookId || !title) {
+      return res.status(400).json({ error: 'Book ID and lesson title are required.' });
     }
 
-    const course = await prisma.course.findUnique({ where: { id: courseId } });
-    if (!course) {
-      return res.status(404).json({ error: 'Parent course not found.' });
+    const book = await prisma.course.findUnique({ where: { id: targetBookId } });
+    if (!book) {
+      return res.status(404).json({ error: 'Parent book not found.' });
     }
 
-    // Calculate next order
+    // Calculate next order and lessonNumber
     const maxOrderLesson = await prisma.lesson.findFirst({
-      where: { courseId },
+      where: { courseId: targetBookId },
       orderBy: { order: 'desc' },
-      select: { order: true },
+      select: { order: true, lessonNumber: true },
     });
 
     const newOrder = maxOrderLesson ? maxOrderLesson.order + 1 : 1;
+    const newLessonNumber = lessonNumber ? parseInt(lessonNumber, 10) : maxOrderLesson ? maxOrderLesson.lessonNumber + 1 : 1;
     let slug = slugify(title);
 
-    // Check duplicate slug in same course
     const existing = await prisma.lesson.findUnique({
-      where: { courseId_slug: { courseId, slug } },
+      where: { courseId_slug: { courseId: targetBookId, slug } },
     });
     if (existing) {
       slug = `${slug}-${Date.now().toString().slice(-4)}`;
@@ -146,11 +179,13 @@ router.post('/', authenticateToken, requireRole('ADMIN'), async (req: Authentica
 
     const lesson = await prisma.lesson.create({
       data: {
-        courseId,
+        courseId: targetBookId,
         title,
         slug,
         description: description || null,
         content: content || null,
+        lessonNumber: newLessonNumber,
+        readingTime: readingTime || null,
         order: newOrder,
         published: Boolean(published),
       },
@@ -159,7 +194,7 @@ router.post('/', authenticateToken, requireRole('ADMIN'), async (req: Authentica
       },
     });
 
-    await createAuditLog(req.user!.userId, 'CREATE_LESSON', 'Lesson', lesson.id, { title, courseId });
+    await createAuditLog(req.user!.userId, 'CREATE_LESSON', 'Lesson', lesson.id, { title, bookId: targetBookId });
 
     return res.status(201).json({ lesson });
   } catch (error) {
@@ -172,7 +207,7 @@ router.post('/', authenticateToken, requireRole('ADMIN'), async (req: Authentica
 router.patch('/:id', authenticateToken, requireLessonEditPermission, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { title, description, content, published, order } = req.body;
+    const { title, description, content, published, order, lessonNumber, readingTime } = req.body;
 
     const existingLesson = await prisma.lesson.findUnique({ where: { id } });
     if (!existingLesson) {
@@ -188,6 +223,8 @@ router.patch('/:id', authenticateToken, requireLessonEditPermission, async (req:
     if (content !== undefined) updateData.content = content;
     if (typeof published === 'boolean') updateData.published = published;
     if (typeof order === 'number') updateData.order = order;
+    if (lessonNumber !== undefined) updateData.lessonNumber = parseInt(lessonNumber, 10);
+    if (readingTime !== undefined) updateData.readingTime = readingTime;
 
     const updatedLesson = await prisma.lesson.update({
       where: { id },
@@ -214,17 +251,20 @@ router.patch('/:id', authenticateToken, requireLessonEditPermission, async (req:
 // Reorder Lessons (ADMIN)
 router.post('/reorder', authenticateToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { items } = req.body; // Array of { id: string, order: number }
+    const { items } = req.body;
 
     if (!Array.isArray(items)) {
-      return res.status(400).json({ error: 'Items must be an array of { id, order }.' });
+      return res.status(400).json({ error: 'Items must be an array of { id, order, lessonNumber }.' });
     }
 
     await Promise.all(
-      items.map((item) =>
+      items.map((item, index) =>
         prisma.lesson.update({
           where: { id: item.id },
-          data: { order: item.order },
+          data: {
+            order: item.order ?? index + 1,
+            lessonNumber: item.lessonNumber ?? index + 1,
+          },
         })
       )
     );
@@ -247,7 +287,6 @@ router.delete('/:id', authenticateToken, requireRole('ADMIN'), async (req: Authe
     }
 
     await prisma.lesson.delete({ where: { id } });
-
     await createAuditLog(req.user!.userId, 'DELETE_LESSON', 'Lesson', id, { title: lesson.title });
 
     return res.json({ message: 'Lesson deleted successfully.' });
@@ -277,7 +316,7 @@ router.get('/:id/editors', authenticateToken, requireRole('ADMIN'), async (req: 
 router.post('/:id/editors', authenticateToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { editorIds } = req.body; // Array of user IDs
+    const { editorIds } = req.body;
 
     if (!Array.isArray(editorIds)) {
       return res.status(400).json({ error: 'editorIds must be an array.' });
