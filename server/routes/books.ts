@@ -1,7 +1,12 @@
 import { Router, Response } from 'express';
 import QRCode from 'qrcode';
 import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import { Readable } from 'stream';
 import prisma from '../lib/prisma.js';
+import { StorageService } from '../lib/storage.js';
+import { formatBook } from '../lib/formatters.js';
 import {
   authenticateToken,
   optionalAuthenticateToken,
@@ -21,6 +26,56 @@ const slugify = (text: string) =>
     .replace(/[^\w\s-]/g, '')
     .replace(/[\s_-]+/g, '-')
     .replace(/^-+|-+$/g, '');
+
+// Stream / Proxy book cover image securely
+router.get('/:id/cover', optionalAuthenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const book = await prisma.course.findFirst({
+      where: { OR: [{ id }, { slug: id }] },
+    });
+
+    if (!book || !book.coverImage) {
+      return res.status(404).json({ error: 'Book cover not found.' });
+    }
+
+    const isPublicAccess = book.published;
+    if (!isPublicAccess) {
+      const user = req.user;
+      if (!user || (user.role !== 'ADMIN' && user.role !== 'EDITOR')) {
+        return res.status(403).json({ error: 'This book cover belongs to an unpublished book.' });
+      }
+    }
+
+    if (book.coverImage.startsWith('/uploads/')) {
+      const filePath = path.join(process.cwd(), book.coverImage.replace(/^\//, ''));
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ error: 'Local cover file not found.' });
+      }
+      res.setHeader('Content-Type', 'image/jpeg');
+      return res.sendFile(filePath);
+    }
+
+    const blobRes = await StorageService.fetchBlobResource(book.coverImage, req.headers.range as string | undefined);
+    if (!blobRes.ok && blobRes.status !== 206) {
+      return res.status(blobRes.status).json({ error: 'Failed to stream cover image.' });
+    }
+
+    res.status(blobRes.status);
+    res.setHeader('Content-Type', blobRes.headers.get('content-type') || 'image/jpeg');
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+
+    if (blobRes.body) {
+      // @ts-ignore
+      Readable.fromWeb(blobRes.body as any).pipe(res);
+    } else {
+      res.end();
+    }
+  } catch (error) {
+    console.error('Book cover streaming error:', error);
+    return res.status(500).json({ error: 'Internal error streaming book cover.' });
+  }
+});
 
 // 0. ADMIN — Upload cover image from local file system
 router.post(
@@ -43,7 +98,6 @@ router.post(
         return res.status(400).json({ error: 'Cover image must be under 10MB.' });
       }
 
-      const { StorageService } = await import('../lib/storage.js');
       const result = await StorageService.uploadFile(file.buffer, file.originalname, file.mimetype);
 
       return res.json({ url: result.url, name: result.name });
@@ -135,13 +189,13 @@ router.get('/', optionalAuthenticateToken, async (req: AuthenticatedRequest, res
           const completedCount = lessons.filter((l) => completedLessonIds.has(l.id)).length;
           const progressPercent = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
 
-          return {
+          return formatBook({
             ...book,
             isBookmarked: bookmarkedBookIds.has(book.id),
             progressPercent,
             completedLessons: completedCount,
             totalLessons,
-          };
+          });
         })
       );
 
@@ -149,11 +203,13 @@ router.get('/', optionalAuthenticateToken, async (req: AuthenticatedRequest, res
     }
 
     // Unauthenticated / Guest response
-    const formattedBooks = books.map((book) => ({
-      ...book,
-      isBookmarked: false,
-      totalLessons: book._count.lessons,
-    }));
+    const formattedBooks = books.map((book) =>
+      formatBook({
+        ...book,
+        isBookmarked: false,
+        totalLessons: book._count.lessons,
+      })
+    );
 
     return res.json({ books: formattedBooks });
   } catch (error) {
@@ -237,15 +293,17 @@ router.get('/:idOrSlug', optionalAuthenticateToken, async (req: AuthenticatedReq
     const totalLessons = lessonsWithProgress.length;
     const progressPercent = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
 
+    const formattedBook = formatBook({
+      ...book,
+      isBookmarked,
+      lessons: lessonsWithProgress,
+      completedLessons: completedCount,
+      totalLessons,
+      progressPercent,
+    });
+
     return res.json({
-      book: {
-        ...book,
-        isBookmarked,
-        lessons: lessonsWithProgress,
-        completedLessons: completedCount,
-        totalLessons,
-        progressPercent,
-      },
+      book: formattedBook,
     });
   } catch (error) {
     console.error('Fetch book detail error:', error);

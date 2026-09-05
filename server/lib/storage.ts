@@ -147,4 +147,22 @@ export class StorageService {
       }
     }
   }
+
+  /**
+   * Securely fetch file stream from Vercel Blob or local storage
+   */
+  static async fetchBlobResource(fileUrl: string, rangeHeader?: string): Promise<globalThis.Response> {
+    const headers: Record<string, string> = {};
+
+    if (process.env.BLOB_READ_WRITE_TOKEN && fileUrl.includes('vercel-storage.com')) {
+      headers['Authorization'] = `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`;
+    }
+
+    if (rangeHeader) {
+      headers['range'] = rangeHeader;
+    }
+
+    return fetch(fileUrl, { headers });
+  }
 }
+

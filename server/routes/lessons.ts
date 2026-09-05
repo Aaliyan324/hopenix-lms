@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import QRCode from 'qrcode';
 import prisma from '../lib/prisma.js';
+import { formatLesson } from '../lib/formatters.js';
 import {
   authenticateToken,
   optionalAuthenticateToken,
@@ -38,7 +39,7 @@ router.get('/editor/assigned', authenticateToken, requireRole('EDITOR'), async (
       },
     });
 
-    const lessons = permissions.map((p) => p.lesson);
+    const lessons = permissions.map((p) => formatLesson(p.lesson));
     return res.json({ lessons });
   } catch (error) {
     console.error('Fetch editor lessons error:', error);
@@ -127,12 +128,14 @@ router.get('/:idOrSlug', optionalAuthenticateToken, async (req: AuthenticatedReq
       }).catch(() => {});
     }
 
+    const formattedLesson = formatLesson({
+      ...lesson,
+      completed,
+      isBookmarked,
+    });
+
     return res.json({
-      lesson: {
-        ...lesson,
-        completed,
-        isBookmarked,
-      },
+      lesson: formattedLesson,
       navigation: {
         prevLesson,
         nextLesson,
