@@ -11,6 +11,12 @@
       radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.06) 0px, transparent 50%),
       radial-gradient(at 50% 50%, rgba(14, 165, 233, 0.04) 0px, transparent 50%);
     background-attachment: fixed;
+    overflow-x: hidden;
+  }
+
+  img, video, iframe, canvas {
+    max-width: 100%;
+    height: auto;
   }
 }
 
@@ -31,10 +37,29 @@
   background: #6d28d9;
 }
 
-/* TipTap Editor Styles */
+/* TipTap & Prose Styles - Prevent Mobile Overflow */
 .ProseMirror {
   outline: none;
   min-height: 200px;
+}
+
+.prose {
+  max-width: 100% !important;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.prose pre {
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.prose table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 .ProseMirror p.is-editor-empty:first-child::before {

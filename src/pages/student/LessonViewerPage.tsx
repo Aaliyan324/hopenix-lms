@@ -207,22 +207,22 @@ export const LessonViewerPage: React.FC = () => {
               {pdfMedia.map((pdf) => (
                 <div
                   key={pdf.id}
-                  className="flex items-center justify-between p-4 bg-slate-900 border border-slate-800 rounded-2xl"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-slate-900 border border-slate-800 rounded-2xl min-w-0"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
                     <FileText className="w-8 h-8 text-rose-400 shrink-0" />
-                    <div>
-                      <p className="text-sm font-semibold text-white truncate max-w-sm">{pdf.name}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-white truncate" title={pdf.name}>{pdf.name}</p>
                       <p className="text-xs text-slate-400">PDF Document</p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
                     <a
                       href={pdf.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors"
+                      className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-colors"
                     >
                       <ExternalLink className="w-3.5 h-3.5" /> Open PDF
                     </a>

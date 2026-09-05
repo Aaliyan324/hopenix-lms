@@ -287,13 +287,13 @@ export const PublicLessonReaderPage: React.FC = () => {
               {pdfMedia.map((pdf) => (
                 <div
                   key={pdf.id}
-                  className="flex items-center justify-between p-4 bg-slate-900/90 border border-slate-800 rounded-2xl"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-slate-900/90 border border-purple-500/20 rounded-2xl min-w-0"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
                     <FileText className="w-8 h-8 text-rose-400 shrink-0" />
-                    <div>
-                      <p className="text-sm font-extrabold text-white truncate max-w-sm">{pdf.name}</p>
-                      <p className="text-xs text-slate-400 font-medium">PDF Attachment</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-extrabold text-white truncate" title={pdf.name}>{pdf.name}</p>
+                      <p className="text-xs text-slate-400 font-medium">PDF Document</p>
                     </div>
                   </div>
 
@@ -301,7 +301,7 @@ export const PublicLessonReaderPage: React.FC = () => {
                     href={pdf.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-4 py-2 bg-slate-950 hover:bg-brand-600 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all border border-slate-800"
+                    className="px-4 py-2 bg-slate-950 hover:bg-brand-600 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all border border-slate-800 shrink-0 self-start sm:self-auto"
                   >
                     <ExternalLink className="w-3.5 h-3.5" /> View PDF
                   </a>
