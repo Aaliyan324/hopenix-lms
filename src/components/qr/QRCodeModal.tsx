@@ -13,14 +13,23 @@ import {
   Check,
   Upload,
   Trash2,
-  Sliders,
+  BookOpen,
+  Layers,
 } from 'lucide-react';
 
 interface QRCodeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  courseId: string; // bookId
-  courseTitle: string; // bookTitle
+  /** Book ID (required) */
+  courseId: string;
+  /** Book title */
+  courseTitle: string;
+  /** Optional: if provided, generates QR for a specific lesson instead of the whole book */
+  lessonId?: string;
+  /** Optional: lesson title shown in the modal header */
+  lessonTitle?: string;
+  /** Optional: lesson number shown in the modal header */
+  lessonNumber?: number;
 }
 
 export const QRCodeModal: React.FC<QRCodeModalProps> = ({
@@ -28,44 +37,61 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
   onClose,
   courseId,
   courseTitle,
+  lessonId,
+  lessonTitle,
+  lessonNumber,
 }) => {
   const { toast } = useToast();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [bookUrl, setBookUrl] = useState('');
-  
+  const [targetUrl, setTargetUrl] = useState('');
+
   // Customization Settings
   const [fgColor, setFgColor] = useState('#0f172a');
   const [bgColor, setBgColor] = useState('#ffffff');
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [logoSize, setLogoSize] = useState<'small' | 'medium' | 'large'>('medium');
-  const [qrWidth, setQrWidth] = useState<number>(400);
+  const [qrWidth] = useState<number>(400);
+
+  const isLessonMode = Boolean(lessonId);
 
   useEffect(() => {
-    if (isOpen && courseId) {
+    if (isOpen) {
       fetchQRDetails();
     }
-  }, [isOpen, courseId]);
+  }, [isOpen, lessonId, courseId]);
 
   useEffect(() => {
-    if (bookUrl && canvasRef.current) {
+    if (targetUrl && canvasRef.current) {
       renderQRWithLogo();
     }
-  }, [bookUrl, fgColor, bgColor, logoUrl, logoSize, qrWidth]);
+  }, [targetUrl, fgColor, bgColor, logoUrl, logoSize, qrWidth]);
 
   const fetchQRDetails = async () => {
     try {
       setLoading(true);
-      const data = await apiFetch<{ bookUrl?: string; courseUrl?: string; qrLogo?: string }>(`/books/${courseId}/qr`);
-      const url = data.bookUrl || data.courseUrl || `${window.location.origin}/books/${courseId}`;
-      setBookUrl(url);
-
-      if (data.qrLogo) {
-        setLogoUrl(data.qrLogo);
+      if (isLessonMode && lessonId) {
+        // Fetch lesson QR details
+        const data = await apiFetch<{
+          lessonUrl?: string;
+          qrLogo?: string;
+        }>(`/lessons/${lessonId}/qr`);
+        setTargetUrl(data.lessonUrl || '');
+        if (data.qrLogo) setLogoUrl(data.qrLogo);
+      } else {
+        // Fetch book QR details
+        const data = await apiFetch<{
+          bookUrl?: string;
+          courseUrl?: string;
+          qrLogo?: string;
+        }>(`/books/${courseId}/qr`);
+        const url = data.bookUrl || data.courseUrl || `${window.location.origin}/books/${courseId}`;
+        setTargetUrl(url);
+        if (data.qrLogo) setLogoUrl(data.qrLogo);
       }
-    } catch (err: any) {
+    } catch {
       toast('Failed to generate QR details.', 'error');
     } finally {
       setLoading(false);
@@ -86,11 +112,10 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
 
   const renderQRWithLogo = async () => {
     const canvas = canvasRef.current;
-    if (!canvas || !bookUrl) return;
+    if (!canvas || !targetUrl) return;
 
     try {
-      // 1. Generate base QR on canvas with Error Correction H
-      await QRCode.toCanvas(canvas, bookUrl, {
+      await QRCode.toCanvas(canvas, targetUrl, {
         width: qrWidth,
         margin: 2,
         errorCorrectionLevel: 'H',
@@ -100,7 +125,6 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
         },
       });
 
-      // 2. If Logo is present, draw centered logo with safe background padding
       if (logoUrl) {
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
@@ -111,7 +135,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
 
         img.onload = () => {
           const canvasSize = canvas.width;
-          let logoPercent = 0.22; // medium
+          let logoPercent = 0.22;
           if (logoSize === 'small') logoPercent = 0.16;
           if (logoSize === 'large') logoPercent = 0.28;
 
@@ -125,7 +149,6 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
           const bgY = y - padding;
           const bgSize = logoDimension + padding * 2;
 
-          // Draw white/bg protective rounded rect
           ctx.save();
           ctx.fillStyle = bgColor;
           ctx.beginPath();
@@ -133,7 +156,6 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
           ctx.fill();
           ctx.restore();
 
-          // Draw centered logo
           ctx.drawImage(img, x, y, logoDimension, logoDimension);
         };
       }
@@ -143,10 +165,10 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
   };
 
   const copyLink = async () => {
-    if (!bookUrl) return;
-    await navigator.clipboard.writeText(bookUrl);
+    if (!targetUrl) return;
+    await navigator.clipboard.writeText(targetUrl);
     setCopied(true);
-    toast('Public book URL copied to clipboard!', 'success');
+    toast(isLessonMode ? 'Lesson URL copied to clipboard!' : 'Public book URL copied to clipboard!', 'success');
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -157,32 +179,65 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
     const dataUrl = canvas.toDataURL('image/png');
     const a = document.createElement('a');
     a.href = dataUrl;
-    a.download = `${courseTitle.replace(/[^a-zA-Z0-9]/g, '_')}_QR.png`;
+    const safeName = isLessonMode
+      ? `${courseTitle}_Lesson${lessonNumber}_QR`.replace(/[^a-zA-Z0-9]/g, '_')
+      : `${courseTitle}_QR`.replace(/[^a-zA-Z0-9]/g, '_');
+    a.download = `${safeName}.png`;
     a.click();
     toast('High-resolution PNG downloaded!', 'success');
   };
 
+  const modalTitle = isLessonMode ? 'Lesson QR Code Studio' : 'Book QR Code Studio';
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Book QR Code Studio" maxWidth="lg">
+    <Modal isOpen={isOpen} onClose={onClose} title={modalTitle} maxWidth="lg">
       <div className="space-y-6">
+        {/* Header info */}
         <div className="text-center space-y-1">
-          <h4 className="text-base font-semibold text-white">{courseTitle}</h4>
-          <p className="text-xs text-brand-400 font-mono truncate max-w-md mx-auto">{bookUrl}</p>
+          {isLessonMode ? (
+            <>
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <Layers className="w-4 h-4 text-brand-400" />
+                <span className="text-xs text-slate-400 font-mono">
+                  {courseTitle} — Lesson {lessonNumber}
+                </span>
+              </div>
+              <h4 className="text-base font-semibold text-white">{lessonTitle}</h4>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <BookOpen className="w-4 h-4 text-brand-400" />
+                <span className="text-xs text-slate-400 font-mono">Book QR Code</span>
+              </div>
+              <h4 className="text-base font-semibold text-white">{courseTitle}</h4>
+            </>
+          )}
+          <p className="text-xs text-brand-400 font-mono truncate max-w-md mx-auto">{targetUrl}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-          {/* Live Preview Canvas Container */}
+          {/* Live Preview Canvas */}
           <div className="flex flex-col items-center justify-center p-6 bg-slate-950 rounded-2xl border border-slate-800 space-y-3">
-            <div className="p-3 bg-white rounded-2xl shadow-2xl inline-block">
-              <canvas ref={canvasRef} className="w-56 h-56 object-contain" />
-            </div>
+            {loading ? (
+              <div className="w-56 h-56 flex items-center justify-center">
+                <RefreshCw className="w-8 h-8 text-brand-400 animate-spin" />
+              </div>
+            ) : (
+              <div className="p-3 bg-white rounded-2xl shadow-2xl inline-block">
+                <canvas ref={canvasRef} className="w-56 h-56 object-contain" />
+              </div>
+            )}
             <p className="text-[11px] text-slate-400 text-center">
-              Scans directly to public book page. No login required.
+              {isLessonMode
+                ? 'Scans directly to this lesson. No login required.'
+                : 'Scans directly to public book page. No login required.'}
             </p>
           </div>
 
-          {/* Controls & Customization */}
+          {/* Controls */}
           <div className="space-y-4 text-xs text-slate-300">
+            {/* Logo Upload */}
             <div className="space-y-2">
               <label className="font-semibold text-white flex items-center gap-1.5">
                 <ImageIcon className="w-4 h-4 text-brand-400" />
@@ -251,7 +306,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
               </div>
             </div>
 
-            {/* Action buttons */}
+            {/* Actions */}
             <div className="pt-2 space-y-2">
               <Button
                 variant="primary"
@@ -271,7 +326,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
                   onClick={copyLink}
                   icon={copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
                 >
-                  {copied ? 'Copied Link!' : 'Copy Book URL'}
+                  {copied ? 'Copied!' : isLessonMode ? 'Copy Lesson URL' : 'Copy Book URL'}
                 </Button>
                 <Button
                   variant="ghost"

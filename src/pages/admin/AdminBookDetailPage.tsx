@@ -32,6 +32,8 @@ export const AdminBookDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [savingBook, setSavingBook] = useState(false);
   const [qrModalOpen, setQrModalOpen] = useState(false);
+  // Lesson-level QR target: null = book-level QR, otherwise a specific lesson
+  const [lessonQrTarget, setLessonQrTarget] = useState<{ id: string; title: string; lessonNumber: number } | null>(null);
 
   // Book Edit Form state
   const [title, setTitle] = useState('');
@@ -344,6 +346,18 @@ export const AdminBookDetailPage: React.FC = () => {
                     {lesson.published ? 'Published' : 'Draft'}
                   </Badge>
 
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-brand-400 hover:bg-brand-500/10 border border-brand-500/20"
+                    onClick={() => {
+                      setLessonQrTarget({ id: lesson.id, title: lesson.title, lessonNumber: lesson.lessonNumber || idx + 1 });
+                      setQrModalOpen(true);
+                    }}
+                    icon={<QrCode className="w-3.5 h-3.5" />}
+                    title="Generate lesson QR code"
+                  />
+
                   <Link to={`/admin/lessons/${lesson.id}/edit`}>
                     <Button variant="outline" size="sm" icon={<Edit className="w-3.5 h-3.5" />}>
                       Edit Content
@@ -430,9 +444,15 @@ export const AdminBookDetailPage: React.FC = () => {
       {qrModalOpen && (
         <QRCodeModal
           isOpen={qrModalOpen}
-          onClose={() => setQrModalOpen(false)}
+          onClose={() => {
+            setQrModalOpen(false);
+            setLessonQrTarget(null);
+          }}
           courseId={book.id}
           courseTitle={book.title}
+          lessonId={lessonQrTarget?.id}
+          lessonTitle={lessonQrTarget?.title}
+          lessonNumber={lessonQrTarget?.lessonNumber}
         />
       )}
     </div>

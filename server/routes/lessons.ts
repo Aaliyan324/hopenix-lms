@@ -1,4 +1,5 @@
 import { Router, Response } from 'express';
+import QRCode from 'qrcode';
 import prisma from '../lib/prisma.js';
 import {
   authenticateToken,
@@ -342,4 +343,64 @@ router.post('/:id/editors', authenticateToken, requireRole('ADMIN'), async (req:
   }
 });
 
+// Generate QR Code for a specific Lesson (PUBLIC - links to public lesson reader)
+router.get('/:id/qr', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const lesson = await prisma.lesson.findFirst({
+      where: { OR: [{ id }, { slug: id }] },
+      include: {
+        course: {
+          select: { id: true, title: true, slug: true },
+        },
+      },
+    });
+
+    if (!lesson) {
+      return res.status(404).json({ error: 'Lesson not found.' });
+    }
+
+    const host = req.get('host') || 'localhost:3000';
+    const protocol = req.protocol === 'https' || host.includes('vercel.app') ? 'https' : 'http';
+    const baseUrl = process.env.VITE_APP_URL || `${protocol}://${host}`;
+
+    // Build the public lesson URL: /books/:bookSlug/lessons/:lessonNumber
+    const lessonUrl = `${baseUrl}/books/${lesson.course.slug}/lessons/${lesson.lessonNumber}`;
+
+    const qrDataUrl = await QRCode.toDataURL(lessonUrl, {
+      width: 500,
+      margin: 2,
+      errorCorrectionLevel: 'H',
+      color: {
+        dark: '#0f172a',
+        light: '#ffffff',
+      },
+    });
+
+    const svgData = await QRCode.toString(lessonUrl, {
+      type: 'svg',
+      margin: 2,
+      errorCorrectionLevel: 'H',
+    });
+
+    return res.json({
+      lessonId: lesson.id,
+      lessonTitle: lesson.title,
+      lessonSlug: lesson.slug,
+      lessonNumber: lesson.lessonNumber,
+      lessonUrl,
+      bookId: lesson.course.id,
+      bookTitle: lesson.course.title,
+      bookSlug: lesson.course.slug,
+      qrDataUrl,
+      svgData,
+    });
+  } catch (error) {
+    console.error('Lesson QR generation error:', error);
+    return res.status(500).json({ error: 'Failed to generate lesson QR code.' });
+  }
+});
+
 export default router;
+
