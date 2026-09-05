@@ -15,6 +15,7 @@ import {
   Trash2,
   BookOpen,
   Layers,
+  Sparkles,
 } from 'lucide-react';
 
 interface QRCodeModalProps {
@@ -49,7 +50,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
   const [targetUrl, setTargetUrl] = useState('');
 
   // Customization Settings
-  const [fgColor, setFgColor] = useState('#0f172a');
+  const [fgColor, setFgColor] = useState('#2e1065');
   const [bgColor, setBgColor] = useState('#ffffff');
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [logoSize, setLogoSize] = useState<'small' | 'medium' | 'large'>('medium');
@@ -73,7 +74,6 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
     try {
       setLoading(true);
       if (isLessonMode && lessonId) {
-        // Fetch lesson QR details
         const data = await apiFetch<{
           lessonUrl?: string;
           qrLogo?: string;
@@ -81,7 +81,6 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
         setTargetUrl(data.lessonUrl || '');
         if (data.qrLogo) setLogoUrl(data.qrLogo);
       } else {
-        // Fetch book QR details
         const data = await apiFetch<{
           bookUrl?: string;
           courseUrl?: string;
@@ -105,7 +104,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
     const reader = new FileReader();
     reader.onload = () => {
       setLogoUrl(reader.result as string);
-      toast('Logo uploaded for QR code!', 'success');
+      toast('Logo uploaded for QR code! ✨', 'success');
     };
     reader.readAsDataURL(file);
   };
@@ -184,99 +183,97 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
       : `${courseTitle}_QR`.replace(/[^a-zA-Z0-9]/g, '_');
     a.download = `${safeName}.png`;
     a.click();
-    toast('High-resolution PNG downloaded!', 'success');
+    toast('High-resolution PNG downloaded! 🎉', 'success');
   };
 
   const modalTitle = isLessonMode ? 'Lesson QR Code Studio' : 'Book QR Code Studio';
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={modalTitle} maxWidth="xl">
-      <div className="space-y-5">
-        {/* Header info */}
-        <div className="text-center space-y-1">
+      <div className="space-y-6">
+        {/* Header Info Banner */}
+        <div className="text-center space-y-1 bg-gradient-to-r from-purple-950/60 to-slate-900 p-4 rounded-2xl border border-purple-500/20">
           {isLessonMode ? (
             <>
               <div className="flex items-center justify-center gap-2 mb-1">
-                <Layers className="w-4 h-4 text-brand-400" />
-                <span className="text-xs text-slate-400 font-mono">
-                  {courseTitle} — Lesson {lessonNumber}
+                <Layers className="w-4 h-4 text-brand-300" />
+                <span className="text-xs text-brand-300 font-extrabold">
+                  {courseTitle} — Chapter {lessonNumber}
                 </span>
               </div>
-              <h4 className="text-base font-semibold text-white">{lessonTitle}</h4>
+              <h4 className="text-base font-extrabold text-white">{lessonTitle}</h4>
             </>
           ) : (
             <>
               <div className="flex items-center justify-center gap-2 mb-1">
-                <BookOpen className="w-4 h-4 text-brand-400" />
-                <span className="text-xs text-slate-400 font-mono">Book QR Code</span>
+                <BookOpen className="w-4 h-4 text-brand-300" />
+                <span className="text-xs text-brand-300 font-extrabold">Digital Book QR</span>
               </div>
-              <h4 className="text-base font-semibold text-white">{courseTitle}</h4>
+              <h4 className="text-base font-extrabold text-white">{courseTitle}</h4>
             </>
           )}
-          <p className="text-xs text-brand-400 font-mono truncate max-w-lg mx-auto">{targetUrl}</p>
+          <p className="text-xs text-brand-300 font-mono truncate max-w-lg mx-auto">{targetUrl}</p>
         </div>
 
-        {/* QR Canvas — centred, full-width preview */}
-        <div className="flex flex-col items-center justify-center p-5 bg-slate-950 rounded-2xl border border-slate-800 space-y-3">
+        {/* QR Canvas Preview */}
+        <div className="flex flex-col items-center justify-center p-6 bg-slate-950 rounded-3xl border border-purple-500/20 space-y-4">
           {loading ? (
             <div className="flex items-center justify-center" style={{ width: 320, height: 320 }}>
               <RefreshCw className="w-10 h-10 text-brand-400 animate-spin" />
             </div>
           ) : (
-            <div className="p-4 bg-white rounded-2xl shadow-2xl inline-block">
-              {/* style width/height is the ONLY reliable way to scale a <canvas> element */}
+            <div className="p-4 bg-white rounded-3xl shadow-2xl inline-block border-4 border-purple-500/30">
               <canvas
                 ref={canvasRef}
                 style={{ display: 'block', width: 320, height: 320 }}
               />
             </div>
           )}
-          <p className="text-[11px] text-slate-400 text-center">
+          <p className="text-xs font-bold text-slate-300 text-center flex items-center gap-1.5">
+            <Sparkles className="w-4 h-4 text-amber-300" />
             {isLessonMode
-              ? 'Scans directly to this lesson. No login required.'
-              : 'Scans directly to public book page. No login required.'}
+              ? 'Scan to open chapter directly on any smartphone.'
+              : 'Scan to open full digital book library page.'}
           </p>
         </div>
 
-        {/* Controls row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-slate-300">
-          {/* Left: Logo + Logo size */}
-          <div className="space-y-3">
-            <div className="space-y-2">
-              <label className="font-semibold text-white flex items-center gap-1.5">
-                <ImageIcon className="w-4 h-4 text-brand-400" />
-                Center QR Logo
+        {/* Customization & Action Controls */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+          {/* Logo Settings */}
+          <div className="space-y-3 p-4 bg-slate-900/80 rounded-2xl border border-slate-800">
+            <label className="font-extrabold text-white flex items-center gap-2">
+              <ImageIcon className="w-4 h-4 text-brand-300" />
+              Center Brand Logo
+            </label>
+            <div className="flex items-center gap-2">
+              <label className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-950 hover:bg-brand-600 border border-slate-800 rounded-xl cursor-pointer text-white font-extrabold transition-all shadow-md">
+                <Upload className="w-4 h-4 text-brand-300" />
+                <span>Upload Logo</span>
+                <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
               </label>
-              <div className="flex items-center gap-2">
-                <label className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl cursor-pointer text-slate-200 font-semibold transition-colors">
-                  <Upload className="w-4 h-4 text-brand-400" />
-                  <span>Upload Logo</span>
-                  <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-                </label>
-                {logoUrl && (
-                  <button
-                    onClick={() => setLogoUrl(null)}
-                    className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 transition-colors"
-                    title="Remove Logo"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
+              {logoUrl && (
+                <button
+                  onClick={() => setLogoUrl(null)}
+                  className="p-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 border border-rose-500/40 transition-colors"
+                  title="Remove Logo"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )}
             </div>
 
             {logoUrl && (
-              <div className="space-y-1.5">
-                <label className="font-semibold text-slate-300">Logo Size</label>
+              <div className="space-y-1.5 pt-1">
+                <label className="font-bold text-slate-300">Logo Size</label>
                 <div className="grid grid-cols-3 gap-2">
                   {(['small', 'medium', 'large'] as const).map((sz) => (
                     <button
                       key={sz}
                       onClick={() => setLogoSize(sz)}
-                      className={`py-1.5 rounded-lg border font-semibold capitalize transition-all ${
+                      className={`py-1.5 rounded-lg border font-bold capitalize transition-all ${
                         logoSize === sz
                           ? 'bg-brand-600 text-white border-brand-500'
-                          : 'bg-slate-900 text-slate-400 border-slate-800'
+                          : 'bg-slate-950 text-slate-400 border-slate-800'
                       }`}
                     >
                       {sz}
@@ -287,48 +284,48 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
             )}
           </div>
 
-          {/* Right: Colors + Actions */}
-          <div className="space-y-3">
+          {/* Color & Action Controls */}
+          <div className="space-y-3 p-4 bg-slate-900/80 rounded-2xl border border-slate-800 flex flex-col justify-between">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="font-semibold text-slate-300 block mb-1">Foreground</label>
+                <label className="font-bold text-slate-300 block mb-1">Foreground</label>
                 <input
                   type="color"
                   value={fgColor}
                   onChange={(e) => setFgColor(e.target.value)}
-                  className="w-full h-9 bg-slate-900 border border-slate-800 rounded-xl cursor-pointer p-1"
+                  className="w-full h-10 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer p-1"
                 />
               </div>
               <div>
-                <label className="font-semibold text-slate-300 block mb-1">Background</label>
+                <label className="font-bold text-slate-300 block mb-1">Background</label>
                 <input
                   type="color"
                   value={bgColor}
                   onChange={(e) => setBgColor(e.target.value)}
-                  className="w-full h-9 bg-slate-900 border border-slate-800 rounded-xl cursor-pointer p-1"
+                  className="w-full h-10 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer p-1"
                 />
               </div>
             </div>
 
             <Button
-              variant="primary"
-              size="sm"
-              className="w-full shadow-lg shadow-brand-500/20"
+              variant="playful"
+              size="md"
+              className="w-full rounded-xl"
               onClick={downloadPNG}
               icon={<Download className="w-4 h-4" />}
             >
-              Download PNG QR Code
+              Download High-Res PNG
             </Button>
 
             <div className="flex gap-2">
               <Button
                 variant="secondary"
                 size="sm"
-                className="flex-1"
+                className="flex-1 rounded-xl"
                 onClick={copyLink}
                 icon={copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
               >
-                {copied ? 'Copied!' : isLessonMode ? 'Copy Lesson URL' : 'Copy Book URL'}
+                {copied ? 'Copied!' : 'Copy Link'}
               </Button>
               <Button
                 variant="ghost"
@@ -344,4 +341,3 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
     </Modal>
   );
 };
-

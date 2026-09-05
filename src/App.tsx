@@ -5,6 +5,7 @@ import { ToastProvider } from './components/ui/Toast';
 import { ProtectedRoute } from './components/common/ProtectedRoute';
 import { Navbar } from './components/common/Navbar';
 import { Sidebar } from './components/common/Sidebar';
+import { Footer } from './components/common/Footer';
 
 // Public Pages
 import { PublicBooksPage } from './pages/public/PublicBooksPage';
@@ -28,19 +29,23 @@ import { LessonEditPage } from './pages/editor/LessonEditPage';
 // Student Pages
 import { StudentDashboardPage } from './pages/student/StudentDashboardPage';
 
-// Portal Layout with Navbar & Sidebar
+// Portal Layout with Navbar, Sidebar, and Footer
 const PortalLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user } = useAuth();
+  const showSidebar = user && (user.role === 'ADMIN' || user.role === 'EDITOR');
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-brand-500 selection:text-white">
-      <Navbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+      <Navbar onToggleSidebar={showSidebar ? () => setSidebarOpen(!sidebarOpen) : undefined} />
       <div className="flex flex-1 relative">
-        {user && <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
-          <Outlet />
-        </main>
+        {showSidebar && <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />}
+        <div className="flex-1 flex flex-col min-w-0">
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+            <Outlet />
+          </main>
+          <Footer />
+        </div>
       </div>
     </div>
   );

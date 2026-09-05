@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Badge } from '../ui/Badge';
-import { BookOpen, LogOut, User, Menu, X, Shield, Sparkles, LogIn, Library } from 'lucide-react';
-import { useNavigate, Link } from 'react-router-dom';
+import { BookOpen, LogOut, User, Menu, X, Shield, Sparkles, LogIn, Library, GraduationCap, ChevronDown } from 'lucide-react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 
 interface NavbarProps {
   onToggleSidebar?: () => void;
@@ -11,116 +11,169 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
   const { user, logout, isAdmin, isEditor } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = async () => {
     await logout();
+    setDropdownOpen(false);
+    setMobileMenuOpen(false);
     navigate('/login');
   };
 
   const getRoleBadgeVariant = () => {
-    if (isAdmin) return 'brand';
-    if (isEditor) return 'warning';
-    return 'success';
+    if (isAdmin) return 'purple';
+    if (isEditor) return 'amber';
+    return 'pink';
   };
 
+  const isCurrentPath = (path: string) => location.pathname === path;
+
   return (
-    <header className="sticky top-0 z-40 w-full bg-slate-950/85 border-b border-slate-800 backdrop-blur-md">
+    <header className="sticky top-0 z-40 w-full bg-slate-950/80 border-b border-purple-500/15 backdrop-blur-xl transition-all">
       <div className="flex items-center justify-between px-4 sm:px-6 py-3 max-w-7xl mx-auto">
-        {/* Left Side: Brand Logo & Navigation Links */}
-        <div className="flex items-center gap-4 sm:gap-6">
+        {/* Left Side: Logo & Primary Nav Links */}
+        <div className="flex items-center gap-4 sm:gap-8">
           {user && onToggleSidebar && (
             <button
               onClick={onToggleSidebar}
-              className="lg:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              className="lg:hidden p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 border border-slate-800"
             >
               <Menu className="w-5 h-5" />
             </button>
           )}
 
-          <Link to="/books" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-brand-500/20 group-hover:scale-105 transition-transform">
-              <BookOpen className="w-5 h-5 text-white" />
+          <Link to="/books" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-600 via-purple-600 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-brand-500/25 group-hover:scale-105 transition-all duration-300">
+              <BookOpen className="w-5 h-5 fill-current" />
             </div>
-            <div>
-              <span className="font-bold text-lg text-white tracking-tight flex items-center gap-1.5">
-                Hopenix <span className="text-brand-400">E-Book Portal</span>
+            <div className="flex flex-col">
+              <span className="font-black text-xl text-white tracking-tight leading-none group-hover:text-brand-300 transition-colors">
+                Hopenix<span className="text-pink-500">.</span>
+              </span>
+              <span className="text-[10px] font-extrabold text-brand-400 uppercase tracking-wider">
+                Magic Library
               </span>
             </div>
           </Link>
 
-          {/* Nav Links */}
-          <div className="hidden sm:flex items-center gap-3">
+          {/* Desktop Navigation Links */}
+          <nav className="hidden md:flex items-center gap-2">
             <Link
               to="/books"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-900 transition-colors"
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-extrabold transition-all ${
+                isCurrentPath('/books')
+                  ? 'bg-brand-500/20 text-brand-300 border border-brand-500/40 shadow-sm'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-900/80'
+              }`}
             >
               <Library className="w-4 h-4 text-brand-400" />
-              Digital Library
+              Books & Adventures
             </Link>
-          </div>
+
+            {user?.role === 'STUDENT' && (
+              <Link
+                to="/student"
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-extrabold transition-all ${
+                  isCurrentPath('/student')
+                    ? 'bg-pink-500/20 text-pink-300 border border-pink-500/40 shadow-sm'
+                    : 'text-slate-300 hover:text-white hover:bg-slate-900/80'
+                }`}
+              >
+                <GraduationCap className="w-4 h-4 text-pink-400" />
+                My Dashboard
+              </Link>
+            )}
+
+            {(isAdmin || isEditor) && (
+              <Link
+                to="/admin"
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-extrabold transition-all ${
+                  location.pathname.startsWith('/admin')
+                    ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-sm'
+                    : 'text-slate-300 hover:text-white hover:bg-slate-900/80'
+                }`}
+              >
+                <Shield className="w-4 h-4 text-purple-400" />
+                Control Center
+              </Link>
+            )}
+          </nav>
         </div>
 
-        {/* Right Side: User Profile / Sign In */}
-        <div>
+        {/* Right Side: User Profile / Auth buttons */}
+        <div className="flex items-center gap-3">
           {user ? (
             <div className="relative">
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center gap-3 p-1.5 rounded-xl hover:bg-slate-900 transition-colors border border-transparent hover:border-slate-800"
+                className="flex items-center gap-2.5 p-1.5 pl-2.5 rounded-2xl bg-slate-900/90 hover:bg-slate-800 transition-all border border-purple-500/20 hover:border-purple-500/40 shadow-md group"
               >
                 <img
                   src={user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
                   alt={user.name}
-                  className="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 object-cover"
+                  className="w-8 h-8 rounded-full bg-slate-950 border border-brand-400/40 object-cover"
                 />
-                <div className="hidden md:block text-left">
-                  <p className="text-sm font-semibold text-white leading-tight">{user.name}</p>
-                  <div className="flex items-center gap-1 mt-0.5">
-                    <Badge variant={getRoleBadgeVariant()} size="sm">
-                      {user.role}
-                    </Badge>
-                  </div>
+                <div className="hidden sm:block text-left pr-1">
+                  <p className="text-xs font-extrabold text-white leading-tight">{user.name}</p>
+                  <p className="text-[10px] font-bold text-brand-400">{user.role}</p>
                 </div>
+                <ChevronDown className={`w-4 h-4 text-slate-400 group-hover:text-white transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {/* User Menu Dropdown */}
               {dropdownOpen && (
                 <>
                   <div className="fixed inset-0 z-10" onClick={() => setDropdownOpen(false)} />
-                  <div className="absolute right-0 mt-2 w-56 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl z-20 overflow-hidden py-1 divide-y divide-slate-800 animate-in fade-in zoom-in-95 duration-150">
-                    <div className="px-4 py-3 bg-slate-900/50">
-                      <p className="text-sm font-semibold text-white truncate">{user.name}</p>
+                  <div className="absolute right-0 mt-3 w-64 bg-slate-900/95 border border-purple-500/25 rounded-2xl shadow-2xl z-20 overflow-hidden py-1 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150">
+                    <div className="px-4 py-3 bg-gradient-to-r from-purple-950/60 to-slate-900 border-b border-slate-800">
+                      <p className="text-sm font-extrabold text-white truncate">{user.name}</p>
                       <p className="text-xs text-slate-400 truncate">{user.email}</p>
+                      <div className="mt-2">
+                        <Badge variant={getRoleBadgeVariant()} size="sm">
+                          ✨ {user.role} Account
+                        </Badge>
+                      </div>
                     </div>
 
-                    <div className="py-1">
+                    <div className="py-2 space-y-1 px-2">
+                      <Link
+                        to="/books"
+                        onClick={() => setDropdownOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-extrabold text-slate-200 hover:bg-brand-500/10 hover:text-brand-300 transition-colors"
+                      >
+                        <Library className="w-4 h-4 text-brand-400" />
+                        Explore Library
+                      </Link>
+
                       {user.role === 'STUDENT' && (
                         <Link
                           to="/student"
                           onClick={() => setDropdownOpen(false)}
-                          className="flex items-center gap-2 px-4 py-2 text-xs font-medium text-slate-200 hover:bg-slate-800 transition-colors"
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-extrabold text-slate-200 hover:bg-pink-500/10 hover:text-pink-300 transition-colors"
                         >
-                          <User className="w-4 h-4 text-brand-400" />
-                          My Student Dashboard
+                          <GraduationCap className="w-4 h-4 text-pink-400" />
+                          Student Dashboard
                         </Link>
                       )}
-                      {user.role === 'ADMIN' && (
+
+                      {(isAdmin || isEditor) && (
                         <Link
                           to="/admin"
                           onClick={() => setDropdownOpen(false)}
-                          className="flex items-center gap-2 px-4 py-2 text-xs font-medium text-slate-200 hover:bg-slate-800 transition-colors"
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-extrabold text-slate-200 hover:bg-purple-500/10 hover:text-purple-300 transition-colors"
                         >
-                          <Shield className="w-4 h-4 text-brand-400" />
+                          <Shield className="w-4 h-4 text-purple-400" />
                           Admin Console
                         </Link>
                       )}
                     </div>
 
-                    <div className="py-1">
+                    <div className="p-2 border-t border-slate-800">
                       <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-2 px-4 py-2 text-xs font-semibold text-rose-400 hover:bg-rose-500/10 transition-colors"
+                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-extrabold text-rose-400 hover:bg-rose-500/10 transition-colors"
                       >
                         <LogOut className="w-4 h-4" />
                         Sign Out
@@ -134,15 +187,57 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
             <div className="flex items-center gap-2">
               <Link
                 to="/login"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-xl transition-all shadow-lg shadow-brand-500/20"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-brand-600 via-purple-600 to-pink-600 hover:from-brand-500 hover:to-pink-500 text-white text-xs font-extrabold rounded-2xl transition-all shadow-lg shadow-brand-500/25 border border-pink-400/30 hover:scale-105 active:scale-95"
               >
                 <LogIn className="w-4 h-4" />
                 Sign In
               </Link>
             </div>
           )}
+
+          {/* Mobile menu trigger */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 rounded-xl text-slate-300 hover:text-white bg-slate-900 border border-slate-800"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
         </div>
       </div>
+
+      {/* Mobile Drawer Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-slate-800 bg-slate-950/95 backdrop-blur-xl px-4 py-4 space-y-3 animate-in slide-in-from-top-2">
+          <Link
+            to="/books"
+            onClick={() => setMobileMenuOpen(false)}
+            className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-extrabold text-slate-200 hover:bg-slate-900"
+          >
+            <Library className="w-4 h-4 text-brand-400" />
+            Digital Library
+          </Link>
+          {user?.role === 'STUDENT' && (
+            <Link
+              to="/student"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-extrabold text-slate-200 hover:bg-slate-900"
+            >
+              <GraduationCap className="w-4 h-4 text-pink-400" />
+              Student Dashboard
+            </Link>
+          )}
+          {(isAdmin || isEditor) && (
+            <Link
+              to="/admin"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-extrabold text-slate-200 hover:bg-slate-900"
+            >
+              <Shield className="w-4 h-4 text-purple-400" />
+              Admin Console
+            </Link>
+          )}
+        </div>
+      )}
     </header>
   );
 };

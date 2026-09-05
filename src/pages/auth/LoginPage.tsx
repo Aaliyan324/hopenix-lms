@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { useToast } from '../../components/ui/Toast';
-import { BookOpen, Shield, Edit3, GraduationCap, Lock, Mail, ArrowRight } from 'lucide-react';
+import { BookOpen, Shield, Edit3, GraduationCap, Lock, Mail, ArrowRight, Sparkles } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const { login } = useAuth();
@@ -24,7 +24,7 @@ export const LoginPage: React.FC = () => {
     try {
       setLoading(true);
       const user = await login(email, password);
-      toast(`Welcome back, ${user.name}!`, 'success');
+      toast(`Welcome back, ${user.name}! ✨`, 'success');
 
       if (user.role === 'ADMIN') navigate('/admin');
       else if (user.role === 'EDITOR') navigate('/editor');
@@ -44,51 +44,56 @@ export const LoginPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col justify-center items-center p-4 relative overflow-hidden">
       {/* Background Gradients */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-brand-600/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-brand-600/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-600/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="w-full max-w-md space-y-8 z-10">
         {/* Header Branding */}
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand-600 to-blue-500 shadow-xl shadow-brand-500/30 mb-2">
-            <BookOpen className="w-8 h-8 text-white" />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-gradient-to-tr from-brand-600 via-purple-600 to-pink-500 shadow-2xl shadow-brand-500/40 mb-2 border border-pink-400/30 animate-float">
+            <BookOpen className="w-8 h-8 text-white fill-current" />
           </div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Hopenix LMS Portal</h1>
-          <p className="text-sm text-slate-400">Enterprise Course & Lesson Management System</p>
+          <h1 className="text-3xl font-black text-white tracking-tight">
+            Hopenix<span className="text-pink-500">.</span>
+          </h1>
+          <p className="text-sm font-medium text-slate-300">
+            Welcome to your magical reading adventure
+          </p>
         </div>
 
         {/* Login Form Card */}
-        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-8 shadow-2xl backdrop-blur-xl space-y-6">
+        <div className="bg-slate-900/90 border border-purple-500/25 rounded-3xl p-8 shadow-2xl backdrop-blur-xl space-y-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-extrabold text-slate-300 uppercase tracking-wider mb-2">
                 Email Address
               </label>
               <div className="relative">
-                <Mail className="w-5 h-5 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Mail className="w-5 h-5 text-brand-400 absolute left-4 top-1/2 -translate-y-1/2" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@example.com"
-                  className="w-full pl-11 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-colors"
+                  className="w-full pl-12 pr-4 py-3.5 bg-slate-950/80 border border-purple-500/20 focus:border-pink-400 focus:ring-4 focus:ring-pink-500/20 rounded-2xl text-white placeholder-slate-500 text-sm font-medium focus:outline-none transition-all"
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-extrabold text-slate-300 uppercase tracking-wider mb-2">
                 Password
               </label>
               <div className="relative">
-                <Lock className="w-5 h-5 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Lock className="w-5 h-5 text-brand-400 absolute left-4 top-1/2 -translate-y-1/2" />
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-11 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-colors"
+                  className="w-full pl-12 pr-4 py-3.5 bg-slate-950/80 border border-purple-500/20 focus:border-pink-400 focus:ring-4 focus:ring-pink-500/20 rounded-2xl text-white placeholder-slate-500 text-sm font-medium focus:outline-none transition-all"
                   required
                 />
               </div>
@@ -96,47 +101,48 @@ export const LoginPage: React.FC = () => {
 
             <Button
               type="submit"
-              variant="primary"
+              variant="playful"
               size="lg"
-              className="w-full mt-2"
+              className="w-full mt-2 rounded-2xl"
               loading={loading}
               icon={<ArrowRight className="w-5 h-5" />}
             >
-              Sign In to Portal
+              Sign In to Adventure
             </Button>
           </form>
 
           {/* Quick Fill Demo Personas */}
-          <div className="pt-4 border-t border-slate-800 space-y-3">
-            <p className="text-xs font-semibold text-slate-400 text-center uppercase tracking-wider">
-              Quick Test Personas
+          <div className="pt-5 border-t border-purple-500/20 space-y-3">
+            <p className="text-xs font-extrabold text-slate-400 text-center uppercase tracking-wider flex items-center justify-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+              Quick Demo Personas
             </p>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-2.5">
               <button
                 type="button"
                 onClick={() => fillDemo('admin@example.com', 'admin123')}
-                className="flex flex-col items-center justify-center p-2.5 bg-slate-950 border border-slate-800 hover:border-brand-500/50 rounded-xl text-xs text-slate-300 hover:text-white transition-all group cursor-pointer"
+                className="flex flex-col items-center justify-center p-3 bg-slate-950 border border-purple-500/30 hover:border-purple-400 rounded-2xl text-xs text-slate-200 hover:text-white transition-all group cursor-pointer shadow-md"
               >
-                <Shield className="w-4 h-4 text-brand-400 mb-1 group-hover:scale-110 transition-transform" />
-                <span className="font-semibold">Admin</span>
+                <Shield className="w-4 h-4 text-purple-400 mb-1 group-hover:scale-110 transition-transform" />
+                <span className="font-extrabold">Admin</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => fillDemo('editor1@example.com', 'password123')}
-                className="flex flex-col items-center justify-center p-2.5 bg-slate-950 border border-slate-800 hover:border-amber-500/50 rounded-xl text-xs text-slate-300 hover:text-white transition-all group cursor-pointer"
+                className="flex flex-col items-center justify-center p-3 bg-slate-950 border border-amber-500/30 hover:border-amber-400 rounded-2xl text-xs text-slate-200 hover:text-white transition-all group cursor-pointer shadow-md"
               >
                 <Edit3 className="w-4 h-4 text-amber-400 mb-1 group-hover:scale-110 transition-transform" />
-                <span className="font-semibold">Editor</span>
+                <span className="font-extrabold">Editor</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => fillDemo('student1@example.com', 'password123')}
-                className="flex flex-col items-center justify-center p-2.5 bg-slate-950 border border-slate-800 hover:border-emerald-500/50 rounded-xl text-xs text-slate-300 hover:text-white transition-all group cursor-pointer"
+                className="flex flex-col items-center justify-center p-3 bg-slate-950 border border-pink-500/30 hover:border-pink-400 rounded-2xl text-xs text-slate-200 hover:text-white transition-all group cursor-pointer shadow-md"
               >
-                <GraduationCap className="w-4 h-4 text-emerald-400 mb-1 group-hover:scale-110 transition-transform" />
-                <span className="font-semibold">Student</span>
+                <GraduationCap className="w-4 h-4 text-pink-400 mb-1 group-hover:scale-110 transition-transform" />
+                <span className="font-extrabold">Student</span>
               </button>
             </div>
           </div>

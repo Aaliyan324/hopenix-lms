@@ -4,6 +4,8 @@ import { DashboardStats, AuditLog } from '../../types';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
+import { SectionHeader } from '../../components/ui/SectionHeader';
+import { PlayfulBanner } from '../../components/ui/PlayfulBanner';
 import {
   BookOpen,
   FileText,
@@ -14,7 +16,8 @@ import {
   Activity,
   Plus,
   ArrowUpRight,
-  Book,
+  Shield,
+  Sparkles,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -43,7 +46,7 @@ export const AdminDashboardPage: React.FC = () => {
   if (loading) {
     return (
       <div className="space-y-6">
-        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-8 w-64 rounded-xl" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(6)].map((_, i) => (
             <Skeleton key={i} className="h-32 rounded-2xl" />
@@ -54,45 +57,47 @@ export const AdminDashboardPage: React.FC = () => {
   }
 
   const statCards = [
-    { label: 'Total Books', value: stats?.totalBooks || stats?.totalCourses || 0, icon: BookOpen, color: 'text-brand-400', bg: 'bg-brand-500/10 border-brand-500/20' },
-    { label: 'Published Books', value: stats?.publishedBooks || stats?.publishedCourses || 0, icon: CheckCircle, color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
-    { label: 'Total Lessons', value: stats?.totalLessons || 0, icon: FileText, color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20' },
-    { label: 'Published Lessons', value: stats?.publishedLessons || 0, icon: Eye, color: 'text-teal-400', bg: 'bg-teal-500/10 border-teal-500/20' },
-    { label: 'Students', value: stats?.totalStudents || 0, icon: Users, color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/20' },
-    { label: 'Editors', value: stats?.totalEditors || 0, icon: UserCheck, color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20' },
+    { label: 'Total Books', value: stats?.totalBooks || stats?.totalCourses || 0, icon: BookOpen, color: 'text-purple-300', bg: 'bg-purple-500/15 border-purple-500/30' },
+    { label: 'Published Books', value: stats?.publishedBooks || stats?.publishedCourses || 0, icon: CheckCircle, color: 'text-emerald-300', bg: 'bg-emerald-500/15 border-emerald-500/30' },
+    { label: 'Total Lessons', value: stats?.totalLessons || 0, icon: FileText, color: 'text-sky-300', bg: 'bg-sky-500/15 border-sky-500/30' },
+    { label: 'Published Lessons', value: stats?.publishedLessons || 0, icon: Eye, color: 'text-teal-300', bg: 'bg-teal-500/15 border-teal-500/30' },
+    { label: 'Students', value: stats?.totalStudents || 0, icon: Users, color: 'text-pink-300', bg: 'bg-pink-500/15 border-pink-500/30' },
+    { label: 'Editors', value: stats?.totalEditors || 0, icon: UserCheck, color: 'text-amber-300', bg: 'bg-amber-500/15 border-amber-500/30' },
   ];
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto pb-16">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-white">E-Book Portal Admin Console</h1>
-          <p className="text-sm text-slate-400">Overview of books catalog, lessons, student progress, and activity logs.</p>
-        </div>
+    <div className="space-y-10 max-w-7xl mx-auto pb-16">
+      {/* Header Banner */}
+      <PlayfulBanner
+        badgeText="Admin Control Center"
+        badgeIcon={<Shield className="w-4 h-4 text-purple-300" />}
+        title="📚 Library Control Center"
+        subtitle="Manage digital book catalog, monitor lesson progress, manage editor permissions, and review real-time audit logs."
+        variant="purple"
+      >
         <Link
           to="/admin/books"
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold rounded-xl transition-all shadow-lg shadow-brand-500/20 w-fit"
+          className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 text-white text-xs font-extrabold rounded-2xl transition-all shadow-lg shadow-brand-500/25 border border-pink-400/30 hover:scale-105"
         >
           <Plus className="w-4 h-4" />
-          Create New Book
+          Create New Digital Book
         </Link>
-      </div>
+      </PlayfulBanner>
 
       {/* Metric Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {statCards.map((item, idx) => {
           const Icon = item.icon;
           return (
-            <Card key={idx} className="relative overflow-hidden group">
+            <Card key={idx} className="relative overflow-hidden group hoverable">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                  <p className="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-1">
                     {item.label}
                   </p>
-                  <p className="text-3xl font-extrabold text-white">{item.value}</p>
+                  <p className="text-3xl font-black text-white">{item.value}</p>
                 </div>
-                <div className={`p-3 rounded-2xl border ${item.bg} ${item.color} group-hover:scale-110 transition-transform`}>
+                <div className={`p-3.5 rounded-2xl border ${item.bg} ${item.color} group-hover:scale-110 transition-transform shadow-inner`}>
                   <Icon className="w-6 h-6" />
                 </div>
               </div>
@@ -102,49 +107,49 @@ export const AdminDashboardPage: React.FC = () => {
       </div>
 
       {/* Recent Activity Section */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl">
-        <div className="flex items-center justify-between mb-6">
+      <div className="bg-slate-900/90 border border-purple-500/20 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-md">
+        <div className="flex items-center justify-between mb-6 border-b border-purple-500/15 pb-4">
           <div className="flex items-center gap-2">
-            <Activity className="w-5 h-5 text-brand-400" />
-            <h3 className="text-lg font-semibold text-white">Recent E-Book Activity & Audit Logs</h3>
+            <Activity className="w-5 h-5 text-brand-300" />
+            <h3 className="text-lg font-extrabold text-white">Recent E-Book Activity & Audit Logs</h3>
           </div>
           <Link
             to="/admin/activity-logs"
-            className="text-xs font-semibold text-brand-400 hover:text-brand-300 flex items-center gap-1"
+            className="text-xs font-extrabold text-brand-300 hover:text-white flex items-center gap-1 bg-brand-500/10 px-3 py-1.5 rounded-xl border border-brand-500/20 transition-all"
           >
             View Full Activity Log <ArrowUpRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
         {recentLogs.length === 0 ? (
-          <p className="text-sm text-slate-500 italic p-6 text-center">No activity recorded yet.</p>
+          <p className="text-sm text-slate-400 italic p-8 text-center font-medium">No activity recorded yet.</p>
         ) : (
           <div className="space-y-3">
             {recentLogs.map((log) => (
               <div
                 key={log.id}
-                className="flex items-center justify-between p-3.5 bg-slate-950/60 border border-slate-800/80 rounded-xl text-sm"
+                className="flex items-center justify-between p-4 bg-slate-950/80 border border-slate-800/80 rounded-2xl text-sm"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3.5">
                   <img
                     src={log.user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${log.user?.name || 'System'}`}
                     alt={log.user?.name || 'User'}
-                    className="w-8 h-8 rounded-full bg-slate-800 object-cover"
+                    className="w-9 h-9 rounded-full bg-slate-900 border border-purple-500/30 object-cover"
                   />
                   <div>
-                    <p className="text-xs font-semibold text-white">
+                    <p className="text-xs font-extrabold text-white">
                       {log.user?.name || 'System'} <span className="font-normal text-slate-400">({log.action})</span>
                     </p>
-                    <p className="text-[11px] text-slate-500">
-                      Target: <span className="text-slate-300">{log.entityType}</span> ({log.entityId || 'N/A'})
+                    <p className="text-[11px] text-slate-400 font-medium">
+                      Target: <span className="text-slate-200 font-semibold">{log.entityType}</span> ({log.entityId || 'N/A'})
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <Badge variant="brand" size="sm">
+                  <Badge variant="purple" size="sm">
                     {log.action}
                   </Badge>
-                  <p className="text-[10px] text-slate-500 mt-1">
+                  <p className="text-[10px] font-bold text-slate-500 mt-1">
                     {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </div>

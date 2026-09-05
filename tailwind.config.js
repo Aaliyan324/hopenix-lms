@@ -8,20 +8,51 @@ export default {
     extend: {
       colors: {
         brand: {
-          50: '#f0f4ff',
-          100: '#e0e9fe',
-          200: '#bae0fd',
-          300: '#7cc5fd',
-          400: '#36a6f9',
-          500: '#0c87eb',
-          600: '#0069cb',
-          700: '#0054a6',
-          800: '#054788',
-          900: '#0a3b70',
-          950: '#07254a',
+          50: '#f5f3ff',
+          100: '#ede9fe',
+          200: '#ddd6fe',
+          300: '#c4b5fd',
+          400: '#a78bfa',
+          500: '#8b5cf6',
+          600: '#7c3aed',
+          700: '#6d28d9',
+          800: '#5b21b6',
+          900: '#4c1d95',
+          950: '#2e1065',
         },
+      },
+      borderRadius: {
+        'card': '1.25rem',
+        'hero': '2rem',
+        'pill': '9999px',
+      },
+      boxShadow: {
+        'card': '0 8px 30px rgba(124, 58, 237, 0.12)',
+        'chunky': '0 6px 0 0 rgba(91, 33, 182, 0.9)',
+        'chunky-sm': '0 3px 0 0 rgba(91, 33, 182, 0.9)',
+        'glow': '0 0 25px rgba(139, 92, 246, 0.4)',
+        'glow-pink': '0 0 25px rgba(236, 72, 153, 0.4)',
+      },
+      keyframes: {
+        shimmer: {
+          '100%': { transform: 'translateX(100%)' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-8px)' },
+        },
+        'bounce-subtle': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-4px)' },
+        },
+      },
+      animation: {
+        shimmer: 'shimmer 2s infinite',
+        float: 'float 4s ease-in-out infinite',
+        'bounce-subtle': 'bounce-subtle 2s ease-in-out infinite',
       },
     },
   },
   plugins: [],
 }
+

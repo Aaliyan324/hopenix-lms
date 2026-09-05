@@ -6,23 +6,28 @@ import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
+import { ReadingProgress } from '../../components/ui/ReadingProgress';
+import { SectionHeader } from '../../components/ui/SectionHeader';
 import { useToast } from '../../components/ui/Toast';
 import { AuthPromptModal } from '../../components/auth/AuthPromptModal';
 import { QRCodeModal } from '../../components/qr/QRCodeModal';
 import {
   ArrowLeft,
   BookOpen,
-  CheckCircle,
+  CheckCircle2,
   Play,
   Layers,
   Clock,
   Bookmark,
   QrCode,
-  Share2,
   Globe,
   Award,
   Calendar,
-  FileText,
+  Sparkles,
+  Heart,
+  Lock,
+  ArrowRight,
+  Compass,
 } from 'lucide-react';
 
 export const PublicBookDetailPage: React.FC = () => {
@@ -74,7 +79,7 @@ export const PublicBookDetailPage: React.FC = () => {
   if (loading || !book) {
     return (
       <div className="space-y-6 max-w-5xl mx-auto">
-        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-8 w-48 rounded-xl" />
         <Skeleton className="h-80 w-full rounded-3xl" />
         <Skeleton className="h-96 w-full rounded-3xl" />
       </div>
@@ -89,52 +94,60 @@ export const PublicBookDetailPage: React.FC = () => {
   const nextLesson = book.lessons?.find((l) => !l.completed) || firstLesson;
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto pb-16">
-      {/* Back Link */}
+    <div className="space-y-10 max-w-5xl mx-auto pb-16">
+      {/* Back Button */}
       <Link
         to="/books"
-        className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
+        className="inline-flex items-center gap-2 text-xs font-extrabold text-brand-300 hover:text-white bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl transition-all"
       >
-        <ArrowLeft className="w-4 h-4" /> Back to Digital Library
+        <ArrowLeft className="w-4 h-4" /> Back to Magic Library
       </Link>
 
-      {/* Book Cover Header Card */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6 sm:p-8">
+      {/* Book Cover Header Banner Card */}
+      <div className="relative bg-gradient-to-br from-slate-900 via-purple-950/40 to-slate-950 border border-purple-500/25 rounded-3xl overflow-hidden shadow-2xl p-6 sm:p-8 backdrop-blur-xl">
+        <div className="absolute right-0 top-0 w-96 h-96 bg-brand-500/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute left-1/3 bottom-0 w-72 h-72 bg-pink-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Cover Image */}
-          <div className="relative h-72 sm:h-80 bg-slate-950 rounded-2xl overflow-hidden shadow-xl shrink-0">
+          <div className="relative h-72 sm:h-80 bg-slate-950 rounded-2xl overflow-hidden shadow-2xl border border-purple-500/30 shrink-0 group">
             <img
               src={book.coverImage || book.thumbnail || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80'}
               alt={book.title}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
+            {book.category && (
+              <span className="absolute top-3 left-3 text-[11px] font-black text-white bg-slate-950/85 backdrop-blur-md px-3 py-1 rounded-full border border-purple-500/30">
+                ✨ {book.category}
+              </span>
+            )}
           </div>
 
-          {/* Book Metadata & Intro */}
-          <div className="md:col-span-2 flex flex-col justify-between space-y-4">
+          {/* Book Metadata & Actions */}
+          <div className="md:col-span-2 flex flex-col justify-between space-y-5">
             <div className="space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <Badge variant="brand">{book.category || 'General'}</Badge>
-                  {book.readingLevel && <Badge variant="slate">{book.readingLevel}</Badge>}
+                  <Badge variant="purple">{book.category || 'General'}</Badge>
+                  {book.readingLevel && <Badge variant="pink">Level: {book.readingLevel}</Badge>}
                 </div>
 
                 <div className="flex items-center gap-2">
                   <button
                     onClick={handleToggleBookmark}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all ${
+                    className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border text-xs font-extrabold transition-all cursor-pointer ${
                       book.isBookmarked
-                        ? 'bg-rose-500 text-white border-rose-400 shadow-md'
-                        : 'bg-slate-950 text-slate-300 border-slate-800 hover:text-white hover:border-slate-700'
+                        ? 'bg-rose-500 text-white border-rose-400 shadow-lg shadow-rose-500/25 scale-105'
+                        : 'bg-slate-950/80 text-slate-300 border-slate-700 hover:text-white hover:border-slate-600'
                     }`}
                   >
-                    <Bookmark className={`w-4 h-4 ${book.isBookmarked ? 'fill-white' : ''}`} />
-                    {book.isBookmarked ? '♥ Saved' : '♡ Save Book'}
+                    <Heart className={`w-4 h-4 ${book.isBookmarked ? 'fill-current' : ''}`} />
+                    {book.isBookmarked ? 'Saved to Collection' : 'Save Book'}
                   </button>
 
                   <button
                     onClick={() => setQrModalOpen(true)}
-                    className="p-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:text-white transition-colors"
+                    className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-700 text-brand-300 hover:text-white hover:border-brand-500 transition-all cursor-pointer"
                     title="QR Code & Share"
                   >
                     <QrCode className="w-4 h-4" />
@@ -142,63 +155,64 @@ export const PublicBookDetailPage: React.FC = () => {
                 </div>
               </div>
 
-              <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">{book.title}</h1>
-              <p className="text-sm text-brand-400 font-semibold">By {book.author || 'Hopenix Editorial'}</p>
-              <p className="text-sm text-slate-300 leading-relaxed">{book.description}</p>
+              <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-tight">
+                {book.title}
+              </h1>
+              <p className="text-sm font-bold text-brand-300">By {book.author || 'Hopenix Editorial'}</p>
+              <p className="text-sm text-slate-300 leading-relaxed font-medium">
+                {book.description || 'Embark on this interactive reading journey filled with rich lessons and knowledge.'}
+              </p>
             </div>
 
-            {/* Quick Specs Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 py-3 border-y border-slate-800/80 text-xs">
+            {/* Specs Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 py-3 border-y border-purple-500/20 text-xs">
               <div>
-                <span className="text-slate-500 block font-medium">Total Lessons</span>
-                <span className="font-semibold text-white flex items-center gap-1 mt-0.5">
+                <span className="text-slate-400 block font-bold">Total Lessons</span>
+                <span className="font-extrabold text-white flex items-center gap-1 mt-0.5">
                   <Layers className="w-3.5 h-3.5 text-brand-400" />
-                  {totalCount} Lessons
+                  {totalCount} Chapters
                 </span>
               </div>
               <div>
-                <span className="text-slate-500 block font-medium">Language</span>
-                <span className="font-semibold text-white flex items-center gap-1 mt-0.5">
-                  <Globe className="w-3.5 h-3.5 text-brand-400" />
+                <span className="text-slate-400 block font-bold">Language</span>
+                <span className="font-extrabold text-white flex items-center gap-1 mt-0.5">
+                  <Globe className="w-3.5 h-3.5 text-sky-400" />
                   {book.language || 'English'}
                 </span>
               </div>
               <div>
-                <span className="text-slate-500 block font-medium">Reading Level</span>
-                <span className="font-semibold text-white flex items-center gap-1 mt-0.5">
-                  <Award className="w-3.5 h-3.5 text-brand-400" />
+                <span className="text-slate-400 block font-bold">Reading Level</span>
+                <span className="font-extrabold text-white flex items-center gap-1 mt-0.5">
+                  <Award className="w-3.5 h-3.5 text-amber-400" />
                   {book.readingLevel || 'Beginner'}
                 </span>
               </div>
               <div>
-                <span className="text-slate-500 block font-medium">Published Year</span>
-                <span className="font-semibold text-white flex items-center gap-1 mt-0.5">
-                  <Calendar className="w-3.5 h-3.5 text-brand-400" />
+                <span className="text-slate-400 block font-bold">Published</span>
+                <span className="font-extrabold text-white flex items-center gap-1 mt-0.5">
+                  <Calendar className="w-3.5 h-3.5 text-pink-400" />
                   {book.publicationYear || '2026'}
                 </span>
               </div>
             </div>
 
-            {/* Reading Actions */}
-            <div className="space-y-3 pt-2">
+            {/* Reading Actions & Progress */}
+            <div className="space-y-4 pt-1">
               {user && (
-                <div className="bg-slate-950 border border-slate-800 rounded-2xl p-3.5 space-y-1.5">
-                  <div className="flex justify-between text-xs">
-                    <span className="font-medium text-slate-300">Your Reading Progress</span>
-                    <span className="font-bold text-brand-400">{progressPercent}%</span>
-                  </div>
-                  <div className="w-full bg-slate-900 rounded-full h-2 overflow-hidden">
-                    <div className="bg-brand-500 h-full rounded-full transition-all duration-500" style={{ width: `${progressPercent}%` }} />
-                  </div>
-                </div>
+                <ReadingProgress
+                  percent={progressPercent}
+                  completedLessons={completedCount}
+                  totalLessons={totalCount}
+                  size="md"
+                />
               )}
 
               {nextLesson && (
                 <Link
                   to={`/books/${book.slug}/lessons/${nextLesson.lessonNumber || nextLesson.order}`}
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold rounded-2xl transition-all shadow-xl shadow-brand-500/25 w-full sm:w-auto"
+                  className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-brand-600 via-purple-600 to-pink-600 hover:from-brand-500 hover:to-pink-500 text-white text-sm font-extrabold rounded-2xl transition-all shadow-xl shadow-brand-500/25 border border-pink-400/30 hover:scale-[1.02] active:scale-95"
                 >
-                  <span>{user && completedCount > 0 ? 'Continue Reading' : 'Start Reading Lesson 1'}</span>
+                  <span>{user && completedCount > 0 ? 'Continue Reading Quest 🚀' : 'Start Reading Chapter 1 📖'}</span>
                   <Play className="w-4 h-4 fill-white" />
                 </Link>
               )}
@@ -207,55 +221,73 @@ export const PublicBookDetailPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Lesson Syllabus Table */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <Layers className="w-5 h-5 text-brand-400" />
-            Book Lessons & Table of Contents ({totalCount})
-          </h2>
-          <span className="text-xs text-slate-400">Publicly readable</span>
-        </div>
+      {/* Reading Journey Timeline / Table of Contents */}
+      <div className="space-y-6">
+        <SectionHeader
+          badge="Syllabus Timeline"
+          title="🗺️ Your Reading Journey & Chapters"
+          subtitle="Explore all structured lessons in order. Click any chapter to read directly."
+        />
 
         <div className="space-y-3">
           {book.lessons?.map((lesson, idx) => {
             const lessonNum = lesson.lessonNumber || idx + 1;
+            const isCompleted = lesson.completed;
+            const isNextToRead = nextLesson?.id === lesson.id;
+
             return (
               <Link
                 key={lesson.id}
                 to={`/books/${book.slug}/lessons/${lessonNum}`}
-                className="flex items-center justify-between p-4 bg-slate-900 border border-slate-800 hover:border-brand-500/50 rounded-2xl transition-all duration-200 group"
+                className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-5 rounded-2xl border transition-all duration-300 group ${
+                  isNextToRead
+                    ? 'bg-gradient-to-r from-brand-950/90 to-purple-950/60 border-brand-500/50 shadow-lg shadow-brand-500/15 scale-[1.01]'
+                    : isCompleted
+                    ? 'bg-slate-900/90 border-emerald-500/30 hover:border-emerald-500/60'
+                    : 'bg-slate-900/60 border-slate-800/80 hover:border-purple-500/40'
+                }`}
               >
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 mb-2 sm:mb-0">
                   <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${
-                      lesson.completed
-                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                        : 'bg-slate-800 text-slate-300 border border-slate-700'
+                    className={`w-11 h-11 rounded-2xl flex items-center justify-center font-black text-sm shrink-0 border shadow-inner transition-transform group-hover:scale-105 ${
+                      isCompleted
+                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                        : isNextToRead
+                        ? 'bg-gradient-to-br from-brand-500 to-pink-500 text-white border-pink-400/40'
+                        : 'bg-slate-950 text-slate-400 border-slate-800'
                     }`}
                   >
-                    {lesson.completed ? <CheckCircle className="w-5 h-5" /> : `L${lessonNum}`}
+                    {isCompleted ? <CheckCircle2 className="w-5 h-5" /> : `C${lessonNum}`}
                   </div>
 
-                  <div>
-                    <h3 className="text-base font-semibold text-white group-hover:text-brand-400 transition-colors">
-                      Lesson {lessonNum}: {lesson.title}
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-brand-300">Chapter {lessonNum}</span>
+                      {isNextToRead && (
+                        <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300 border border-pink-500/30">
+                          Current Quest 🚀
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="text-base font-extrabold text-white group-hover:text-brand-300 transition-colors">
+                      {lesson.title}
                     </h3>
                     {lesson.description && (
-                      <p className="text-xs text-slate-400 line-clamp-1">{lesson.description}</p>
+                      <p className="text-xs text-slate-300 line-clamp-1">{lesson.description}</p>
                     )}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 shrink-0">
+                <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800/60">
                   {lesson.media && lesson.media.length > 0 && (
-                    <span className="hidden sm:inline-block text-[11px] font-medium text-slate-400 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800">
-                      {lesson.media.length} Attachments
+                    <span className="text-[11px] font-bold text-purple-300 bg-purple-950/60 px-2.5 py-1 rounded-lg border border-purple-500/30">
+                      📎 {lesson.media.length} Media
                     </span>
                   )}
-                  <Button variant="ghost" size="sm" className="group-hover:text-brand-400">
-                    Read →
-                  </Button>
+                  <span className="inline-flex items-center gap-1.5 text-xs font-extrabold text-brand-300 group-hover:text-white transition-colors">
+                    <span>Read Chapter</span>
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </span>
                 </div>
               </Link>
             );
