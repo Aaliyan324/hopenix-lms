@@ -39,10 +39,27 @@ export class StorageService {
       const baseName = path.basename(originalName, ext).replace(/[^a-zA-Z0-9]/g, '_');
       const pathname = `lms-media/${Date.now()}_${baseName}${ext}`;
 
-      const blob = await put(pathname, fileBuffer, {
-        access: 'public',
-        contentType: mimeType,
-      });
+      let blob: Awaited<ReturnType<typeof put>>;
+
+      try {
+        // Try public access first (works with public Vercel Blob stores)
+        blob = await put(pathname, fileBuffer, {
+          access: 'public',
+          contentType: mimeType,
+        });
+      } catch (err: any) {
+        // If the store is configured as private, fall back to private access.
+        // Private blob URLs from Vercel CDN are directly accessible via their
+        // embedded token and work fine for media serving.
+        if (err?.message?.toLowerCase().includes('private')) {
+          blob = await put(pathname, fileBuffer, {
+            access: 'private',
+            contentType: mimeType,
+          });
+        } else {
+          throw err;
+        }
+      }
 
       return {
         url: blob.url,
@@ -55,6 +72,7 @@ export class StorageService {
     // Local Disk Fallback
     return this.saveLocalFile(fileBuffer, originalName, mimeType);
   }
+
 
   static async saveLocalFile(
     fileBuffer: Buffer,

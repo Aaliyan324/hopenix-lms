@@ -178,27 +178,30 @@ export const AdminBookDetailPage: React.FC = () => {
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setCoverPreview(URL.createObjectURL(file));
-    try {
-      setUploadingCover(true);
-      const formData = new FormData();
-      formData.append('cover', file);
-      const token = localStorage.getItem('auth_token');
-      const res = await fetch('/api/books/upload-cover', {
-        method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: formData,
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Upload failed');
-      setCoverImage(data.url);
-      toast('Cover image uploaded!', 'success');
-    } catch (err: any) {
-      toast(err.message || 'Cover upload failed.', 'error');
-      setCoverPreview(null);
-    } finally {
-      setUploadingCover(false);
+
+    if (!file.type.startsWith('image/')) {
+      toast('Please select an image file.', 'error');
+      return;
     }
+    if (file.size > 5 * 1024 * 1024) {
+      toast('Cover image must be under 5MB.', 'error');
+      return;
+    }
+
+    setUploadingCover(true);
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      setCoverImage(dataUrl);
+      setCoverPreview(dataUrl);
+      setUploadingCover(false);
+      toast('Cover image ready! Click "Save Changes" to save.', 'success');
+    };
+    reader.onerror = () => {
+      toast('Failed to read image file.', 'error');
+      setUploadingCover(false);
+    };
+    reader.readAsDataURL(file);
   };
 
   const resetLessonForm = () => {
