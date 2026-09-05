@@ -85,6 +85,7 @@ export interface Book {
   published: boolean;
   qrLogo?: string | null;
   readingTime?: string | null;
+  companyName?: string | null;
   createdAt: string;
   updatedAt: string;
   lessons?: Lesson[];

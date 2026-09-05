@@ -17,6 +17,9 @@ import {
   QrCode,
   Search,
   Layers,
+  Upload,
+  Building2,
+  X,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -37,6 +40,7 @@ export const AdminBooksPage: React.FC = () => {
   // Form inputs
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
+  const [companyName, setCompanyName] = useState('');
   const [description, setDescription] = useState('');
   const [shortDescription, setShortDescription] = useState('');
   const [category, setCategory] = useState('Computer Science');
@@ -45,6 +49,8 @@ export const AdminBooksPage: React.FC = () => {
   const [publicationYear, setPublicationYear] = useState('2026');
   const [isbn, setIsbn] = useState('');
   const [coverImage, setCoverImage] = useState('');
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [uploadingCover, setUploadingCover] = useState(false);
   const [published, setPublished] = useState(true);
 
   useEffect(() => {
@@ -65,6 +71,36 @@ export const AdminBooksPage: React.FC = () => {
     }
   };
 
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Show local preview immediately
+    const localUrl = URL.createObjectURL(file);
+    setCoverPreview(localUrl);
+
+    try {
+      setUploadingCover(true);
+      const formData = new FormData();
+      formData.append('cover', file);
+      const token = localStorage.getItem('auth_token');
+      const res = await fetch('/api/books/upload-cover', {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Upload failed');
+      setCoverImage(data.url);
+      toast('Cover image uploaded!', 'success');
+    } catch (err: any) {
+      toast(err.message || 'Cover upload failed.', 'error');
+      setCoverPreview(null);
+    } finally {
+      setUploadingCover(false);
+    }
+  };
+
   const handleCreateBook = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !description) {
@@ -79,6 +115,7 @@ export const AdminBooksPage: React.FC = () => {
         body: JSON.stringify({
           title,
           author,
+          companyName,
           description,
           shortDescription,
           category,
@@ -119,6 +156,7 @@ export const AdminBooksPage: React.FC = () => {
   const resetForm = () => {
     setTitle('');
     setAuthor('');
+    setCompanyName('');
     setDescription('');
     setShortDescription('');
     setCategory('Computer Science');
@@ -127,6 +165,7 @@ export const AdminBooksPage: React.FC = () => {
     setPublicationYear('2026');
     setIsbn('');
     setCoverImage('');
+    setCoverPreview(null);
     setPublished(true);
   };
 
@@ -299,6 +338,17 @@ export const AdminBooksPage: React.FC = () => {
             />
           </div>
 
+          {/* Company Name */}
+          <div className="relative">
+            <Building2 className="w-3.5 h-3.5 text-brand-400 absolute left-3 top-8 pointer-events-none" />
+            <Input
+              label="Company / Publisher Name"
+              placeholder="e.g. Hopenix Inc., Acme Corp"
+              value={companyName}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCompanyName(e.target.value)}
+            />
+          </div>
+
           <div>
             <label className="block font-semibold text-slate-300 mb-1">Book Description / Overview *</label>
             <textarea
@@ -357,21 +407,68 @@ export const AdminBooksPage: React.FC = () => {
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input
-              label="Cover Image URL"
-              placeholder="https://..."
-              value={coverImage}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCoverImage(e.target.value)}
-            />
+          {/* Cover Image: file upload + URL fallback */}
+          <div className="space-y-2">
+            <label className="block font-semibold text-slate-300">Cover Image</label>
+            <div className="flex gap-3 items-start">
+              {/* Preview */}
+              <div className="relative shrink-0">
+                <img
+                  src={coverPreview || coverImage || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=200&q=80'}
+                  alt="Cover preview"
+                  className="w-20 h-24 object-cover rounded-xl border border-slate-700 bg-slate-800"
+                />
+                {(coverPreview || coverImage) && (
+                  <button
+                    type="button"
+                    onClick={() => { setCoverImage(''); setCoverPreview(null); }}
+                    className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-rose-500 hover:bg-rose-400 flex items-center justify-center transition-colors"
+                    title="Remove cover"
+                  >
+                    <X className="w-3 h-3 text-white" />
+                  </button>
+                )}
+                {uploadingCover && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-slate-900/70 rounded-xl">
+                    <div className="w-5 h-5 border-2 border-brand-400 border-t-transparent rounded-full animate-spin" />
+                  </div>
+                )}
+              </div>
 
-            <Input
-              label="ISBN (Optional)"
-              placeholder="978-3-16-148410-0"
-              value={isbn}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setIsbn(e.target.value)}
-            />
+              <div className="flex-1 space-y-2">
+                {/* File upload button */}
+                <label className="inline-flex items-center gap-2 px-3 py-2 bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold rounded-xl cursor-pointer transition-colors w-full justify-center">
+                  <Upload className="w-4 h-4" />
+                  {uploadingCover ? 'Uploading…' : 'Upload from Device'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleCoverUpload}
+                    className="hidden"
+                    disabled={uploadingCover}
+                  />
+                </label>
+                {/* URL fallback */}
+                <input
+                  type="url"
+                  placeholder="Or paste image URL…"
+                  value={coverImage}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    setCoverImage(e.target.value);
+                    setCoverPreview(null);
+                  }}
+                  className="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 outline-none"
+                />
+              </div>
+            </div>
           </div>
+
+          <Input
+            label="ISBN (Optional)"
+            placeholder="978-3-16-148410-0"
+            value={isbn}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setIsbn(e.target.value)}
+          />
 
           <div className="flex items-center gap-2 pt-2">
             <input

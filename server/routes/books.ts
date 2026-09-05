@@ -1,5 +1,6 @@
 import { Router, Response } from 'express';
 import QRCode from 'qrcode';
+import multer from 'multer';
 import prisma from '../lib/prisma.js';
 import {
   authenticateToken,
@@ -10,6 +11,7 @@ import {
 import { createAuditLog } from '../lib/logger.js';
 
 const router = Router();
+const upload = multer({ limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB max for cover images
 
 // Helper to generate clean slugs
 const slugify = (text: string) =>
@@ -20,7 +22,39 @@ const slugify = (text: string) =>
     .replace(/[\s_-]+/g, '-')
     .replace(/^-+|-+$/g, '');
 
-// 1. PUBLIC List books with search, filters & optional student bookmark/progress tracking
+// 0. ADMIN — Upload cover image from local file system
+router.post(
+  '/upload-cover',
+  authenticateToken,
+  requireRole('ADMIN'),
+  upload.single('cover'),
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const file = req.file;
+      if (!file) {
+        return res.status(400).json({ error: 'No file provided.' });
+      }
+
+      if (!file.mimetype.startsWith('image/')) {
+        return res.status(400).json({ error: 'Only image files are allowed for book covers.' });
+      }
+
+      if (file.size > 10 * 1024 * 1024) {
+        return res.status(400).json({ error: 'Cover image must be under 10MB.' });
+      }
+
+      const { StorageService } = await import('../lib/storage.js');
+      const result = await StorageService.uploadFile(file.buffer, file.originalname, file.mimetype);
+
+      return res.json({ url: result.url, name: result.name });
+    } catch (error: any) {
+      console.error('Cover upload error:', error);
+      return res.status(500).json({ error: error.message || 'Cover image upload failed.' });
+    }
+  }
+);
+
+// 1. PUBLIC List books
 router.get('/', optionalAuthenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const search = (req.query.search as string) || '';
@@ -239,6 +273,7 @@ router.post('/', authenticateToken, requireRole('ADMIN'), async (req: Authentica
       slug: customSlug,
       qrLogo,
       readingTime,
+      companyName,
     } = req.body;
 
     if (!title || !description) {
@@ -270,6 +305,7 @@ router.post('/', authenticateToken, requireRole('ADMIN'), async (req: Authentica
         published: Boolean(published),
         qrLogo: qrLogo || null,
         readingTime: readingTime || null,
+        companyName: companyName || null,
       },
     });
 
@@ -314,6 +350,7 @@ router.patch('/:id', authenticateToken, async (req: AuthenticatedRequest, res: R
       slug: newSlug,
       qrLogo,
       readingTime,
+      companyName,
     } = req.body;
 
     const updateData: any = {};
@@ -333,6 +370,7 @@ router.patch('/:id', authenticateToken, async (req: AuthenticatedRequest, res: R
     if (newSlug) updateData.slug = slugify(newSlug);
     if (qrLogo !== undefined) updateData.qrLogo = qrLogo;
     if (readingTime !== undefined) updateData.readingTime = readingTime;
+    if (companyName !== undefined) updateData.companyName = companyName;
 
     const updatedBook = await prisma.course.update({
       where: { id },
