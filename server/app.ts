@@ -26,9 +26,9 @@ app.use(cookieParser());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Static uploads directory for local dev
+// Static uploads directory for local dev (with CORS support)
 StorageService.ensureUploadDirExists();
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+app.use('/uploads', cors(), express.static(path.join(process.cwd(), 'uploads')));
 
 // Routes
 app.use('/api/auth', authRoutes);

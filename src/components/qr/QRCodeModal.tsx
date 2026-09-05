@@ -21,6 +21,20 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 
+/** Default Hopenix Brand Logo (SVG Data URI) used when no custom logo is uploaded */
+const DEFAULT_HOPENIX_LOGO = `data:image/svg+xml;utf8,${encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#9333ea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4c1d95;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="120" height="120" rx="28" fill="url(#grad)"/>
+  <path d="M35 30 L35 90 M85 30 L85 90 M35 60 L85 60" stroke="#ffffff" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+`)}`;
+
 interface QRCodeModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -60,13 +74,13 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
   const [persistedQrUrl, setPersistedQrUrl] = useState<string | null>(null);
   const [hasPersisted, setHasPersisted] = useState(false);
 
-  // Regeneration Confirmation Modal state
+  // Confirmation Modal state
   const [confirmRegenOpen, setConfirmRegenOpen] = useState(false);
 
   // Customization Settings (Admin only)
   const [fgColor, setFgColor] = useState('#2e1065');
   const [bgColor, setBgColor] = useState('#ffffff');
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [logoUrl, setLogoUrl] = useState<string | null>(DEFAULT_HOPENIX_LOGO);
   const [logoSize, setLogoSize] = useState<'small' | 'medium' | 'large'>('medium');
   const [qrWidth] = useState<number>(400);
 
@@ -93,7 +107,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
           hasPersistedQR?: boolean;
         }>(`/lessons/${lessonId}/qr`);
         setTargetUrl(data.lessonUrl || '');
-        if (data.qrLogo) setLogoUrl(data.qrLogo);
+        setLogoUrl(data.qrLogo || DEFAULT_HOPENIX_LOGO);
         if (data.qrCodeUrl) {
           setPersistedQrUrl(data.qrCodeUrl);
           setHasPersisted(true);
@@ -109,7 +123,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
         }>(`/books/${courseId}/qr`);
         const url = data.bookUrl || `${window.location.origin}/books/${courseId}`;
         setTargetUrl(url);
-        if (data.qrLogo) setLogoUrl(data.qrLogo);
+        setLogoUrl(data.qrLogo || DEFAULT_HOPENIX_LOGO);
         if (data.qrCodeUrl) {
           setPersistedQrUrl(data.qrCodeUrl);
           setHasPersisted(true);
@@ -138,7 +152,6 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
       const formData = new FormData();
       formData.append('logo', file);
 
-      // Upload logo to server for permanent URL storage
       const token = localStorage.getItem('token');
       const response = await fetch('/api/books/upload-qr-logo', {
         method: 'POST',
@@ -162,11 +175,12 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
     }
   };
 
-  const renderQRWithLogo = async () => {
+  const renderQRWithLogo = async (): Promise<void> => {
     const canvas = canvasRef.current;
     if (!canvas || !targetUrl) return;
 
     try {
+      // 1. Render QR canvas
       await QRCode.toCanvas(canvas, targetUrl, {
         width: qrWidth,
         margin: 2,
@@ -177,39 +191,99 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
         },
       });
 
-      if (logoUrl) {
+      const effectiveLogo = logoUrl || DEFAULT_HOPENIX_LOGO;
+
+      if (effectiveLogo) {
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.src = logoUrl;
+        await new Promise<void>((resolve) => {
+          const img = new Image();
 
-        img.onload = () => {
-          const canvasSize = canvas.width;
-          let logoPercent = 0.22;
-          if (logoSize === 'small') logoPercent = 0.16;
-          if (logoSize === 'large') logoPercent = 0.28;
+          // Only set crossOrigin for external http/https URLs
+          if (effectiveLogo.startsWith('http://') || effectiveLogo.startsWith('https://')) {
+            if (!effectiveLogo.includes(window.location.host)) {
+              img.crossOrigin = 'anonymous';
+            }
+          }
 
-          const logoDimension = canvasSize * logoPercent;
-          const center = canvasSize / 2;
-          const x = center - logoDimension / 2;
-          const y = center - logoDimension / 2;
+          const drawLogoOnCanvas = () => {
+            const canvasSize = canvas.width;
+            let logoPercent = 0.22;
+            if (logoSize === 'small') logoPercent = 0.16;
+            if (logoSize === 'large') logoPercent = 0.28;
 
-          const padding = 6;
-          const bgX = x - padding;
-          const bgY = y - padding;
-          const bgSize = logoDimension + padding * 2;
+            const logoDimension = canvasSize * logoPercent;
+            const center = canvasSize / 2;
+            const x = center - logoDimension / 2;
+            const y = center - logoDimension / 2;
 
-          ctx.save();
-          ctx.fillStyle = bgColor;
-          ctx.beginPath();
-          ctx.roundRect ? ctx.roundRect(bgX, bgY, bgSize, bgSize, 10) : ctx.rect(bgX, bgY, bgSize, bgSize);
-          ctx.fill();
-          ctx.restore();
+            const padding = 6;
+            const bgX = x - padding;
+            const bgY = y - padding;
+            const bgSize = logoDimension + padding * 2;
 
-          ctx.drawImage(img, x, y, logoDimension, logoDimension);
-        };
+            ctx.save();
+            ctx.fillStyle = bgColor;
+            ctx.beginPath();
+            if (typeof ctx.roundRect === 'function') {
+              ctx.roundRect(bgX, bgY, bgSize, bgSize, 12);
+            } else {
+              ctx.rect(bgX, bgY, bgSize, bgSize);
+            }
+            ctx.fill();
+
+            // Border around logo background badge
+            ctx.strokeStyle = fgColor;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.restore();
+
+            ctx.drawImage(img, x, y, logoDimension, logoDimension);
+            resolve();
+          };
+
+          img.onload = drawLogoOnCanvas;
+
+          img.onerror = (err) => {
+            console.warn('Primary logo load failed, attempting fallback draw:', err);
+            const fallbackImg = new Image();
+            fallbackImg.onload = () => {
+              const canvasSize = canvas.width;
+              let logoPercent = 0.22;
+              if (logoSize === 'small') logoPercent = 0.16;
+              if (logoSize === 'large') logoPercent = 0.28;
+
+              const logoDimension = canvasSize * logoPercent;
+              const center = canvasSize / 2;
+              const x = center - logoDimension / 2;
+              const y = center - logoDimension / 2;
+
+              const padding = 6;
+              const bgX = x - padding;
+              const bgY = y - padding;
+              const bgSize = logoDimension + padding * 2;
+
+              ctx.save();
+              ctx.fillStyle = bgColor;
+              ctx.beginPath();
+              if (typeof ctx.roundRect === 'function') {
+                ctx.roundRect(bgX, bgY, bgSize, bgSize, 12);
+              } else {
+                ctx.rect(bgX, bgY, bgSize, bgSize);
+              }
+              ctx.fill();
+              ctx.restore();
+
+              ctx.drawImage(fallbackImg, x, y, logoDimension, logoDimension);
+              resolve();
+            };
+            fallbackImg.onerror = () => resolve();
+            fallbackImg.src = effectiveLogo;
+          };
+
+          img.src = effectiveLogo;
+        });
       }
     } catch (err) {
       console.error('Render QR error:', err);
@@ -222,6 +296,8 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
 
     try {
       setSaving(true);
+      // Guarantee logo is fully drawn onto canvas before capturing dataURL
+      await renderQRWithLogo();
       const qrDataUrl = canvas.toDataURL('image/png');
       const endpoint = isLessonMode ? `/lessons/${lessonId}/qr` : `/books/${courseId}/qr`;
 
@@ -257,19 +333,6 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
   };
 
   const downloadPNG = () => {
-    if (persistedQrUrl && !isAdmin) {
-      const a = document.createElement('a');
-      a.href = persistedQrUrl;
-      const safeName = isLessonMode
-        ? `${courseTitle}_Lesson${lessonNumber}_QR`.replace(/[^a-zA-Z0-9]/g, '_')
-        : `${courseTitle}_QR`.replace(/[^a-zA-Z0-9]/g, '_');
-      a.download = `${safeName}.png`;
-      a.target = '_blank';
-      a.click();
-      toast('PNG QR code downloading! 🎉', 'success');
-      return;
-    }
-
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -316,7 +379,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
             <p className="text-xs text-brand-300 font-mono truncate max-w-lg mx-auto">{targetUrl}</p>
           </div>
 
-          {/* QR Preview Area */}
+          {/* QR Canvas Preview Area */}
           <div className="flex flex-col items-center justify-center p-6 bg-slate-950 rounded-3xl border border-purple-500/20 space-y-4">
             {loading ? (
               <div className="flex items-center justify-center" style={{ width: 320, height: 320 }}>
@@ -360,11 +423,11 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
                         className="hidden"
                       />
                     </label>
-                    {logoUrl && (
+                    {logoUrl && logoUrl !== DEFAULT_HOPENIX_LOGO && (
                       <button
-                        onClick={() => setLogoUrl(null)}
+                        onClick={() => setLogoUrl(DEFAULT_HOPENIX_LOGO)}
                         className="p-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 border border-rose-500/40 transition-colors"
-                        title="Remove Logo"
+                        title="Reset to Default Brand Logo"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
