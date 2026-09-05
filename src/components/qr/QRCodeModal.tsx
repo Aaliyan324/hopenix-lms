@@ -190,8 +190,8 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
   const modalTitle = isLessonMode ? 'Lesson QR Code Studio' : 'Book QR Code Studio';
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={modalTitle} maxWidth="lg">
-      <div className="space-y-6">
+    <Modal isOpen={isOpen} onClose={onClose} title={modalTitle} maxWidth="xl">
+      <div className="space-y-5">
         {/* Header info */}
         <div className="text-center space-y-1">
           {isLessonMode ? (
@@ -213,31 +213,35 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
               <h4 className="text-base font-semibold text-white">{courseTitle}</h4>
             </>
           )}
-          <p className="text-xs text-brand-400 font-mono truncate max-w-md mx-auto">{targetUrl}</p>
+          <p className="text-xs text-brand-400 font-mono truncate max-w-lg mx-auto">{targetUrl}</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-          {/* Live Preview Canvas */}
-          <div className="flex flex-col items-center justify-center p-6 bg-slate-950 rounded-2xl border border-slate-800 space-y-3">
-            {loading ? (
-              <div className="w-56 h-56 flex items-center justify-center">
-                <RefreshCw className="w-8 h-8 text-brand-400 animate-spin" />
-              </div>
-            ) : (
-              <div className="p-3 bg-white rounded-2xl shadow-2xl inline-block">
-                <canvas ref={canvasRef} className="w-56 h-56 object-contain" />
-              </div>
-            )}
-            <p className="text-[11px] text-slate-400 text-center">
-              {isLessonMode
-                ? 'Scans directly to this lesson. No login required.'
-                : 'Scans directly to public book page. No login required.'}
-            </p>
-          </div>
+        {/* QR Canvas — centred, full-width preview */}
+        <div className="flex flex-col items-center justify-center p-5 bg-slate-950 rounded-2xl border border-slate-800 space-y-3">
+          {loading ? (
+            <div className="flex items-center justify-center" style={{ width: 320, height: 320 }}>
+              <RefreshCw className="w-10 h-10 text-brand-400 animate-spin" />
+            </div>
+          ) : (
+            <div className="p-4 bg-white rounded-2xl shadow-2xl inline-block">
+              {/* style width/height is the ONLY reliable way to scale a <canvas> element */}
+              <canvas
+                ref={canvasRef}
+                style={{ display: 'block', width: 320, height: 320 }}
+              />
+            </div>
+          )}
+          <p className="text-[11px] text-slate-400 text-center">
+            {isLessonMode
+              ? 'Scans directly to this lesson. No login required.'
+              : 'Scans directly to public book page. No login required.'}
+          </p>
+        </div>
 
-          {/* Controls */}
-          <div className="space-y-4 text-xs text-slate-300">
-            {/* Logo Upload */}
+        {/* Controls row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-slate-300">
+          {/* Left: Logo + Logo size */}
+          <div className="space-y-3">
             <div className="space-y-2">
               <label className="font-semibold text-white flex items-center gap-1.5">
                 <ImageIcon className="w-4 h-4 text-brand-400" />
@@ -249,7 +253,6 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
                   <span>Upload Logo</span>
                   <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
                 </label>
-
                 {logoUrl && (
                   <button
                     onClick={() => setLogoUrl(null)}
@@ -282,8 +285,10 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
                 </div>
               </div>
             )}
+          </div>
 
-            {/* Colors */}
+          {/* Right: Colors + Actions */}
+          <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="font-semibold text-slate-300 block mb-1">Foreground</label>
@@ -294,7 +299,6 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
                   className="w-full h-9 bg-slate-900 border border-slate-800 rounded-xl cursor-pointer p-1"
                 />
               </div>
-
               <div>
                 <label className="font-semibold text-slate-300 block mb-1">Background</label>
                 <input
@@ -306,36 +310,33 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
               </div>
             </div>
 
-            {/* Actions */}
-            <div className="pt-2 space-y-2">
-              <Button
-                variant="primary"
-                size="sm"
-                className="w-full shadow-lg shadow-brand-500/20"
-                onClick={downloadPNG}
-                icon={<Download className="w-4 h-4" />}
-              >
-                Download PNG QR Code
-              </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              className="w-full shadow-lg shadow-brand-500/20"
+              onClick={downloadPNG}
+              icon={<Download className="w-4 h-4" />}
+            >
+              Download PNG QR Code
+            </Button>
 
-              <div className="flex gap-2">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="flex-1"
-                  onClick={copyLink}
-                  icon={copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-                >
-                  {copied ? 'Copied!' : isLessonMode ? 'Copy Lesson URL' : 'Copy Book URL'}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={renderQRWithLogo}
-                  icon={<RefreshCw className="w-4 h-4" />}
-                  title="Regenerate Preview"
-                />
-              </div>
+            <div className="flex gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                className="flex-1"
+                onClick={copyLink}
+                icon={copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+              >
+                {copied ? 'Copied!' : isLessonMode ? 'Copy Lesson URL' : 'Copy Book URL'}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={renderQRWithLogo}
+                icon={<RefreshCw className="w-4 h-4" />}
+                title="Regenerate Preview"
+              />
             </div>
           </div>
         </div>
@@ -343,3 +344,4 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
     </Modal>
   );
 };
+
