@@ -3,6 +3,7 @@ import QRCode from 'qrcode';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { useToast } from '../ui/Toast';
+import { useAuth } from '../../context/AuthContext';
 import { apiFetch } from '../../lib/api';
 import {
   QrCode,
@@ -16,6 +17,8 @@ import {
   BookOpen,
   Layers,
   Sparkles,
+  Save,
+  AlertTriangle,
 } from 'lucide-react';
 
 interface QRCodeModalProps {
@@ -42,21 +45,30 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
   lessonTitle,
   lessonNumber,
 }) => {
+  const { user } = useAuth();
   const { toast } = useToast();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
+  const isAdmin = user?.role === 'ADMIN';
+  const isLessonMode = Boolean(lessonId);
+
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [copied, setCopied] = useState(false);
   const [targetUrl, setTargetUrl] = useState('');
+  const [persistedQrUrl, setPersistedQrUrl] = useState<string | null>(null);
+  const [hasPersisted, setHasPersisted] = useState(false);
 
-  // Customization Settings
+  // Regeneration Confirmation Modal state
+  const [confirmRegenOpen, setConfirmRegenOpen] = useState(false);
+
+  // Customization Settings (Admin only)
   const [fgColor, setFgColor] = useState('#2e1065');
   const [bgColor, setBgColor] = useState('#ffffff');
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [logoSize, setLogoSize] = useState<'small' | 'medium' | 'large'>('medium');
   const [qrWidth] = useState<number>(400);
-
-  const isLessonMode = Boolean(lessonId);
 
   useEffect(() => {
     if (isOpen) {
@@ -77,36 +89,77 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
         const data = await apiFetch<{
           lessonUrl?: string;
           qrLogo?: string;
+          qrCodeUrl?: string;
+          hasPersistedQR?: boolean;
         }>(`/lessons/${lessonId}/qr`);
         setTargetUrl(data.lessonUrl || '');
         if (data.qrLogo) setLogoUrl(data.qrLogo);
+        if (data.qrCodeUrl) {
+          setPersistedQrUrl(data.qrCodeUrl);
+          setHasPersisted(true);
+        } else {
+          setHasPersisted(false);
+        }
       } else {
         const data = await apiFetch<{
           bookUrl?: string;
-          courseUrl?: string;
           qrLogo?: string;
+          qrCodeUrl?: string;
+          hasPersistedQR?: boolean;
         }>(`/books/${courseId}/qr`);
-        const url = data.bookUrl || data.courseUrl || `${window.location.origin}/books/${courseId}`;
+        const url = data.bookUrl || `${window.location.origin}/books/${courseId}`;
         setTargetUrl(url);
         if (data.qrLogo) setLogoUrl(data.qrLogo);
+        if (data.qrCodeUrl) {
+          setPersistedQrUrl(data.qrCodeUrl);
+          setHasPersisted(true);
+        } else {
+          setHasPersisted(false);
+        }
       }
     } catch {
-      toast('Failed to generate QR details.', 'error');
+      toast('Failed to load QR details.', 'error');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      setLogoUrl(reader.result as string);
-      toast('Logo uploaded for QR code! ✨', 'success');
-    };
-    reader.readAsDataURL(file);
+    if (!file.type.startsWith('image/')) {
+      toast('Please select an image file for the logo.', 'error');
+      return;
+    }
+
+    try {
+      setUploadingLogo(true);
+      const formData = new FormData();
+      formData.append('logo', file);
+
+      // Upload logo to server for permanent URL storage
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/books/upload-qr-logo', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const resData = await response.json();
+      if (!response.ok) {
+        throw new Error(resData.error || 'Failed to upload logo.');
+      }
+
+      setLogoUrl(resData.url);
+      toast('Brand logo uploaded permanently! ✨', 'success');
+    } catch (err: any) {
+      toast(err.message || 'Logo upload failed.', 'error');
+    } finally {
+      setUploadingLogo(false);
+    }
   };
 
   const renderQRWithLogo = async () => {
@@ -163,6 +216,38 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
     }
   };
 
+  const handleSaveOrRegenerate = async (isRegenerate = false) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    try {
+      setSaving(true);
+      const qrDataUrl = canvas.toDataURL('image/png');
+      const endpoint = isLessonMode ? `/lessons/${lessonId}/qr` : `/books/${courseId}/qr`;
+
+      const data = await apiFetch<{
+        qrCodeUrl: string;
+        message: string;
+      }>(endpoint, {
+        method: 'POST',
+        body: JSON.stringify({
+          qrDataUrl,
+          logoUrl,
+          regenerate: isRegenerate,
+        }),
+      });
+
+      setPersistedQrUrl(data.qrCodeUrl);
+      setHasPersisted(true);
+      toast(data.message || 'QR code saved permanently!', 'success');
+      setConfirmRegenOpen(false);
+    } catch (err: any) {
+      toast(err.message || 'Failed to save QR code.', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const copyLink = async () => {
     if (!targetUrl) return;
     await navigator.clipboard.writeText(targetUrl);
@@ -172,6 +257,19 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
   };
 
   const downloadPNG = () => {
+    if (persistedQrUrl && !isAdmin) {
+      const a = document.createElement('a');
+      a.href = persistedQrUrl;
+      const safeName = isLessonMode
+        ? `${courseTitle}_Lesson${lessonNumber}_QR`.replace(/[^a-zA-Z0-9]/g, '_')
+        : `${courseTitle}_QR`.replace(/[^a-zA-Z0-9]/g, '_');
+      a.download = `${safeName}.png`;
+      a.target = '_blank';
+      a.click();
+      toast('PNG QR code downloading! 🎉', 'success');
+      return;
+    }
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -186,158 +284,245 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
     toast('High-resolution PNG downloaded! 🎉', 'success');
   };
 
-  const modalTitle = isLessonMode ? 'Lesson QR Code Studio' : 'Book QR Code Studio';
+  const modalTitle = isLessonMode
+    ? isAdmin ? 'Lesson QR Code Studio' : 'Lesson QR Code'
+    : isAdmin ? 'Book QR Code Studio' : 'Book QR Code';
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={modalTitle} maxWidth="xl">
-      <div className="space-y-6">
-        {/* Header Info Banner */}
-        <div className="text-center space-y-1 bg-gradient-to-r from-purple-950/60 to-slate-900 p-4 rounded-2xl border border-purple-500/20">
-          {isLessonMode ? (
-            <>
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <Layers className="w-4 h-4 text-brand-300" />
-                <span className="text-xs text-brand-300 font-extrabold">
-                  {courseTitle} — Chapter {lessonNumber}
-                </span>
-              </div>
-              <h4 className="text-base font-extrabold text-white">{lessonTitle}</h4>
-            </>
-          ) : (
-            <>
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <BookOpen className="w-4 h-4 text-brand-300" />
-                <span className="text-xs text-brand-300 font-extrabold">Digital Book QR</span>
-              </div>
-              <h4 className="text-base font-extrabold text-white">{courseTitle}</h4>
-            </>
-          )}
-          <p className="text-xs text-brand-300 font-mono truncate max-w-lg mx-auto">{targetUrl}</p>
-        </div>
-
-        {/* QR Canvas Preview */}
-        <div className="flex flex-col items-center justify-center p-6 bg-slate-950 rounded-3xl border border-purple-500/20 space-y-4">
-          {loading ? (
-            <div className="flex items-center justify-center" style={{ width: 320, height: 320 }}>
-              <RefreshCw className="w-10 h-10 text-brand-400 animate-spin" />
-            </div>
-          ) : (
-            <div className="p-4 bg-white rounded-3xl shadow-2xl inline-block border-4 border-purple-500/30">
-              <canvas
-                ref={canvasRef}
-                style={{ display: 'block', width: 320, height: 320 }}
-              />
-            </div>
-          )}
-          <p className="text-xs font-bold text-slate-300 text-center flex items-center gap-1.5">
-            <Sparkles className="w-4 h-4 text-amber-300" />
-            {isLessonMode
-              ? 'Scan to open chapter directly on any smartphone.'
-              : 'Scan to open full digital book library page.'}
-          </p>
-        </div>
-
-        {/* Customization & Action Controls */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-          {/* Logo Settings */}
-          <div className="space-y-3 p-4 bg-slate-900/80 rounded-2xl border border-slate-800">
-            <label className="font-extrabold text-white flex items-center gap-2">
-              <ImageIcon className="w-4 h-4 text-brand-300" />
-              Center Brand Logo
-            </label>
-            <div className="flex items-center gap-2">
-              <label className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-950 hover:bg-brand-600 border border-slate-800 rounded-xl cursor-pointer text-white font-extrabold transition-all shadow-md">
-                <Upload className="w-4 h-4 text-brand-300" />
-                <span>Upload Logo</span>
-                <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-              </label>
-              {logoUrl && (
-                <button
-                  onClick={() => setLogoUrl(null)}
-                  className="p-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 border border-rose-500/40 transition-colors"
-                  title="Remove Logo"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              )}
-            </div>
-
-            {logoUrl && (
-              <div className="space-y-1.5 pt-1">
-                <label className="font-bold text-slate-300">Logo Size</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {(['small', 'medium', 'large'] as const).map((sz) => (
-                    <button
-                      key={sz}
-                      onClick={() => setLogoSize(sz)}
-                      className={`py-1.5 rounded-lg border font-bold capitalize transition-all ${
-                        logoSize === sz
-                          ? 'bg-brand-600 text-white border-brand-500'
-                          : 'bg-slate-950 text-slate-400 border-slate-800'
-                      }`}
-                    >
-                      {sz}
-                    </button>
-                  ))}
+    <>
+      <Modal isOpen={isOpen} onClose={onClose} title={modalTitle} maxWidth="xl">
+        <div className="space-y-6">
+          {/* Header Info Banner */}
+          <div className="text-center space-y-1 bg-gradient-to-r from-purple-950/60 to-slate-900 p-4 rounded-2xl border border-purple-500/20">
+            {isLessonMode ? (
+              <>
+                <div className="flex items-center justify-center gap-2 mb-1">
+                  <Layers className="w-4 h-4 text-brand-300" />
+                  <span className="text-xs text-brand-300 font-extrabold">
+                    {courseTitle} — Chapter {lessonNumber}
+                  </span>
                 </div>
-              </div>
+                <h4 className="text-base font-extrabold text-white">{lessonTitle}</h4>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center justify-center gap-2 mb-1">
+                  <BookOpen className="w-4 h-4 text-brand-300" />
+                  <span className="text-xs text-brand-300 font-extrabold">Digital Book QR</span>
+                </div>
+                <h4 className="text-base font-extrabold text-white">{courseTitle}</h4>
+              </>
             )}
+            <p className="text-xs text-brand-300 font-mono truncate max-w-lg mx-auto">{targetUrl}</p>
           </div>
 
-          {/* Color & Action Controls */}
-          <div className="space-y-3 p-4 bg-slate-900/80 rounded-2xl border border-slate-800 flex flex-col justify-between">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="font-bold text-slate-300 block mb-1">Foreground</label>
-                <input
-                  type="color"
-                  value={fgColor}
-                  onChange={(e) => setFgColor(e.target.value)}
-                  className="w-full h-10 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer p-1"
+          {/* QR Preview Area */}
+          <div className="flex flex-col items-center justify-center p-6 bg-slate-950 rounded-3xl border border-purple-500/20 space-y-4">
+            {loading ? (
+              <div className="flex items-center justify-center" style={{ width: 320, height: 320 }}>
+                <RefreshCw className="w-10 h-10 text-brand-400 animate-spin" />
+              </div>
+            ) : (
+              <div className="p-4 bg-white rounded-3xl shadow-2xl inline-block border-4 border-purple-500/30">
+                <canvas
+                  ref={canvasRef}
+                  style={{ display: 'block', width: 320, height: 320 }}
                 />
               </div>
-              <div>
-                <label className="font-bold text-slate-300 block mb-1">Background</label>
-                <input
-                  type="color"
-                  value={bgColor}
-                  onChange={(e) => setBgColor(e.target.value)}
-                  className="w-full h-10 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer p-1"
-                />
+            )}
+            <p className="text-xs font-bold text-slate-300 text-center flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-amber-300" />
+              {isLessonMode
+                ? 'Scan to open chapter directly on any smartphone.'
+                : 'Scan to open full digital book library page.'}
+            </p>
+          </div>
+
+          {/* ADMIN Customization Controls */}
+          {isAdmin ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                {/* Logo Settings */}
+                <div className="space-y-3 p-4 bg-slate-900/80 rounded-2xl border border-slate-800">
+                  <label className="font-extrabold text-white flex items-center gap-2">
+                    <ImageIcon className="w-4 h-4 text-brand-300" />
+                    Center Brand Logo
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <label className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-950 hover:bg-brand-600 border border-slate-800 rounded-xl cursor-pointer text-white font-extrabold transition-all shadow-md">
+                      <Upload className="w-4 h-4 text-brand-300" />
+                      <span>{uploadingLogo ? 'Uploading...' : 'Upload Logo'}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleLogoUpload}
+                        disabled={uploadingLogo}
+                        className="hidden"
+                      />
+                    </label>
+                    {logoUrl && (
+                      <button
+                        onClick={() => setLogoUrl(null)}
+                        className="p-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 border border-rose-500/40 transition-colors"
+                        title="Remove Logo"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+
+                  {logoUrl && (
+                    <div className="space-y-1.5 pt-1">
+                      <label className="font-bold text-slate-300">Logo Size</label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {(['small', 'medium', 'large'] as const).map((sz) => (
+                          <button
+                            key={sz}
+                            onClick={() => setLogoSize(sz)}
+                            className={`py-1.5 rounded-lg border font-bold capitalize transition-all ${
+                              logoSize === sz
+                                ? 'bg-brand-600 text-white border-brand-500'
+                                : 'bg-slate-950 text-slate-400 border-slate-800'
+                            }`}
+                          >
+                            {sz}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Color Controls */}
+                <div className="space-y-3 p-4 bg-slate-900/80 rounded-2xl border border-slate-800">
+                  <label className="font-extrabold text-white">QR Code Palette</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="font-bold text-slate-300 block mb-1">Foreground</label>
+                      <input
+                        type="color"
+                        value={fgColor}
+                        onChange={(e) => setFgColor(e.target.value)}
+                        className="w-full h-10 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer p-1"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-bold text-slate-300 block mb-1">Background</label>
+                      <input
+                        type="color"
+                        value={bgColor}
+                        onChange={(e) => setBgColor(e.target.value)}
+                        className="w-full h-10 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer p-1"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Admin Save & Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                {!hasPersisted ? (
+                  <Button
+                    variant="playful"
+                    size="md"
+                    className="flex-1 rounded-xl"
+                    loading={saving}
+                    onClick={() => handleSaveOrRegenerate(false)}
+                    icon={<Save className="w-4 h-4" />}
+                  >
+                    Generate & Save Permanent QR
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="md"
+                    className="flex-1 rounded-xl text-amber-300 border-amber-500/30 hover:bg-amber-500/10"
+                    loading={saving}
+                    onClick={() => setConfirmRegenOpen(true)}
+                    icon={<RefreshCw className="w-4 h-4" />}
+                  >
+                    Regenerate QR Code
+                  </Button>
+                )}
+
+                <Button
+                  variant="secondary"
+                  size="md"
+                  className="rounded-xl"
+                  onClick={downloadPNG}
+                  icon={<Download className="w-4 h-4" />}
+                >
+                  Download PNG
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="md"
+                  className="rounded-xl"
+                  onClick={copyLink}
+                  icon={copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                >
+                  {copied ? 'Copied!' : 'Copy Link'}
+                </Button>
               </div>
             </div>
-
-            <Button
-              variant="playful"
-              size="md"
-              className="w-full rounded-xl"
-              onClick={downloadPNG}
-              icon={<Download className="w-4 h-4" />}
-            >
-              Download High-Res PNG
-            </Button>
-
-            <div className="flex gap-2">
+          ) : (
+            /* NON-ADMIN Consumer View (Student / Guest / Editor) */
+            <div className="flex gap-3 pt-2">
+              <Button
+                variant="playful"
+                size="md"
+                className="flex-1 rounded-xl"
+                onClick={downloadPNG}
+                icon={<Download className="w-4 h-4" />}
+              >
+                Download QR Image
+              </Button>
               <Button
                 variant="secondary"
-                size="sm"
+                size="md"
                 className="flex-1 rounded-xl"
                 onClick={copyLink}
                 icon={copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
               >
                 {copied ? 'Copied!' : 'Copy Link'}
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={renderQRWithLogo}
-                icon={<RefreshCw className="w-4 h-4" />}
-                title="Regenerate Preview"
-              />
             </div>
+          )}
+        </div>
+      </Modal>
+
+      {/* Confirmation Modal for Admin Regeneration */}
+      <Modal
+        isOpen={confirmRegenOpen}
+        onClose={() => setConfirmRegenOpen(false)}
+        title="Confirm QR Code Regeneration"
+        maxWidth="sm"
+      >
+        <div className="space-y-4 text-xs">
+          <div className="flex items-start gap-3 p-4 bg-amber-950/40 border border-amber-500/30 rounded-2xl text-amber-200">
+            <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+            <p className="leading-relaxed">
+              Regenerating this QR code may invalidate the existing QR configuration. Are you sure you want to proceed?
+            </p>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-2">
+            <Button variant="outline" size="sm" onClick={() => setConfirmRegenOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              loading={saving}
+              onClick={() => handleSaveOrRegenerate(true)}
+              className="bg-amber-600 hover:bg-amber-500 border-amber-500"
+            >
+              Confirm Regeneration
+            </Button>
           </div>
         </div>
-      </div>
-    </Modal>
+      </Modal>
+    </>
   );
 };

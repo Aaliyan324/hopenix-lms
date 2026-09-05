@@ -47,6 +47,10 @@ export interface Lesson {
   readingTime?: string | null;
   order: number;
   published: boolean;
+  qrLogo?: string | null;
+  qrCodeData?: string | null;
+  qrCodeUrl?: string | null;
+  qrGeneratedAt?: string | null;
   createdAt: string;
   updatedAt: string;
   media?: Media[];
@@ -84,6 +88,9 @@ export interface Book {
   featured?: boolean;
   published: boolean;
   qrLogo?: string | null;
+  qrCodeData?: string | null;
+  qrCodeUrl?: string | null;
+  qrGeneratedAt?: string | null;
   readingTime?: string | null;
   companyName?: string | null;
   createdAt: string;

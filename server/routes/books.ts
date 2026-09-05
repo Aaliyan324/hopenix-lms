@@ -463,7 +463,37 @@ router.delete('/:id', authenticateToken, requireRole('ADMIN'), async (req: Authe
   }
 });
 
-// 6. PUBLIC Generate / Fetch QR Code for Book with Logo support
+// 0. ADMIN — Upload QR Logo to persistent storage
+router.post(
+  '/upload-qr-logo',
+  authenticateToken,
+  requireRole('ADMIN'),
+  upload.single('logo'),
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const file = req.file;
+      if (!file) {
+        return res.status(400).json({ error: 'No logo file provided.' });
+      }
+
+      if (!file.mimetype.startsWith('image/')) {
+        return res.status(400).json({ error: 'Only image files are allowed for QR logos.' });
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        return res.status(400).json({ error: 'Logo image must be under 5MB.' });
+      }
+
+      const result = await StorageService.uploadFile(file.buffer, `qr_logo_${Date.now()}_${file.originalname}`, file.mimetype);
+      return res.json({ url: result.url, name: result.name });
+    } catch (error: any) {
+      console.error('QR logo upload error:', error);
+      return res.status(500).json({ error: error.message || 'QR logo upload failed.' });
+    }
+  }
+);
+
+// 6. PUBLIC Fetch Persisted QR Code for Book (Does NOT auto-generate)
 router.get('/:idOrSlug/qr', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { idOrSlug } = req.params;
@@ -480,34 +510,189 @@ router.get('/:idOrSlug/qr', async (req: AuthenticatedRequest, res: Response) => 
     const baseUrl = process.env.VITE_APP_URL || `${protocol}://${host}`;
     const bookUrl = `${baseUrl}/books/${book.slug}`;
 
-    const qrDataUrl = await QRCode.toDataURL(bookUrl, {
-      width: 500,
-      margin: 2,
-      errorCorrectionLevel: 'H',
-      color: {
-        dark: '#0f172a',
-        light: '#ffffff',
-      },
-    });
-
-    const svgData = await QRCode.toString(bookUrl, {
-      type: 'svg',
-      margin: 2,
-      errorCorrectionLevel: 'H',
-    });
-
     return res.json({
       bookId: book.id,
       bookTitle: book.title,
       bookSlug: book.slug,
-      bookUrl,
+      bookUrl: book.qrCodeData || bookUrl,
       qrLogo: book.qrLogo || null,
-      qrDataUrl,
-      svgData,
+      qrCodeData: book.qrCodeData || null,
+      qrCodeUrl: book.qrCodeUrl || null,
+      qrGeneratedAt: book.qrGeneratedAt || null,
+      hasPersistedQR: Boolean(book.qrCodeUrl),
     });
   } catch (error) {
-    console.error('QR Generation error:', error);
-    return res.status(500).json({ error: 'Failed to generate QR code.' });
+    console.error('Fetch Book QR error:', error);
+    return res.status(500).json({ error: 'Failed to fetch book QR code.' });
+  }
+});
+
+// ADMIN Generate or Regenerate QR Code for Book (Strict ADMIN authorization)
+router.post('/:id/qr', authenticateToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { logoUrl, qrDataUrl, regenerate } = req.body;
+
+    const book = await prisma.course.findUnique({ where: { id } });
+    if (!book) {
+      return res.status(404).json({ error: 'Book not found.' });
+    }
+
+    // If QR already exists and admin did not explicitly request regeneration, return saved QR
+    if (book.qrCodeUrl && !regenerate) {
+      return res.json({
+        bookId: book.id,
+        bookTitle: book.title,
+        bookSlug: book.slug,
+        bookUrl: book.qrCodeData || `${process.env.VITE_APP_URL || 'http://localhost:3000'}/books/${book.slug}`,
+        qrLogo: book.qrLogo || null,
+        qrCodeData: book.qrCodeData || null,
+        qrCodeUrl: book.qrCodeUrl,
+        qrGeneratedAt: book.qrGeneratedAt,
+        message: 'Loaded existing persistent QR code.',
+      });
+    }
+
+    const host = req.get('host') || 'localhost:3000';
+    const protocol = req.protocol === 'https' || host.includes('vercel.app') ? 'https' : 'http';
+    const baseUrl = process.env.VITE_APP_URL || `${protocol}://${host}`;
+    const bookUrl = `${baseUrl}/books/${book.slug}`;
+
+    let savedQrImageUrl = book.qrCodeUrl;
+
+    // Convert dataUrl (PNG) to buffer & save to storage if provided
+    if (qrDataUrl && qrDataUrl.startsWith('data:image/')) {
+      const base64Data = qrDataUrl.replace(/^data:image\/\w+;base64,/, '');
+      const buffer = Buffer.from(base64Data, 'base64');
+      const filename = `qr_book_${book.slug}_${Date.now()}.png`;
+      const uploaded = await StorageService.uploadFile(buffer, filename, 'image/png');
+      savedQrImageUrl = uploaded.url;
+    } else if (!savedQrImageUrl || regenerate) {
+      // Fallback server-side QR generation
+      const qrData = await QRCode.toDataURL(bookUrl, {
+        width: 500,
+        margin: 2,
+        errorCorrectionLevel: 'H',
+        color: { dark: '#0f172a', light: '#ffffff' },
+      });
+      const base64Data = qrData.replace(/^data:image\/\w+;base64,/, '');
+      const buffer = Buffer.from(base64Data, 'base64');
+      const filename = `qr_book_${book.slug}_${Date.now()}.png`;
+      const uploaded = await StorageService.uploadFile(buffer, filename, 'image/png');
+      savedQrImageUrl = uploaded.url;
+    }
+
+    const now = new Date();
+    const updatedBook = await prisma.course.update({
+      where: { id: book.id },
+      data: {
+        qrCodeData: bookUrl,
+        qrCodeUrl: savedQrImageUrl,
+        qrLogo: logoUrl !== undefined ? logoUrl : book.qrLogo,
+        qrGeneratedAt: now,
+      },
+    });
+
+    await createAuditLog(req.user!.userId, regenerate ? 'REGENERATE_BOOK_QR' : 'GENERATE_BOOK_QR', 'Book', book.id, {
+      bookTitle: book.title,
+      bookUrl,
+      qrCodeUrl: savedQrImageUrl,
+    });
+
+    return res.json({
+      bookId: updatedBook.id,
+      bookTitle: updatedBook.title,
+      bookSlug: updatedBook.slug,
+      bookUrl: updatedBook.qrCodeData,
+      qrLogo: updatedBook.qrLogo,
+      qrCodeData: updatedBook.qrCodeData,
+      qrCodeUrl: updatedBook.qrCodeUrl,
+      qrGeneratedAt: updatedBook.qrGeneratedAt,
+      message: regenerate ? 'QR code regenerated successfully.' : 'QR code saved persistently.',
+    });
+  } catch (error) {
+    console.error('Generate / Save Book QR error:', error);
+    return res.status(500).json({ error: 'Failed to generate persistent QR code.' });
+  }
+});
+
+// ADMIN Bulk Generate Missing QR Codes for Books
+router.post('/generate-missing-qr', authenticateToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const booksWithoutQR = await prisma.course.findMany({
+      where: { qrCodeUrl: null },
+    });
+
+    const host = req.get('host') || 'localhost:3000';
+    const protocol = req.protocol === 'https' || host.includes('vercel.app') ? 'https' : 'http';
+    const baseUrl = process.env.VITE_APP_URL || `${protocol}://${host}`;
+
+    let generatedCount = 0;
+
+    for (const book of booksWithoutQR) {
+      const bookUrl = `${baseUrl}/books/${book.slug}`;
+      const qrData = await QRCode.toDataURL(bookUrl, {
+        width: 500,
+        margin: 2,
+        errorCorrectionLevel: 'H',
+        color: { dark: '#0f172a', light: '#ffffff' },
+      });
+
+      const base64Data = qrData.replace(/^data:image\/\w+;base64,/, '');
+      const buffer = Buffer.from(base64Data, 'base64');
+      const filename = `qr_book_${book.slug}_${Date.now()}.png`;
+      const uploaded = await StorageService.uploadFile(buffer, filename, 'image/png');
+
+      await prisma.course.update({
+        where: { id: book.id },
+        data: {
+          qrCodeData: bookUrl,
+          qrCodeUrl: uploaded.url,
+          qrGeneratedAt: new Date(),
+        },
+      });
+
+      generatedCount++;
+    }
+
+    return res.json({
+      message: `Successfully generated persistent QR codes for ${generatedCount} book(s).`,
+      generatedCount,
+    });
+  } catch (error) {
+    console.error('Bulk generate missing book QR error:', error);
+    return res.status(500).json({ error: 'Failed to bulk generate missing QR codes.' });
+  }
+});
+
+// ADMIN Reset / Delete QR Code for Book
+router.delete('/:id/qr', authenticateToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const book = await prisma.course.findUnique({ where: { id } });
+    if (!book) {
+      return res.status(404).json({ error: 'Book not found.' });
+    }
+
+    if (book.qrCodeUrl) {
+      await StorageService.deleteFile(book.qrCodeUrl);
+    }
+
+    await prisma.course.update({
+      where: { id },
+      data: {
+        qrCodeData: null,
+        qrCodeUrl: null,
+        qrLogo: null,
+        qrGeneratedAt: null,
+      },
+    });
+
+    await createAuditLog(req.user!.userId, 'DELETE_BOOK_QR', 'Book', id, { title: book.title });
+    return res.json({ message: 'Book QR code reset successfully.' });
+  } catch (error) {
+    console.error('Delete Book QR error:', error);
+    return res.status(500).json({ error: 'Failed to delete book QR code.' });
   }
 });
 

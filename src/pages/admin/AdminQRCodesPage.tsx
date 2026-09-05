@@ -2,17 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { apiFetch } from '../../lib/api';
 import { Book, Lesson } from '../../types';
 import { Button } from '../../components/ui/Button';
+import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
+import { useToast } from '../../components/ui/Toast';
 import { QRCodeModal } from '../../components/qr/QRCodeModal';
-import { QrCode, ChevronDown, ChevronUp, Layers, BookOpen } from 'lucide-react';
+import { QrCode, ChevronDown, ChevronUp, Layers, BookOpen, Sparkles, CheckCircle2, Clock } from 'lucide-react';
 
 interface BookWithLessons extends Book {
   lessons?: Lesson[];
 }
 
 export const AdminQRCodesPage: React.FC = () => {
+  const { toast } = useToast();
   const [books, setBooks] = useState<BookWithLessons[]>([]);
   const [loading, setLoading] = useState(true);
+  const [bulkLoading, setBulkLoading] = useState(false);
   const [expandedBooks, setExpandedBooks] = useState<Set<string>>(new Set());
 
   // QR Modal state
@@ -30,11 +34,9 @@ export const AdminQRCodesPage: React.FC = () => {
   const fetchBooks = async () => {
     try {
       setLoading(true);
-      // Fetch each book's detail (with lessons) for lesson-level QR support
       const listData = await apiFetch<{ books: BookWithLessons[] }>('/books');
       const bookList = listData.books || [];
 
-      // For each book fetch its full detail (includes lessons)
       const booksWithLessons = await Promise.all(
         bookList.map(async (book) => {
           try {
@@ -51,6 +53,29 @@ export const AdminQRCodesPage: React.FC = () => {
       console.error('Failed to load books for QR studio:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGenerateMissingQRs = async () => {
+    try {
+      setBulkLoading(true);
+      const [bookRes, lessonRes] = await Promise.all([
+        apiFetch<{ message: string; generatedCount: number }>('/books/generate-missing-qr', { method: 'POST' }),
+        apiFetch<{ message: string; generatedCount: number }>('/lessons/generate-missing-qr', { method: 'POST' }),
+      ]);
+
+      const totalGen = (bookRes.generatedCount || 0) + (lessonRes.generatedCount || 0);
+      toast(
+        totalGen > 0
+          ? `Generated persistent QR codes for ${totalGen} missing item(s)!`
+          : 'All books and lessons already have persistent QR codes!',
+        'success'
+      );
+      fetchBooks();
+    } catch (err: any) {
+      toast(err.message || 'Failed to bulk generate missing QR codes.', 'error');
+    } finally {
+      setBulkLoading(false);
     }
   };
 
@@ -87,15 +112,26 @@ export const AdminQRCodesPage: React.FC = () => {
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-16">
       {/* Page Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <QrCode className="w-6 h-6 text-brand-400" />
-          Digital Book QR Code Studio
-        </h1>
-        <p className="text-sm text-slate-400 mt-1">
-          Generate, preview, customize, and download high-resolution QR codes for books and individual lessons.
-          Expand a book to see per-lesson QR codes.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+            <QrCode className="w-6 h-6 text-brand-400" />
+            Digital Book QR Code Studio
+          </h1>
+          <p className="text-sm text-slate-400 mt-1">
+            Generate, preview, customize, and download persistent QR codes for books and lessons.
+          </p>
+        </div>
+
+        <Button
+          variant="playful"
+          size="md"
+          loading={bulkLoading}
+          onClick={handleGenerateMissingQRs}
+          icon={<Sparkles className="w-4 h-4 text-amber-300" />}
+        >
+          Generate Missing QR Codes
+        </Button>
       </div>
 
       {loading ? (
@@ -109,6 +145,7 @@ export const AdminQRCodesPage: React.FC = () => {
           {books.map((book) => {
             const isExpanded = expandedBooks.has(book.id);
             const lessonCount = book.lessons?.length ?? book._count?.lessons ?? 0;
+            const hasBookQR = Boolean(book.qrCodeUrl);
 
             return (
               <div
@@ -132,6 +169,15 @@ export const AdminQRCodesPage: React.FC = () => {
                       <div className="flex items-center gap-2 mb-0.5">
                         <BookOpen className="w-4 h-4 text-brand-400 shrink-0" />
                         <h3 className="font-bold text-base text-white truncate">{book.title}</h3>
+                        {hasBookQR ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                            <CheckCircle2 className="w-3 h-3" /> Persistent QR
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                            <Clock className="w-3 h-3" /> Not Generated
+                          </span>
+                        )}
                       </div>
                       <p className="text-xs text-slate-400">By {book.author || 'Hopenix'}</p>
                       <p className="text-xs text-brand-400 font-mono mt-0.5">/books/{book.slug}</p>
@@ -141,12 +187,12 @@ export const AdminQRCodesPage: React.FC = () => {
 
                   <div className="flex items-center gap-2 shrink-0">
                     <Button
-                      variant="primary"
+                      variant={hasBookQR ? 'outline' : 'primary'}
                       size="sm"
                       onClick={() => openBookQR(book)}
                       icon={<QrCode className="w-4 h-4" />}
                     >
-                      Book QR
+                      {hasBookQR ? 'View / Edit QR' : 'Generate QR'}
                     </Button>
 
                     {lessonCount > 0 && (
@@ -172,6 +218,8 @@ export const AdminQRCodesPage: React.FC = () => {
                   <div className="border-t border-slate-800 divide-y divide-slate-800/60">
                     {book.lessons.map((lesson, idx) => {
                       const num = lesson.lessonNumber || idx + 1;
+                      const hasLessonQR = Boolean(lesson.qrCodeUrl);
+
                       return (
                         <div
                           key={lesson.id}
@@ -182,9 +230,20 @@ export const AdminQRCodesPage: React.FC = () => {
                               L{num}
                             </span>
                             <div className="min-w-0">
-                              <p className="text-sm font-semibold text-white truncate">
-                                Lesson {num}: {lesson.title}
-                              </p>
+                              <div className="flex items-center gap-2">
+                                <p className="text-sm font-semibold text-white truncate">
+                                  Lesson {num}: {lesson.title}
+                                </p>
+                                {hasLessonQR ? (
+                                  <span className="text-[10px] font-extrabold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded-md border border-emerald-500/30">
+                                    QR Active
+                                  </span>
+                                ) : (
+                                  <span className="text-[10px] font-extrabold text-amber-400 bg-amber-950/80 px-2 py-0.5 rounded-md border border-amber-500/30">
+                                    No QR
+                                  </span>
+                                )}
+                              </div>
                               <p className="text-xs text-brand-400 font-mono">
                                 /books/{book.slug}/lessons/{num}
                               </p>
@@ -197,7 +256,7 @@ export const AdminQRCodesPage: React.FC = () => {
                             onClick={() => openLessonQR(book, lesson, idx)}
                             icon={<QrCode className="w-3.5 h-3.5 text-brand-400" />}
                           >
-                            Lesson QR
+                            {hasLessonQR ? 'View QR' : 'Generate QR'}
                           </Button>
                         </div>
                       );
@@ -219,6 +278,7 @@ export const AdminQRCodesPage: React.FC = () => {
             setQrLessonId(undefined);
             setQrLessonTitle(undefined);
             setQrLessonNumber(undefined);
+            fetchBooks();
           }}
           courseId={qrCourseId}
           courseTitle={qrCourseTitle}
