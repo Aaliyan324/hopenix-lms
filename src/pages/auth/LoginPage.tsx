@@ -120,7 +120,7 @@ export const LoginPage: React.FC = () => {
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
-                onClick={() => fillDemo('admin@example.com', 'password123')}
+                onClick={() => fillDemo('admin@example.com', 'admin123')}
                 className="flex flex-col items-center p-3 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 rounded-2xl transition-all text-center group"
               >
                 <Shield className="w-5 h-5 text-purple-400 mb-1 group-hover:scale-110 transition-transform" />
