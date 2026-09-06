@@ -43,6 +43,7 @@ export const PublicLessonReaderPage: React.FC = () => {
 
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sparklesList, setSparklesList] = useState<{ id: number; x: number; y: number }[]>([]);
 
   useEffect(() => {
     if (slug && lessonNumber) {
@@ -82,11 +83,21 @@ export const PublicLessonReaderPage: React.FC = () => {
     }
   };
 
+  // Interactive background magic generator on click
+  const handlePageClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const newSparkle = { id: Date.now(), x, y };
+    setSparklesList((prev) => [...prev.slice(-12), newSparkle]);
+  };
+
   if (loading || !lesson || !book) {
     return (
-      <div className="space-y-6 max-w-6xl mx-auto">
-        <Skeleton className="h-8 w-64 rounded-xl" />
-        <Skeleton className="h-[600px] w-full rounded-3xl" />
+      <div className="space-y-6 max-w-6xl mx-auto px-4 py-8">
+        <Skeleton className="h-8 w-64 rounded-xl bg-slate-800" />
+        <Skeleton className="h-[600px] w-full rounded-3xl bg-slate-800" />
       </div>
     );
   }
@@ -101,7 +112,42 @@ export const PublicLessonReaderPage: React.FC = () => {
   const companySlug = getCompanySlug(book.companyName);
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 max-w-7xl mx-auto pb-16">
+    <div 
+      className="flex flex-col lg:flex-row gap-8 max-w-7xl mx-auto pb-16 px-4 sm:px-6 relative overflow-hidden cursor-crosshair"
+      onClick={handlePageClick}
+    >
+      {/* Dynamic Animated Floating Elements & Background Magic Kingdom */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden -z-10">
+        <div className="absolute top-12 left-10 text-yellow-300 animate-bounce duration-1000 opacity-70 text-3xl select-none">⭐</div>
+        <div className="absolute top-36 right-16 text-pink-400 animate-pulse opacity-60 text-4xl select-none">💖</div>
+        <div className="absolute top-80 left-12 text-cyan-400 animate-spin duration-3000 opacity-50 text-3xl select-none">✨</div>
+        <div className="absolute top-[45%] right-12 text-purple-400 animate-bounce duration-700 opacity-70 text-4xl select-none">🚀</div>
+        <div className="absolute top-[65%] left-10 text-emerald-400 animate-pulse opacity-60 text-3xl select-none">🎈</div>
+        <div className="absolute bottom-40 right-20 text-amber-300 animate-bounce duration-1000 opacity-60 text-3xl select-none">🎨</div>
+        <div className="absolute bottom-16 left-1/4 text-indigo-400 animate-pulse opacity-50 text-4xl select-none">🪐</div>
+        <div className="absolute top-1/2 left-4 text-rose-400 animate-bounce duration-500 opacity-60 text-2xl select-none">🍩</div>
+
+        {/* Floating Planets & Clouds */}
+        <div className="absolute top-20 right-1/4 text-purple-500/25 animate-pulse duration-700 text-6xl select-none">🛸</div>
+        <div className="absolute bottom-32 left-10 text-pink-500/20 animate-bounce duration-1000 text-5xl select-none">☁️</div>
+        <div className="absolute top-96 right-1/3 text-cyan-500/20 animate-pulse duration-1000 text-6xl select-none">🪐</div>
+
+        {/* Ambient Glowing Orbs */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-[100px]" />
+        <div className="absolute bottom-1/3 right-1/4 w-96 h-96 bg-pink-600/10 rounded-full blur-[100px]" />
+
+        {/* Click Sparkles */}
+        {sparklesList.map((sparkle) => (
+          <span
+            key={sparkle.id}
+            className="absolute text-2xl animate-ping select-none pointer-events-none"
+            style={{ left: sparkle.x, top: sparkle.y }}
+          >
+            ✨
+          </span>
+        ))}
+      </div>
+
       {/* Main Reader Column */}
       <div className="flex-1 space-y-8 min-w-0">
         {/* Top Header & Breadcrumb */}
@@ -122,7 +168,7 @@ export const PublicLessonReaderPage: React.FC = () => {
         </div>
 
         {/* Lesson Header Card */}
-        <div className="relative bg-gradient-to-r from-slate-900 via-purple-950/50 to-slate-950 border border-purple-500/25 rounded-3xl p-6 sm:p-8 space-y-4 shadow-2xl overflow-hidden">
+        <div className="relative bg-gradient-to-r from-slate-900 via-purple-950/50 to-slate-950 border border-purple-500/25 rounded-3xl p-6 sm:p-8 space-y-4 shadow-2xl overflow-hidden backdrop-blur-xl">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <span className="text-xs font-black text-brand-300 bg-brand-500/20 px-3.5 py-1.5 rounded-full border border-brand-500/30 flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-amber-300" />
