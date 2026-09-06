@@ -11,6 +11,7 @@ import {
   authenticateToken,
   optionalAuthenticateToken,
   requireRole,
+  requireEditorBookPermission,
   AuthenticatedRequest,
 } from '../middleware/auth.js';
 import { createAuditLog } from '../lib/logger.js';
@@ -108,24 +109,19 @@ router.post(
   }
 );
 
-// 1. PUBLIC List books
-router.get('/', optionalAuthenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+// 1. AUTHENTICATED List books (Scoped strictly by role)
+router.get('/', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const search = (req.query.search as string) || '';
     const category = (req.query.category as string) || '';
     const readingLevel = (req.query.readingLevel as string) || '';
     const featured = req.query.featured === 'true';
 
-    const user = req.user;
-    const role = user?.role;
-    const userId = user?.userId;
+    const user = req.user!;
+    const role = user.role;
+    const userId = user.userId;
 
     const where: any = {};
-
-    // Guest and Students only see published books
-    if (!role || role === 'STUDENT') {
-      where.published = true;
-    }
 
     if (featured) {
       where.featured = true;
@@ -149,9 +145,33 @@ router.get('/', optionalAuthenticateToken, async (req: AuthenticatedRequest, res
       ];
     }
 
+    // Role-specific scoping
+    if (role === 'EDITOR') {
+      // Editor ONLY sees books assigned to them via BookEditorPermission or LessonEditorPermission
+      const [bookPermissions, lessonPermissions] = await Promise.all([
+        prisma.bookEditorPermission.findMany({
+          where: { userId },
+          select: { bookId: true },
+        }),
+        prisma.lessonEditorPermission.findMany({
+          where: { userId },
+          select: { lesson: { select: { courseId: true } } },
+        }),
+      ]);
+
+      const assignedBookIds = new Set<string>();
+      bookPermissions.forEach((bp) => assignedBookIds.add(bp.bookId));
+      lessonPermissions.forEach((lp) => assignedBookIds.add(lp.lesson.courseId));
+
+      where.id = { in: Array.from(assignedBookIds) };
+    } else if (role === 'STUDENT') {
+      where.published = true;
+    }
+
     const books = await prisma.course.findMany({
       where,
       include: {
+        qrCode: true,
         _count: {
           select: {
             lessons: true,
@@ -163,7 +183,7 @@ router.get('/', optionalAuthenticateToken, async (req: AuthenticatedRequest, res
     });
 
     // If logged-in student, compute progress and bookmark state
-    if (userId) {
+    if (role === 'STUDENT') {
       const [userProgress, userBookmarks] = await Promise.all([
         prisma.lessonProgress.findMany({
           where: { userId, completed: true },
@@ -191,6 +211,9 @@ router.get('/', optionalAuthenticateToken, async (req: AuthenticatedRequest, res
 
           return formatBook({
             ...book,
+            qrCodeUrl: book.qrCode?.imageUrl || book.qrCodeUrl,
+            qrCodeData: book.qrCode?.destinationUrl || book.qrCodeData,
+            qrLogo: book.qrCode?.logoUrl || book.qrLogo,
             isBookmarked: bookmarkedBookIds.has(book.id),
             progressPercent,
             completedLessons: completedCount,
@@ -202,10 +225,13 @@ router.get('/', optionalAuthenticateToken, async (req: AuthenticatedRequest, res
       return res.json({ books: booksWithPersonalization });
     }
 
-    // Unauthenticated / Guest response
+    // Admin / Editor formatted response
     const formattedBooks = books.map((book) =>
       formatBook({
         ...book,
+        qrCodeUrl: book.qrCode?.imageUrl || book.qrCodeUrl,
+        qrCodeData: book.qrCode?.destinationUrl || book.qrCodeData,
+        qrLogo: book.qrCode?.logoUrl || book.qrLogo,
         isBookmarked: false,
         totalLessons: book._count.lessons,
       })
@@ -218,7 +244,7 @@ router.get('/', optionalAuthenticateToken, async (req: AuthenticatedRequest, res
   }
 });
 
-// 2. PUBLIC Get book detail by ID or Slug
+// 2. PUBLIC / AUTH Get book detail by ID or Slug (Direct QR access)
 router.get('/:idOrSlug', optionalAuthenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { idOrSlug } = req.params;
@@ -231,10 +257,12 @@ router.get('/:idOrSlug', optionalAuthenticateToken, async (req: AuthenticatedReq
         OR: [{ id: idOrSlug }, { slug: idOrSlug }],
       },
       include: {
+        qrCode: true,
         lessons: {
           where: (!role || role === 'STUDENT') ? { published: true } : undefined,
           orderBy: [{ lessonNumber: 'asc' }, { order: 'asc' }],
           include: {
+            qrCode: true,
             media: true,
             permissions: {
               include: {
@@ -256,13 +284,36 @@ router.get('/:idOrSlug', optionalAuthenticateToken, async (req: AuthenticatedReq
       return res.status(404).json({ error: 'Book not found.' });
     }
 
-    // If guest or student visits an unpublished book, deny access
+    // Check Editor access: must be assigned to book
+    if (role === 'EDITOR') {
+      const [bookPermission, lessonPermission] = await Promise.all([
+        prisma.bookEditorPermission.findUnique({
+          where: { bookId_userId: { bookId: book.id, userId: userId! } },
+        }),
+        prisma.lessonEditorPermission.findFirst({
+          where: { userId: userId!, lesson: { courseId: book.id } },
+        }),
+      ]);
+
+      if (!bookPermission && !lessonPermission) {
+        return res.status(403).json({ error: 'Access Denied: You are not assigned to view or edit this book.' });
+      }
+    }
+
+    // Check Guest & Student access: must be published
     if ((!role || role === 'STUDENT') && !book.published) {
       return res.status(403).json({ error: 'This digital book is currently unpublished.' });
     }
 
     let isBookmarked = false;
-    let lessonsWithProgress = book.lessons.map((l) => ({ ...l, completed: false, isBookmarked: false }));
+    let lessonsWithProgress = book.lessons.map((l) => ({
+      ...l,
+      qrCodeUrl: l.qrCode?.imageUrl || l.qrCodeUrl,
+      qrCodeData: l.qrCode?.destinationUrl || l.qrCodeData,
+      qrLogo: l.qrCode?.logoUrl || l.qrLogo,
+      completed: false,
+      isBookmarked: false,
+    }));
 
     if (userId) {
       const [bookmark, userProgress, lessonBookmarks] = await Promise.all([
@@ -284,6 +335,9 @@ router.get('/:idOrSlug', optionalAuthenticateToken, async (req: AuthenticatedReq
 
       lessonsWithProgress = book.lessons.map((lesson) => ({
         ...lesson,
+        qrCodeUrl: lesson.qrCode?.imageUrl || lesson.qrCodeUrl,
+        qrCodeData: lesson.qrCode?.destinationUrl || lesson.qrCodeData,
+        qrLogo: lesson.qrCode?.logoUrl || lesson.qrLogo,
         completed: completedSet.has(lesson.id),
         isBookmarked: bookmarkedLessonIds.has(lesson.id),
       }));
@@ -295,6 +349,9 @@ router.get('/:idOrSlug', optionalAuthenticateToken, async (req: AuthenticatedReq
 
     const formattedBook = formatBook({
       ...book,
+      qrCodeUrl: book.qrCode?.imageUrl || book.qrCodeUrl,
+      qrCodeData: book.qrCode?.destinationUrl || book.qrCodeData,
+      qrLogo: book.qrCode?.logoUrl || book.qrLogo,
       isBookmarked,
       lessons: lessonsWithProgress,
       completedLessons: completedCount,
@@ -376,15 +433,11 @@ router.post('/', authenticateToken, requireRole('ADMIN'), async (req: Authentica
   }
 });
 
-// 4. ADMIN / EDITOR Update Book
-router.patch('/:id', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+// 4. ADMIN / ASSIGNED EDITOR Update Book
+router.patch('/:id', authenticateToken, requireEditorBookPermission, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
     const { role } = req.user!;
-
-    if (role !== 'ADMIN' && role !== 'EDITOR') {
-      return res.status(403).json({ error: 'Forbidden' });
-    }
 
     const book = await prisma.course.findUnique({ where: { id } });
     if (!book) {
@@ -423,10 +476,15 @@ router.patch('/:id', authenticateToken, async (req: AuthenticatedRequest, res: R
     if (readingLevel !== undefined) updateData.readingLevel = readingLevel;
     if (coverImage !== undefined) updateData.coverImage = coverImage;
     if (thumbnail !== undefined) updateData.thumbnail = thumbnail;
-    if (typeof featured === 'boolean') updateData.featured = featured;
-    if (typeof published === 'boolean') updateData.published = published;
+    
+    // Editors cannot change publication or featured status unless Admin
+    if (role === 'ADMIN') {
+      if (typeof featured === 'boolean') updateData.featured = featured;
+      if (typeof published === 'boolean') updateData.published = published;
+    }
+    
     if (newSlug) updateData.slug = slugify(newSlug);
-    if (qrLogo !== undefined) updateData.qrLogo = qrLogo;
+    if (qrLogo !== undefined && role === 'ADMIN') updateData.qrLogo = qrLogo;
     if (readingTime !== undefined) updateData.readingTime = readingTime;
     if (companyName !== undefined) updateData.companyName = companyName;
 
@@ -499,6 +557,7 @@ router.get('/:idOrSlug/qr', async (req: AuthenticatedRequest, res: Response) => 
     const { idOrSlug } = req.params;
     const book = await prisma.course.findFirst({
       where: { OR: [{ id: idOrSlug }, { slug: idOrSlug }] },
+      include: { qrCode: true },
     });
 
     if (!book) {
@@ -510,16 +569,19 @@ router.get('/:idOrSlug/qr', async (req: AuthenticatedRequest, res: Response) => 
     const baseUrl = process.env.VITE_APP_URL || `${protocol}://${host}`;
     const bookUrl = `${baseUrl}/books/${book.slug}`;
 
+    const persistentQr = book.qrCode;
+
     return res.json({
       bookId: book.id,
       bookTitle: book.title,
       bookSlug: book.slug,
-      bookUrl: book.qrCodeData || bookUrl,
-      qrLogo: book.qrLogo || null,
-      qrCodeData: book.qrCodeData || null,
-      qrCodeUrl: book.qrCodeUrl || null,
-      qrGeneratedAt: book.qrGeneratedAt || null,
-      hasPersistedQR: Boolean(book.qrCodeUrl),
+      bookUrl: persistentQr?.destinationUrl || book.qrCodeData || bookUrl,
+      qrLogo: persistentQr?.logoUrl || book.qrLogo || null,
+      qrCodeData: persistentQr?.destinationUrl || book.qrCodeData || null,
+      qrCodeUrl: persistentQr?.imageUrl || book.qrCodeUrl || null,
+      logoConfig: persistentQr?.logoConfig || null,
+      qrGeneratedAt: persistentQr?.updatedAt || book.qrGeneratedAt || null,
+      hasPersistedQR: Boolean(persistentQr?.imageUrl || book.qrCodeUrl),
     });
   } catch (error) {
     console.error('Fetch Book QR error:', error);
@@ -531,24 +593,29 @@ router.get('/:idOrSlug/qr', async (req: AuthenticatedRequest, res: Response) => 
 router.post('/:id/qr', authenticateToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { logoUrl, qrDataUrl, regenerate } = req.body;
+    const { logoUrl, logoConfig, qrDataUrl, regenerate } = req.body;
 
-    const book = await prisma.course.findUnique({ where: { id } });
+    const book = await prisma.course.findUnique({
+      where: { id },
+      include: { qrCode: true },
+    });
+
     if (!book) {
       return res.status(404).json({ error: 'Book not found.' });
     }
 
-    // If QR already exists and admin did not explicitly request regeneration, return saved QR
-    if (book.qrCodeUrl && !regenerate) {
+    // If QR already exists in QRCode model and admin did not explicitly request regeneration, return saved QR
+    if (book.qrCode?.imageUrl && !regenerate) {
       return res.json({
         bookId: book.id,
         bookTitle: book.title,
         bookSlug: book.slug,
-        bookUrl: book.qrCodeData || `${process.env.VITE_APP_URL || 'http://localhost:3000'}/books/${book.slug}`,
-        qrLogo: book.qrLogo || null,
-        qrCodeData: book.qrCodeData || null,
-        qrCodeUrl: book.qrCodeUrl,
-        qrGeneratedAt: book.qrGeneratedAt,
+        bookUrl: book.qrCode.destinationUrl,
+        qrLogo: book.qrCode.logoUrl || null,
+        qrCodeData: book.qrCode.destinationUrl,
+        qrCodeUrl: book.qrCode.imageUrl,
+        logoConfig: book.qrCode.logoConfig || null,
+        qrGeneratedAt: book.qrCode.updatedAt,
         message: 'Loaded existing persistent QR code.',
       });
     }
@@ -558,9 +625,9 @@ router.post('/:id/qr', authenticateToken, requireRole('ADMIN'), async (req: Auth
     const baseUrl = process.env.VITE_APP_URL || `${protocol}://${host}`;
     const bookUrl = `${baseUrl}/books/${book.slug}`;
 
-    let savedQrImageUrl = book.qrCodeUrl;
+    let savedQrImageUrl = book.qrCode?.imageUrl || book.qrCodeUrl;
 
-    // Convert dataUrl (PNG) to buffer & save to storage if provided
+    // Convert dataUrl (PNG) to buffer & save to persistent storage if provided
     if (qrDataUrl && qrDataUrl.startsWith('data:image/')) {
       const base64Data = qrDataUrl.replace(/^data:image\/\w+;base64,/, '');
       const buffer = Buffer.from(base64Data, 'base64');
@@ -568,7 +635,7 @@ router.post('/:id/qr', authenticateToken, requireRole('ADMIN'), async (req: Auth
       const uploaded = await StorageService.uploadFile(buffer, filename, 'image/png');
       savedQrImageUrl = uploaded.url;
     } else if (!savedQrImageUrl || regenerate) {
-      // Fallback server-side QR generation
+      // Server-side fallback QR generation
       const qrData = await QRCode.toDataURL(bookUrl, {
         width: 500,
         margin: 2,
@@ -583,12 +650,34 @@ router.post('/:id/qr', authenticateToken, requireRole('ADMIN'), async (req: Auth
     }
 
     const now = new Date();
-    const updatedBook = await prisma.course.update({
+    const effectiveLogo = logoUrl !== undefined ? logoUrl : (book.qrCode?.logoUrl || book.qrLogo);
+    const configString = typeof logoConfig === 'object' ? JSON.stringify(logoConfig) : logoConfig;
+
+    // Upsert QRCode DB relation
+    const qrRecord = await prisma.qRCode.upsert({
+      where: { bookId: book.id },
+      create: {
+        bookId: book.id,
+        destinationUrl: bookUrl,
+        imageUrl: savedQrImageUrl,
+        logoUrl: effectiveLogo,
+        logoConfig: configString || null,
+      },
+      update: {
+        destinationUrl: bookUrl,
+        imageUrl: savedQrImageUrl,
+        logoUrl: effectiveLogo,
+        logoConfig: configString || null,
+      },
+    });
+
+    // Sync Course scalar fields for backward compatibility
+    await prisma.course.update({
       where: { id: book.id },
       data: {
         qrCodeData: bookUrl,
         qrCodeUrl: savedQrImageUrl,
-        qrLogo: logoUrl !== undefined ? logoUrl : book.qrLogo,
+        qrLogo: effectiveLogo,
         qrGeneratedAt: now,
       },
     });
@@ -600,14 +689,15 @@ router.post('/:id/qr', authenticateToken, requireRole('ADMIN'), async (req: Auth
     });
 
     return res.json({
-      bookId: updatedBook.id,
-      bookTitle: updatedBook.title,
-      bookSlug: updatedBook.slug,
-      bookUrl: updatedBook.qrCodeData,
-      qrLogo: updatedBook.qrLogo,
-      qrCodeData: updatedBook.qrCodeData,
-      qrCodeUrl: updatedBook.qrCodeUrl,
-      qrGeneratedAt: updatedBook.qrGeneratedAt,
+      bookId: book.id,
+      bookTitle: book.title,
+      bookSlug: book.slug,
+      bookUrl: qrRecord.destinationUrl,
+      qrLogo: qrRecord.logoUrl,
+      qrCodeData: qrRecord.destinationUrl,
+      qrCodeUrl: qrRecord.imageUrl,
+      logoConfig: qrRecord.logoConfig,
+      qrGeneratedAt: qrRecord.updatedAt,
       message: regenerate ? 'QR code regenerated successfully.' : 'QR code saved persistently.',
     });
   } catch (error) {
@@ -620,7 +710,10 @@ router.post('/:id/qr', authenticateToken, requireRole('ADMIN'), async (req: Auth
 router.post('/generate-missing-qr', authenticateToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
   try {
     const booksWithoutQR = await prisma.course.findMany({
-      where: { qrCodeUrl: null },
+      where: {
+        qrCode: null,
+        qrCodeUrl: null,
+      },
     });
 
     const host = req.get('host') || 'localhost:3000';
@@ -642,6 +735,19 @@ router.post('/generate-missing-qr', authenticateToken, requireRole('ADMIN'), asy
       const buffer = Buffer.from(base64Data, 'base64');
       const filename = `qr_book_${book.slug}_${Date.now()}.png`;
       const uploaded = await StorageService.uploadFile(buffer, filename, 'image/png');
+
+      await prisma.qRCode.upsert({
+        where: { bookId: book.id },
+        create: {
+          bookId: book.id,
+          destinationUrl: bookUrl,
+          imageUrl: uploaded.url,
+        },
+        update: {
+          destinationUrl: bookUrl,
+          imageUrl: uploaded.url,
+        },
+      });
 
       await prisma.course.update({
         where: { id: book.id },
@@ -669,13 +775,22 @@ router.post('/generate-missing-qr', authenticateToken, requireRole('ADMIN'), asy
 router.delete('/:id/qr', authenticateToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const book = await prisma.course.findUnique({ where: { id } });
+    const book = await prisma.course.findUnique({
+      where: { id },
+      include: { qrCode: true },
+    });
+
     if (!book) {
       return res.status(404).json({ error: 'Book not found.' });
     }
 
-    if (book.qrCodeUrl) {
-      await StorageService.deleteFile(book.qrCodeUrl);
+    const qrUrl = book.qrCode?.imageUrl || book.qrCodeUrl;
+    if (qrUrl) {
+      await StorageService.deleteFile(qrUrl);
+    }
+
+    if (book.qrCode) {
+      await prisma.qRCode.delete({ where: { id: book.qrCode.id } });
     }
 
     await prisma.course.update({
@@ -740,6 +855,51 @@ router.post('/:id/access', authenticateToken, requireRole('ADMIN'), async (req: 
   } catch (error) {
     console.error('Update book access error:', error);
     return res.status(500).json({ error: 'Failed to update book access.' });
+  }
+});
+
+// ADMIN Editor Book Assignment Management
+router.get('/:id/editors', authenticateToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const permissions = await prisma.bookEditorPermission.findMany({
+      where: { bookId: id },
+      include: {
+        user: { select: { id: true, name: true, email: true, avatar: true } },
+      },
+    });
+    return res.json({ editors: permissions.map((p) => p.user) });
+  } catch (error) {
+    return res.status(500).json({ error: 'Failed to fetch book editors.' });
+  }
+});
+
+router.post('/:id/editors', authenticateToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { editorIds } = req.body;
+
+    if (!Array.isArray(editorIds)) {
+      return res.status(400).json({ error: 'editorIds must be an array.' });
+    }
+
+    await prisma.bookEditorPermission.deleteMany({ where: { bookId: id } });
+
+    if (editorIds.length > 0) {
+      await prisma.bookEditorPermission.createMany({
+        data: editorIds.map((userId: string) => ({
+          bookId: id,
+          userId,
+        })),
+      });
+    }
+
+    await createAuditLog(req.user!.userId, 'ASSIGN_BOOK_EDITORS', 'Book', id, { editorCount: editorIds.length });
+
+    return res.json({ message: 'Book editor permissions updated successfully.' });
+  } catch (error) {
+    console.error('Assign book editors error:', error);
+    return res.status(500).json({ error: 'Failed to update book editor permissions.' });
   }
 });
 

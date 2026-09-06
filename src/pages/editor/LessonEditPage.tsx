@@ -141,18 +141,20 @@ export const LessonEditPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 pt-2">
-            <input
-              type="checkbox"
-              id="lesson-pub-check"
-              checked={published}
-              onChange={(e) => setPublished(e.target.checked)}
-              className="w-4 h-4 rounded border-slate-700 bg-slate-950 text-brand-600 focus:ring-brand-500"
-            />
-            <label htmlFor="lesson-pub-check" className="text-sm font-medium text-slate-200 cursor-pointer">
-              Publish this lesson for student viewing
-            </label>
-          </div>
+          {isAdmin && (
+            <div className="flex items-center gap-3 pt-2">
+              <input
+                type="checkbox"
+                id="lesson-pub-check"
+                checked={published}
+                onChange={(e) => setPublished(e.target.checked)}
+                className="w-4 h-4 rounded border-slate-700 bg-slate-950 text-brand-600 focus:ring-brand-500"
+              />
+              <label htmlFor="lesson-pub-check" className="text-sm font-medium text-slate-200 cursor-pointer">
+                Publish this lesson for student viewing
+              </label>
+            </div>
+          )}
         </div>
 
         {/* Rich Text Content Section */}

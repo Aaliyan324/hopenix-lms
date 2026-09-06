@@ -7,8 +7,7 @@ import { Navbar } from './components/common/Navbar';
 import { Sidebar } from './components/common/Sidebar';
 import { Footer } from './components/common/Footer';
 
-// Public Pages
-import { PublicBooksPage } from './pages/public/PublicBooksPage';
+// Public Direct QR Access Pages & Auth
 import { PublicBookDetailPage } from './pages/public/PublicBookDetailPage';
 import { PublicLessonReaderPage } from './pages/public/PublicLessonReaderPage';
 import { LoginPage } from './pages/auth/LoginPage';
@@ -33,7 +32,7 @@ import { StudentDashboardPage } from './pages/student/StudentDashboardPage';
 const PortalLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user } = useAuth();
-  const showSidebar = user && (user.role === 'ADMIN' || user.role === 'EDITOR');
+  const showSidebar = Boolean(user && (user.role === 'ADMIN' || user.role === 'EDITOR'));
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-brand-500 selection:text-white">
@@ -51,14 +50,14 @@ const PortalLayout: React.FC = () => {
   );
 };
 
-// Root index redirector
+// Root index & unauthenticated entry redirector
 const RootRedirect: React.FC = () => {
   const { user, loading } = useAuth();
   if (loading) return null;
-  if (!user) return <Navigate to="/books" replace />;
+  if (!user) return <Navigate to="/login" replace />;
   if (user.role === 'ADMIN') return <Navigate to="/admin" replace />;
   if (user.role === 'EDITOR') return <Navigate to="/editor" replace />;
-  return <Navigate to="/books" replace />;
+  return <Navigate to="/student" replace />;
 };
 
 export const App: React.FC = () => {
@@ -67,13 +66,15 @@ export const App: React.FC = () => {
       <ToastProvider>
         <AuthProvider>
           <Routes>
-            {/* Public Login Route */}
+            {/* Main Entry Point: Login Route */}
             <Route path="/login" element={<LoginPage />} />
 
-            {/* Public Digital Library Layout (NO LOGIN REQUIRED) */}
+            {/* Direct QR Access & Protected Application Routes */}
             <Route element={<PortalLayout />}>
               <Route path="/" element={<RootRedirect />} />
-              <Route path="/books" element={<PublicBooksPage />} />
+              <Route path="/books" element={<RootRedirect />} />
+              
+              {/* Direct QR Code Access Paths for Books & Lessons */}
               <Route path="/books/:slug" element={<PublicBookDetailPage />} />
               <Route path="/books/:slug/lessons/:lessonNumber" element={<PublicLessonReaderPage />} />
               

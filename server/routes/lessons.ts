@@ -26,21 +26,54 @@ const slugify = (text: string) =>
 router.get('/editor/assigned', authenticateToken, requireRole('EDITOR'), async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user!.userId;
-    const permissions = await prisma.lessonEditorPermission.findMany({
-      where: { userId },
-      include: {
-        lesson: {
-          include: {
-            course: {
-              select: { id: true, title: true, slug: true },
+    
+    // Lessons assigned directly OR via parent book assignment
+    const [lessonPermissions, bookPermissions] = await Promise.all([
+      prisma.lessonEditorPermission.findMany({
+        where: { userId },
+        include: {
+          lesson: {
+            include: {
+              qrCode: true,
+              course: {
+                select: { id: true, title: true, slug: true },
+              },
+              media: true,
             },
-            media: true,
           },
         },
-      },
-    });
+      }),
+      prisma.bookEditorPermission.findMany({
+        where: { userId },
+        select: { bookId: true },
+      }),
+    ]);
 
-    const lessons = permissions.map((p) => formatLesson(p.lesson));
+    const assignedBookIds = bookPermissions.map((bp) => bp.bookId);
+    
+    let bookAssignedLessons: any[] = [];
+    if (assignedBookIds.length > 0) {
+      bookAssignedLessons = await prisma.lesson.findMany({
+        where: { courseId: { in: assignedBookIds } },
+        include: {
+          qrCode: true,
+          course: { select: { id: true, title: true, slug: true } },
+          media: true,
+        },
+      });
+    }
+
+    const map = new Map<string, any>();
+    lessonPermissions.forEach((p) => map.set(p.lesson.id, p.lesson));
+    bookAssignedLessons.forEach((l) => map.set(l.id, l));
+
+    const lessons = Array.from(map.values()).map((lesson) => formatLesson({
+      ...lesson,
+      qrCodeUrl: lesson.qrCode?.imageUrl || lesson.qrCodeUrl,
+      qrCodeData: lesson.qrCode?.destinationUrl || lesson.qrCodeData,
+      qrLogo: lesson.qrCode?.logoUrl || lesson.qrLogo,
+    }));
+
     return res.json({ lessons });
   } catch (error) {
     console.error('Fetch editor lessons error:', error);
@@ -61,6 +94,7 @@ router.get('/:idOrSlug', optionalAuthenticateToken, async (req: AuthenticatedReq
         OR: [{ id: idOrSlug }, { slug: idOrSlug }],
       },
       include: {
+        qrCode: true,
         course: {
           select: { id: true, title: true, slug: true, published: true },
         },
@@ -79,8 +113,16 @@ router.get('/:idOrSlug', optionalAuthenticateToken, async (req: AuthenticatedReq
 
     // Check Editor access if EDITOR role
     if (role === 'EDITOR') {
-      const isAssigned = lesson.permissions.some((p) => p.userId === userId);
-      if (!isAssigned) {
+      const [lessonPermission, bookPermission] = await Promise.all([
+        prisma.lessonEditorPermission.findUnique({
+          where: { lessonId_userId: { lessonId: lesson.id, userId: userId! } },
+        }),
+        prisma.bookEditorPermission.findUnique({
+          where: { bookId_userId: { bookId: lesson.courseId, userId: userId! } },
+        }),
+      ]);
+
+      if (!lessonPermission && !bookPermission) {
         return res.status(403).json({ error: 'You do not have access to edit or view this lesson.' });
       }
     }
@@ -131,6 +173,9 @@ router.get('/:idOrSlug', optionalAuthenticateToken, async (req: AuthenticatedReq
 
     const formattedLesson = formatLesson({
       ...lesson,
+      qrCodeUrl: lesson.qrCode?.imageUrl || lesson.qrCodeUrl,
+      qrCodeData: lesson.qrCode?.destinationUrl || lesson.qrCodeData,
+      qrLogo: lesson.qrCode?.logoUrl || lesson.qrLogo,
       completed,
       isBookmarked,
     });
@@ -208,11 +253,12 @@ router.post('/', authenticateToken, requireRole('ADMIN'), async (req: Authentica
   }
 });
 
-// Update Lesson (ADMIN or EDITOR assigned to lesson)
+// Update Lesson (ADMIN or EDITOR assigned to lesson/book)
 router.patch('/:id', authenticateToken, requireLessonEditPermission, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
     const { title, description, content, published, order, lessonNumber, readingTime } = req.body;
+    const { role } = req.user!;
 
     const existingLesson = await prisma.lesson.findUnique({ where: { id } });
     if (!existingLesson) {
@@ -226,7 +272,12 @@ router.patch('/:id', authenticateToken, requireLessonEditPermission, async (req:
     }
     if (description !== undefined) updateData.description = description;
     if (content !== undefined) updateData.content = content;
-    if (typeof published === 'boolean') updateData.published = published;
+    
+    // Editors cannot toggle published status unless Admin
+    if (role === 'ADMIN' && typeof published === 'boolean') {
+      updateData.published = published;
+    }
+    
     if (typeof order === 'number') updateData.order = order;
     if (lessonNumber !== undefined) updateData.lessonNumber = parseInt(lessonNumber, 10);
     if (readingTime !== undefined) updateData.readingTime = readingTime;
@@ -235,6 +286,7 @@ router.patch('/:id', authenticateToken, requireLessonEditPermission, async (req:
       where: { id },
       data: updateData,
       include: {
+        qrCode: true,
         media: true,
         permissions: {
           include: {
@@ -355,6 +407,7 @@ router.get('/:id/qr', async (req: AuthenticatedRequest, res: Response) => {
     const lesson = await prisma.lesson.findFirst({
       where: { OR: [{ id }, { slug: id }] },
       include: {
+        qrCode: true,
         course: {
           select: { id: true, title: true, slug: true, qrLogo: true },
         },
@@ -370,20 +423,23 @@ router.get('/:id/qr', async (req: AuthenticatedRequest, res: Response) => {
     const baseUrl = process.env.VITE_APP_URL || `${protocol}://${host}`;
     const lessonUrl = `${baseUrl}/books/${lesson.course.slug}/lessons/${lesson.lessonNumber}`;
 
+    const persistentQr = lesson.qrCode;
+
     return res.json({
       lessonId: lesson.id,
       lessonTitle: lesson.title,
       lessonSlug: lesson.slug,
       lessonNumber: lesson.lessonNumber,
-      lessonUrl: lesson.qrCodeData || lessonUrl,
+      lessonUrl: persistentQr?.destinationUrl || lesson.qrCodeData || lessonUrl,
       bookId: lesson.course.id,
       bookTitle: lesson.course.title,
       bookSlug: lesson.course.slug,
-      qrLogo: lesson.qrLogo || lesson.course.qrLogo || null,
-      qrCodeData: lesson.qrCodeData || null,
-      qrCodeUrl: lesson.qrCodeUrl || null,
-      qrGeneratedAt: lesson.qrGeneratedAt || null,
-      hasPersistedQR: Boolean(lesson.qrCodeUrl),
+      qrLogo: persistentQr?.logoUrl || lesson.qrLogo || lesson.course.qrLogo || null,
+      qrCodeData: persistentQr?.destinationUrl || lesson.qrCodeData || null,
+      qrCodeUrl: persistentQr?.imageUrl || lesson.qrCodeUrl || null,
+      logoConfig: persistentQr?.logoConfig || null,
+      qrGeneratedAt: persistentQr?.updatedAt || lesson.qrGeneratedAt || null,
+      hasPersistedQR: Boolean(persistentQr?.imageUrl || lesson.qrCodeUrl),
     });
   } catch (error) {
     console.error('Fetch Lesson QR error:', error);
@@ -395,11 +451,12 @@ router.get('/:id/qr', async (req: AuthenticatedRequest, res: Response) => {
 router.post('/:id/qr', authenticateToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { logoUrl, qrDataUrl, regenerate } = req.body;
+    const { logoUrl, logoConfig, qrDataUrl, regenerate } = req.body;
 
     const lesson = await prisma.lesson.findFirst({
       where: { OR: [{ id }, { slug: id }] },
       include: {
+        qrCode: true,
         course: {
           select: { id: true, title: true, slug: true, qrLogo: true },
         },
@@ -410,21 +467,22 @@ router.post('/:id/qr', authenticateToken, requireRole('ADMIN'), async (req: Auth
       return res.status(404).json({ error: 'Lesson not found.' });
     }
 
-    // If QR already exists and admin did not explicitly request regeneration, return saved QR
-    if (lesson.qrCodeUrl && !regenerate) {
+    // If QR already exists in QRCode model and admin did not explicitly request regeneration, return saved QR
+    if (lesson.qrCode?.imageUrl && !regenerate) {
       return res.json({
         lessonId: lesson.id,
         lessonTitle: lesson.title,
         lessonSlug: lesson.slug,
         lessonNumber: lesson.lessonNumber,
-        lessonUrl: lesson.qrCodeData,
+        lessonUrl: lesson.qrCode.destinationUrl,
         bookId: lesson.course.id,
         bookTitle: lesson.course.title,
         bookSlug: lesson.course.slug,
-        qrLogo: lesson.qrLogo || lesson.course.qrLogo || null,
-        qrCodeData: lesson.qrCodeData,
-        qrCodeUrl: lesson.qrCodeUrl,
-        qrGeneratedAt: lesson.qrGeneratedAt,
+        qrLogo: lesson.qrCode.logoUrl || lesson.course.qrLogo || null,
+        qrCodeData: lesson.qrCode.destinationUrl,
+        qrCodeUrl: lesson.qrCode.imageUrl,
+        logoConfig: lesson.qrCode.logoConfig || null,
+        qrGeneratedAt: lesson.qrCode.updatedAt,
         message: 'Loaded existing persistent lesson QR code.',
       });
     }
@@ -434,7 +492,7 @@ router.post('/:id/qr', authenticateToken, requireRole('ADMIN'), async (req: Auth
     const baseUrl = process.env.VITE_APP_URL || `${protocol}://${host}`;
     const lessonUrl = `${baseUrl}/books/${lesson.course.slug}/lessons/${lesson.lessonNumber}`;
 
-    let savedQrImageUrl = lesson.qrCodeUrl;
+    let savedQrImageUrl = lesson.qrCode?.imageUrl || lesson.qrCodeUrl;
 
     if (qrDataUrl && qrDataUrl.startsWith('data:image/')) {
       const base64Data = qrDataUrl.replace(/^data:image\/\w+;base64,/, '');
@@ -457,12 +515,34 @@ router.post('/:id/qr', authenticateToken, requireRole('ADMIN'), async (req: Auth
     }
 
     const now = new Date();
-    const updatedLesson = await prisma.lesson.update({
+    const effectiveLogo = logoUrl !== undefined ? logoUrl : (lesson.qrCode?.logoUrl || lesson.qrLogo || lesson.course.qrLogo);
+    const configString = typeof logoConfig === 'object' ? JSON.stringify(logoConfig) : logoConfig;
+
+    // Upsert QRCode DB relation
+    const qrRecord = await prisma.qRCode.upsert({
+      where: { lessonId: lesson.id },
+      create: {
+        lessonId: lesson.id,
+        destinationUrl: lessonUrl,
+        imageUrl: savedQrImageUrl,
+        logoUrl: effectiveLogo,
+        logoConfig: configString || null,
+      },
+      update: {
+        destinationUrl: lessonUrl,
+        imageUrl: savedQrImageUrl,
+        logoUrl: effectiveLogo,
+        logoConfig: configString || null,
+      },
+    });
+
+    // Sync Lesson scalar fields for backward compatibility
+    await prisma.lesson.update({
       where: { id: lesson.id },
       data: {
         qrCodeData: lessonUrl,
         qrCodeUrl: savedQrImageUrl,
-        qrLogo: logoUrl !== undefined ? logoUrl : lesson.qrLogo,
+        qrLogo: effectiveLogo,
         qrGeneratedAt: now,
       },
     });
@@ -474,18 +554,19 @@ router.post('/:id/qr', authenticateToken, requireRole('ADMIN'), async (req: Auth
     });
 
     return res.json({
-      lessonId: updatedLesson.id,
-      lessonTitle: updatedLesson.title,
-      lessonSlug: updatedLesson.slug,
-      lessonNumber: updatedLesson.lessonNumber,
-      lessonUrl: updatedLesson.qrCodeData,
+      lessonId: lesson.id,
+      lessonTitle: lesson.title,
+      lessonSlug: lesson.slug,
+      lessonNumber: lesson.lessonNumber,
+      lessonUrl: qrRecord.destinationUrl,
       bookId: lesson.course.id,
       bookTitle: lesson.course.title,
       bookSlug: lesson.course.slug,
-      qrLogo: updatedLesson.qrLogo || lesson.course.qrLogo || null,
-      qrCodeData: updatedLesson.qrCodeData,
-      qrCodeUrl: updatedLesson.qrCodeUrl,
-      qrGeneratedAt: updatedLesson.qrGeneratedAt,
+      qrLogo: qrRecord.logoUrl,
+      qrCodeData: qrRecord.destinationUrl,
+      qrCodeUrl: qrRecord.imageUrl,
+      logoConfig: qrRecord.logoConfig,
+      qrGeneratedAt: qrRecord.updatedAt,
       message: regenerate ? 'Lesson QR code regenerated successfully.' : 'Lesson QR code saved persistently.',
     });
   } catch (error) {
@@ -498,7 +579,10 @@ router.post('/:id/qr', authenticateToken, requireRole('ADMIN'), async (req: Auth
 router.post('/generate-missing-qr', authenticateToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
   try {
     const lessonsWithoutQR = await prisma.lesson.findMany({
-      where: { qrCodeUrl: null },
+      where: {
+        qrCode: null,
+        qrCodeUrl: null,
+      },
       include: {
         course: { select: { slug: true } },
       },
@@ -523,6 +607,19 @@ router.post('/generate-missing-qr', authenticateToken, requireRole('ADMIN'), asy
       const buffer = Buffer.from(base64Data, 'base64');
       const filename = `qr_lesson_${lesson.course.slug}_L${lesson.lessonNumber}_${Date.now()}.png`;
       const uploaded = await StorageService.uploadFile(buffer, filename, 'image/png');
+
+      await prisma.qRCode.upsert({
+        where: { lessonId: lesson.id },
+        create: {
+          lessonId: lesson.id,
+          destinationUrl: lessonUrl,
+          imageUrl: uploaded.url,
+        },
+        update: {
+          destinationUrl: lessonUrl,
+          imageUrl: uploaded.url,
+        },
+      });
 
       await prisma.lesson.update({
         where: { id: lesson.id },
@@ -550,13 +647,22 @@ router.post('/generate-missing-qr', authenticateToken, requireRole('ADMIN'), asy
 router.delete('/:id/qr', authenticateToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const lesson = await prisma.lesson.findUnique({ where: { id } });
+    const lesson = await prisma.lesson.findUnique({
+      where: { id },
+      include: { qrCode: true },
+    });
+
     if (!lesson) {
       return res.status(404).json({ error: 'Lesson not found.' });
     }
 
-    if (lesson.qrCodeUrl) {
-      await StorageService.deleteFile(lesson.qrCodeUrl);
+    const qrUrl = lesson.qrCode?.imageUrl || lesson.qrCodeUrl;
+    if (qrUrl) {
+      await StorageService.deleteFile(qrUrl);
+    }
+
+    if (lesson.qrCode) {
+      await prisma.qRCode.delete({ where: { id: lesson.qrCode.id } });
     }
 
     await prisma.lesson.update({
@@ -578,4 +684,3 @@ router.delete('/:id/qr', authenticateToken, requireRole('ADMIN'), async (req: Au
 });
 
 export default router;
-

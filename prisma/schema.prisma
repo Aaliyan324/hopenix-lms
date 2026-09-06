@@ -11,53 +11,56 @@ datasource db {
 }
 
 model User {
-  id              String                   @id @default(uuid())
-  name            String
-  email           String                   @unique
-  passwordHash    String
-  role            String                   @default("STUDENT") // ADMIN, EDITOR, STUDENT
-  avatar          String?
-  isActive        Boolean                  @default(true)
-  createdAt       DateTime                 @default(now())
-  updatedAt       DateTime                 @updatedAt
-  permissions     LessonEditorPermission[]
-  courseAccess    CourseAccess[]
-  auditLogs       AuditLog[]
-  progress        LessonProgress[]
-  bookBookmarks   BookBookmark[]
-  lessonBookmarks LessonBookmark[]
+  id                    String                 @id @default(uuid())
+  name                  String
+  email                 String                 @unique
+  passwordHash          String
+  role                  String                 @default("STUDENT") // ADMIN, EDITOR, STUDENT
+  avatar                String?
+  isActive              Boolean                @default(true)
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  permissions           LessonEditorPermission[]
+  bookEditorPermissions BookEditorPermission[]
+  courseAccess          CourseAccess[]
+  auditLogs             AuditLog[]
+  progress              LessonProgress[]
+  bookBookmarks         BookBookmark[]
+  lessonBookmarks       LessonBookmark[]
 
   @@index([email])
   @@index([role])
 }
 
 model Course {
-  id               String         @id @default(uuid())
-  title            String
-  slug             String         @unique
-  description      String
-  shortDescription String?
-  author           String?
-  coverImage       String?
-  thumbnail        String?
-  category         String?
-  publicationYear  Int?
-  isbn             String?
-  language         String?        @default("English")
-  readingLevel     String?
-  featured         Boolean        @default(false)
-  published        Boolean        @default(false)
-  qrLogo           String?
-  qrCodeData       String?
-  qrCodeUrl        String?
-  qrGeneratedAt    DateTime?
-  readingTime      String?
-  companyName      String?
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-  lessons          Lesson[]
-  courseAccess     CourseAccess[]
-  bookmarks        BookBookmark[]
+  id                    String                 @id @default(uuid())
+  title                 String
+  slug                  String                 @unique
+  description           String
+  shortDescription      String?
+  author                String?
+  coverImage            String?
+  thumbnail             String?
+  category              String?
+  publicationYear       Int?
+  isbn                  String?
+  language              String?                @default("English")
+  readingLevel          String?
+  featured              Boolean                @default(false)
+  published             Boolean                @default(false)
+  qrLogo                String?
+  qrCodeData            String?
+  qrCodeUrl             String?
+  qrGeneratedAt         DateTime?
+  readingTime           String?
+  companyName           String?
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  lessons               Lesson[]
+  courseAccess          CourseAccess[]
+  bookmarks             BookBookmark[]
+  editorPermissions     BookEditorPermission[]
+  qrCode                QRCode?
 
   @@index([slug])
   @@index([published])
@@ -86,6 +89,7 @@ model Lesson {
   permissions  LessonEditorPermission[]
   progress     LessonProgress[]
   bookmarks    LessonBookmark[]
+  qrCode       QRCode?
 
   @@unique([courseId, slug])
   @@index([courseId])
@@ -104,6 +108,36 @@ model Media {
   createdAt DateTime @default(now())
 
   @@index([lessonId])
+}
+
+model QRCode {
+  id             String   @id @default(uuid())
+  bookId         String?  @unique
+  book           Course?  @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  lessonId       String?  @unique
+  lesson         Lesson?  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  destinationUrl String
+  imageUrl       String
+  logoUrl        String?
+  logoConfig     String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([bookId])
+  @@index([lessonId])
+}
+
+model BookEditorPermission {
+  id        String   @id @default(uuid())
+  bookId    String
+  book      Course   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([bookId, userId])
+  @@index([userId])
+  @@index([bookId])
 }
 
 model LessonEditorPermission {

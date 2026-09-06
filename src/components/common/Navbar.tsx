@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Badge } from '../ui/Badge';
-import { BookOpen, LogOut, User, Menu, X, Shield, Sparkles, LogIn, Library, GraduationCap, ChevronDown } from 'lucide-react';
+import { BookOpen, LogOut, Menu, X, Shield, LogIn, GraduationCap, ChevronDown, CheckSquare } from 'lucide-react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 
 interface NavbarProps {
@@ -9,7 +9,7 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
-  const { user, logout, isAdmin, isEditor } = useAuth();
+  const { user, logout, isAdmin, isEditor, isStudent } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -30,6 +30,14 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
 
   const isCurrentPath = (path: string) => location.pathname === path;
 
+  // Determine home link target based on role
+  const getHomeLink = () => {
+    if (!user) return '/login';
+    if (isAdmin) return '/admin';
+    if (isEditor) return '/editor';
+    return '/student';
+  };
+
   return (
     <header className="sticky top-0 z-40 w-full bg-slate-950/80 border-b border-purple-500/15 backdrop-blur-xl transition-all">
       <div className="flex items-center justify-between px-4 sm:px-6 py-3 max-w-7xl mx-auto">
@@ -44,7 +52,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
             </button>
           )}
 
-          <Link to="/books" className="flex items-center gap-3 group">
+          <Link to={getHomeLink()} className="flex items-center gap-3 group">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-600 via-purple-600 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-brand-500/25 group-hover:scale-105 transition-all duration-300">
               <BookOpen className="w-5 h-5 fill-current" />
             </div>
@@ -53,26 +61,14 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
                 Hopenix<span className="text-pink-500">.</span>
               </span>
               <span className="text-[10px] font-extrabold text-brand-400 uppercase tracking-wider">
-                Magic Library
+                E-Book Portal
               </span>
             </div>
           </Link>
 
-          {/* Desktop Navigation Links */}
+          {/* Desktop Navigation Links (Role Scoped) */}
           <nav className="hidden md:flex items-center gap-2">
-            <Link
-              to="/books"
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-extrabold transition-all ${
-                isCurrentPath('/books')
-                  ? 'bg-brand-500/20 text-brand-300 border border-brand-500/40 shadow-sm'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-900/80'
-              }`}
-            >
-              <Library className="w-4 h-4 text-brand-400" />
-              Books & Adventures
-            </Link>
-
-            {user?.role === 'STUDENT' && (
+            {isStudent && (
               <Link
                 to="/student"
                 className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-extrabold transition-all ${
@@ -82,11 +78,25 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
                 }`}
               >
                 <GraduationCap className="w-4 h-4 text-pink-400" />
-                My Dashboard
+                My Library & Progress
               </Link>
             )}
 
-            {(isAdmin || isEditor) && (
+            {isEditor && (
+              <Link
+                to="/editor"
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-extrabold transition-all ${
+                  isCurrentPath('/editor')
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
+                    : 'text-slate-300 hover:text-white hover:bg-slate-900/80'
+                }`}
+              >
+                <CheckSquare className="w-4 h-4 text-amber-400" />
+                My Assigned E-Books
+              </Link>
+            )}
+
+            {isAdmin && (
               <Link
                 to="/admin"
                 className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-extrabold transition-all ${
@@ -96,7 +106,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
                 }`}
               >
                 <Shield className="w-4 h-4 text-purple-400" />
-                Control Center
+                Admin Dashboard
               </Link>
             )}
           </nav>
@@ -138,27 +148,29 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
                     </div>
 
                     <div className="py-2 space-y-1 px-2">
-                      <Link
-                        to="/books"
-                        onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-extrabold text-slate-200 hover:bg-brand-500/10 hover:text-brand-300 transition-colors"
-                      >
-                        <Library className="w-4 h-4 text-brand-400" />
-                        Explore Library
-                      </Link>
-
-                      {user.role === 'STUDENT' && (
+                      {isStudent && (
                         <Link
                           to="/student"
                           onClick={() => setDropdownOpen(false)}
                           className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-extrabold text-slate-200 hover:bg-pink-500/10 hover:text-pink-300 transition-colors"
                         >
                           <GraduationCap className="w-4 h-4 text-pink-400" />
-                          Student Dashboard
+                          Student Library
                         </Link>
                       )}
 
-                      {(isAdmin || isEditor) && (
+                      {isEditor && (
+                        <Link
+                          to="/editor"
+                          onClick={() => setDropdownOpen(false)}
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-extrabold text-slate-200 hover:bg-amber-500/10 hover:text-amber-300 transition-colors"
+                        >
+                          <CheckSquare className="w-4 h-4 text-amber-400" />
+                          Assigned E-Books
+                        </Link>
+                      )}
+
+                      {isAdmin && (
                         <Link
                           to="/admin"
                           onClick={() => setDropdownOpen(false)}
@@ -208,32 +220,34 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-slate-800 bg-slate-950/95 backdrop-blur-xl px-4 py-4 space-y-3 animate-in slide-in-from-top-2">
-          <Link
-            to="/books"
-            onClick={() => setMobileMenuOpen(false)}
-            className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-extrabold text-slate-200 hover:bg-slate-900"
-          >
-            <Library className="w-4 h-4 text-brand-400" />
-            Digital Library
-          </Link>
-          {user?.role === 'STUDENT' && (
+          {isStudent && (
             <Link
               to="/student"
               onClick={() => setMobileMenuOpen(false)}
               className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-extrabold text-slate-200 hover:bg-slate-900"
             >
               <GraduationCap className="w-4 h-4 text-pink-400" />
-              Student Dashboard
+              Student Library
             </Link>
           )}
-          {(isAdmin || isEditor) && (
+          {isEditor && (
+            <Link
+              to="/editor"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-extrabold text-slate-200 hover:bg-slate-900"
+            >
+              <CheckSquare className="w-4 h-4 text-amber-400" />
+              Assigned Books
+            </Link>
+          )}
+          {isAdmin && (
             <Link
               to="/admin"
               onClick={() => setMobileMenuOpen(false)}
               className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-extrabold text-slate-200 hover:bg-slate-900"
             >
               <Shield className="w-4 h-4 text-purple-400" />
-              Admin Console
+              Admin Dashboard
             </Link>
           )}
         </div>

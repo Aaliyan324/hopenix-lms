@@ -104,10 +104,19 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
           lessonUrl?: string;
           qrLogo?: string;
           qrCodeUrl?: string;
+          logoConfig?: any;
           hasPersistedQR?: boolean;
         }>(`/lessons/${lessonId}/qr`);
         setTargetUrl(data.lessonUrl || '');
         setLogoUrl(data.qrLogo || DEFAULT_HOPENIX_LOGO);
+        if (data.logoConfig) {
+          try {
+            const parsed = typeof data.logoConfig === 'string' ? JSON.parse(data.logoConfig) : data.logoConfig;
+            if (parsed.fgColor) setFgColor(parsed.fgColor);
+            if (parsed.bgColor) setBgColor(parsed.bgColor);
+            if (parsed.logoSize) setLogoSize(parsed.logoSize);
+          } catch {}
+        }
         if (data.qrCodeUrl) {
           setPersistedQrUrl(data.qrCodeUrl);
           setHasPersisted(true);
@@ -119,11 +128,20 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
           bookUrl?: string;
           qrLogo?: string;
           qrCodeUrl?: string;
+          logoConfig?: any;
           hasPersistedQR?: boolean;
         }>(`/books/${courseId}/qr`);
         const url = data.bookUrl || `${window.location.origin}/books/${courseId}`;
         setTargetUrl(url);
         setLogoUrl(data.qrLogo || DEFAULT_HOPENIX_LOGO);
+        if (data.logoConfig) {
+          try {
+            const parsed = typeof data.logoConfig === 'string' ? JSON.parse(data.logoConfig) : data.logoConfig;
+            if (parsed.fgColor) setFgColor(parsed.fgColor);
+            if (parsed.bgColor) setBgColor(parsed.bgColor);
+            if (parsed.logoSize) setLogoSize(parsed.logoSize);
+          } catch {}
+        }
         if (data.qrCodeUrl) {
           setPersistedQrUrl(data.qrCodeUrl);
           setHasPersisted(true);
@@ -309,6 +327,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
         body: JSON.stringify({
           qrDataUrl,
           logoUrl,
+          logoConfig: { fgColor, bgColor, logoSize },
           regenerate: isRegenerate,
         }),
       });

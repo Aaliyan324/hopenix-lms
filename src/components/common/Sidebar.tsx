@@ -9,7 +9,6 @@ import {
   QrCode,
   History,
   CheckSquare,
-  Library,
   GraduationCap,
   Sparkles,
 } from 'lucide-react';
@@ -32,12 +31,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
   ];
 
   const editorNav = [
-    { label: 'Assigned Books', path: '/editor', icon: CheckSquare },
+    { label: 'My Assigned Books', path: '/editor', icon: CheckSquare },
   ];
 
   const studentNav = [
-    { label: 'Digital Library', path: '/books', icon: Library },
-    { label: 'Student Dashboard', path: '/student', icon: GraduationCap },
+    { label: 'My Library & Progress', path: '/student', icon: GraduationCap },
   ];
 
   const navItems = role === 'ADMIN' ? adminNav : role === 'EDITOR' ? editorNav : studentNav;
@@ -61,7 +59,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
               <NavLink
                 key={item.path}
                 to={item.path}
-                end={item.path === '/admin' || item.path === '/editor' || item.path === '/student' || item.path === '/books'}
+                end={item.path === '/admin' || item.path === '/editor' || item.path === '/student'}
                 onClick={onClose}
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-extrabold transition-all duration-200 ${
@@ -80,8 +78,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
       </div>
 
       <div className="p-4 border-t border-slate-900 text-[11px] text-slate-500 text-center space-y-1">
-        <p className="font-extrabold text-slate-300">Hopenix Magic Library</p>
-        <p className="text-[10px] text-brand-400 font-semibold">Interactive E-Books</p>
+        <p className="font-extrabold text-slate-300">Hopenix E-Book Portal</p>
+        <p className="text-[10px] text-brand-400 font-semibold">Private Digital Library</p>
       </div>
     </aside>
   );

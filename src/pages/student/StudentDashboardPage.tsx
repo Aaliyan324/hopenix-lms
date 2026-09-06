@@ -167,9 +167,9 @@ export const StudentDashboardPage: React.FC = () => {
               {!data?.continueReading || data.continueReading.length === 0 ? (
                 <EmptyState
                   title="No active reading quests yet!"
-                  description="Browse our magical digital library and start reading your first book to track progress automatically."
-                  actionText="Explore Digital Library 📚"
-                  onAction={() => (window.location.href = '/books')}
+                  description="Scan a QR code or open a book link to start reading your first book and track progress automatically."
+                  actionText="View Saved Books 📚"
+                  onAction={() => setActiveTab('saved')}
                 />
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -194,8 +194,8 @@ export const StudentDashboardPage: React.FC = () => {
                 <EmptyState
                   title="Your bookshelf is empty!"
                   description="Click the ♡ Save Book button on any book page to save it into your personal favorite collection."
-                  actionText="Find Books to Save 💖"
-                  onAction={() => (window.location.href = '/books')}
+                  actionText="View Bookmarked Chapters ⭐"
+                  onAction={() => setActiveTab('bookmarks')}
                 />
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

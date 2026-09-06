@@ -10,6 +10,10 @@ async function main() {
   await prisma.auditLog.deleteMany();
   await prisma.lessonProgress.deleteMany();
   await prisma.courseAccess.deleteMany();
+  await prisma.bookBookmark.deleteMany();
+  await prisma.lessonBookmark.deleteMany();
+  await prisma.qRCode.deleteMany();
+  await prisma.bookEditorPermission.deleteMany();
   await prisma.lessonEditorPermission.deleteMany();
   await prisma.media.deleteMany();
   await prisma.lesson.deleteMany();
@@ -237,7 +241,11 @@ export function useLocalStorage&lt;T&gt;(key: string, initialValue: T): [T, (val
   console.log('✅ Created Media records.');
 
   // 5. Grant Editor Permissions
-  // Sarah (editor1) can edit Lesson 1 and Lesson 2
+  // Sarah (editor1) assigned to Course 1 and its lessons
+  await prisma.bookEditorPermission.create({
+    data: { bookId: course1.id, userId: editor1.id },
+  });
+
   await prisma.lessonEditorPermission.createMany({
     data: [
       { lessonId: lesson1.id, userId: editor1.id },

@@ -79,24 +79,44 @@ export const requireLessonEditPermission = async (
     }
 
     if (req.user.role !== 'EDITOR') {
-      return res.status(403).json({ error: 'Only Editors and Admins can edit lessons.' });
+      return res.status(403).json({ error: 'Forbidden: Only Editors and Admins can edit lessons.' });
     }
 
-    const lessonId = req.params.id || req.body.lessonId;
+    const lessonId = req.params.id || req.params.lessonId || req.body.lessonId;
     if (!lessonId) {
       return res.status(400).json({ error: 'Lesson ID is required for authorization check.' });
     }
 
-    const permission = await prisma.lessonEditorPermission.findUnique({
-      where: {
-        lessonId_userId: {
-          lessonId,
-          userId: req.user.userId,
-        },
-      },
+    const lesson = await prisma.lesson.findFirst({
+      where: { OR: [{ id: lessonId }, { slug: lessonId }] },
+      select: { id: true, courseId: true },
     });
 
-    if (!permission) {
+    if (!lesson) {
+      return res.status(404).json({ error: 'Lesson not found.' });
+    }
+
+    // Check specific lesson permission OR parent book editor permission
+    const [lessonPermission, bookPermission] = await Promise.all([
+      prisma.lessonEditorPermission.findUnique({
+        where: {
+          lessonId_userId: {
+            lessonId: lesson.id,
+            userId: req.user.userId,
+          },
+        },
+      }),
+      prisma.bookEditorPermission.findUnique({
+        where: {
+          bookId_userId: {
+            bookId: lesson.courseId,
+            userId: req.user.userId,
+          },
+        },
+      }),
+    ]);
+
+    if (!lessonPermission && !bookPermission) {
       return res.status(403).json({
         error: 'Access Denied: You do not have permission to edit this specific lesson.',
       });
@@ -104,7 +124,70 @@ export const requireLessonEditPermission = async (
 
     next();
   } catch (error) {
-    console.error('Permission check error:', error);
+    console.error('Lesson edit permission check error:', error);
+    res.status(500).json({ error: 'Internal server error during authorization check.' });
+  }
+};
+
+export const requireEditorBookPermission = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required.' });
+    }
+
+    if (req.user.role === 'ADMIN') {
+      return next();
+    }
+
+    if (req.user.role !== 'EDITOR') {
+      return res.status(403).json({ error: 'Forbidden: Only Editors and Admins can perform this action.' });
+    }
+
+    const bookId = req.params.id || req.params.bookId || req.body.bookId;
+    if (!bookId) {
+      return res.status(400).json({ error: 'Book ID is required for authorization check.' });
+    }
+
+    const book = await prisma.course.findFirst({
+      where: { OR: [{ id: bookId }, { slug: bookId }] },
+      select: { id: true },
+    });
+
+    if (!book) {
+      return res.status(404).json({ error: 'Book not found.' });
+    }
+
+    // Check direct book permission or lesson permission within the book
+    const [bookPermission, lessonPermission] = await Promise.all([
+      prisma.bookEditorPermission.findUnique({
+        where: {
+          bookId_userId: {
+            bookId: book.id,
+            userId: req.user.userId,
+          },
+        },
+      }),
+      prisma.lessonEditorPermission.findFirst({
+        where: {
+          userId: req.user.userId,
+          lesson: { courseId: book.id },
+        },
+      }),
+    ]);
+
+    if (!bookPermission && !lessonPermission) {
+      return res.status(403).json({
+        error: 'Access Denied: You are not assigned to edit this book.',
+      });
+    }
+
+    next();
+  } catch (error) {
+    console.error('Book editor permission check error:', error);
     res.status(500).json({ error: 'Internal server error during authorization check.' });
   }
 };
@@ -119,8 +202,8 @@ export const requireCourseReadAccess = async (
       return res.status(401).json({ error: 'Authentication required.' });
     }
 
-    // Admins and Editors can view courses
-    if (req.user.role === 'ADMIN' || req.user.role === 'EDITOR') {
+    // Admins and Editors can view courses if authorized
+    if (req.user.role === 'ADMIN') {
       return next();
     }
 
@@ -139,17 +222,41 @@ export const requireCourseReadAccess = async (
       return res.status(404).json({ error: 'Course not found.' });
     }
 
-    // Check if course is published
+    if (req.user.role === 'EDITOR') {
+      const [bookPermission, lessonPermission] = await Promise.all([
+        prisma.bookEditorPermission.findUnique({
+          where: {
+            bookId_userId: {
+              bookId: course.id,
+              userId: req.user.userId,
+            },
+          },
+        }),
+        prisma.lessonEditorPermission.findFirst({
+          where: {
+            userId: req.user.userId,
+            lesson: { courseId: course.id },
+          },
+        }),
+      ]);
+
+      if (!bookPermission && !lessonPermission) {
+        return res.status(403).json({ error: 'Access Denied: You are not assigned to this book.' });
+      }
+
+      return next();
+    }
+
+    // Check if course is published for Students
     if (!course.published) {
       return res.status(403).json({ error: 'This course is currently unpublished.' });
     }
 
-    // Check course access requirement
+    // Check course access requirement for Students
     const accessCount = await prisma.courseAccess.count({
       where: { courseId: course.id },
     });
 
-    // If access rules are explicitly assigned, student must have an entry
     if (accessCount > 0) {
       const hasAccess = await prisma.courseAccess.findUnique({
         where: {
