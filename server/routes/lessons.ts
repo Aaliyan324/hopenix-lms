@@ -719,4 +719,58 @@ router.delete('/:id/qr', authenticateToken, requireRole('ADMIN'), async (req: Au
   }
 });
 
+// ADMIN — Get editors assigned to a specific lesson
+router.get('/:id/editors', authenticateToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const permissions = await prisma.lessonEditorPermission.findMany({
+      where: { lessonId: id },
+      include: {
+        user: { select: { id: true, name: true, email: true, avatar: true } },
+      },
+    });
+    return res.json({ editors: permissions.map((p) => p.user) });
+  } catch (error) {
+    console.error('Fetch lesson editors error:', error);
+    return res.status(500).json({ error: 'Failed to fetch lesson editors.' });
+  }
+});
+
+// ADMIN — Set editors for a specific lesson (replace-all pattern)
+router.post('/:id/editors', authenticateToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { editorIds } = req.body;
+
+    if (!Array.isArray(editorIds)) {
+      return res.status(400).json({ error: 'editorIds must be an array.' });
+    }
+
+    // Verify lesson exists
+    const lesson = await prisma.lesson.findUnique({ where: { id }, select: { id: true, title: true } });
+    if (!lesson) {
+      return res.status(404).json({ error: 'Lesson not found.' });
+    }
+
+    // Replace all permissions atomically
+    await prisma.lessonEditorPermission.deleteMany({ where: { lessonId: id } });
+
+    if (editorIds.length > 0) {
+      await prisma.lessonEditorPermission.createMany({
+        data: editorIds.map((userId: string) => ({ lessonId: id, userId })),
+      });
+    }
+
+    await createAuditLog(req.user!.userId, 'ASSIGN_LESSON_EDITORS', 'Lesson', id, {
+      lessonTitle: lesson.title,
+      editorCount: editorIds.length,
+    });
+
+    return res.json({ message: 'Lesson editor permissions updated successfully.' });
+  } catch (error) {
+    console.error('Assign lesson editors error:', error);
+    return res.status(500).json({ error: 'Failed to update lesson editor permissions.' });
+  }
+});
+
 export default router;

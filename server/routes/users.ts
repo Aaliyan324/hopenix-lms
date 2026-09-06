@@ -181,4 +181,39 @@ router.delete('/:id', async (req: AuthenticatedRequest, res: Response) => {
   }
 });
 
+// GET editor permissions — returns all book and lesson permission IDs for one user
+router.get('/:id/permissions', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: { id: true, name: true, email: true, role: true, avatar: true },
+    });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    const [bookPermissions, lessonPermissions] = await Promise.all([
+      prisma.bookEditorPermission.findMany({
+        where: { userId: id },
+        select: { bookId: true },
+      }),
+      prisma.lessonEditorPermission.findMany({
+        where: { userId: id },
+        select: { lessonId: true },
+      }),
+    ]);
+
+    return res.json({
+      user,
+      bookPermissions: bookPermissions.map((p) => p.bookId),
+      lessonPermissions: lessonPermissions.map((p) => p.lessonId),
+    });
+  } catch (error) {
+    console.error('Fetch user permissions error:', error);
+    return res.status(500).json({ error: 'Failed to fetch user permissions.' });
+  }
+});
+
 export default router;
