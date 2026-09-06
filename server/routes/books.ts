@@ -28,6 +28,48 @@ const slugify = (text: string) =>
     .replace(/[\s_-]+/g, '-')
     .replace(/^-+|-+$/g, '');
 
+// Stream / Proxy any storage asset (private Vercel Blob or local uploads) with CORS support
+router.get('/proxy-asset', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const rawUrl = req.query.url as string;
+    if (!rawUrl) {
+      return res.status(400).json({ error: 'URL parameter is required.' });
+    }
+
+    const fileUrl = decodeURIComponent(rawUrl);
+
+    if (fileUrl.startsWith('/uploads/')) {
+      const filePath = path.join(process.cwd(), fileUrl.replace(/^\//, ''));
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ error: 'Local file not found.' });
+      }
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      return res.sendFile(filePath);
+    }
+
+    const blobRes = await StorageService.fetchBlobResource(fileUrl, req.headers.range as string | undefined);
+    if (!blobRes.ok && blobRes.status !== 206) {
+      return res.status(blobRes.status).json({ error: 'Failed to fetch asset from storage.' });
+    }
+
+    res.status(blobRes.status);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Content-Type', blobRes.headers.get('content-type') || 'image/png');
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+
+    if (blobRes.body) {
+      // @ts-ignore
+      Readable.fromWeb(blobRes.body as any).pipe(res);
+    } else {
+      res.end();
+    }
+  } catch (error) {
+    console.error('Proxy asset streaming error:', error);
+    return res.status(500).json({ error: 'Failed to proxy storage asset.' });
+  }
+});
+
 // Stream / Proxy book cover image securely
 router.get('/:id/cover', optionalAuthenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {

@@ -218,11 +218,11 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
         await new Promise<void>((resolve) => {
           const img = new Image();
 
-          // Only set crossOrigin for external http/https URLs
-          if (effectiveLogo.startsWith('http://') || effectiveLogo.startsWith('https://')) {
-            if (!effectiveLogo.includes(window.location.host)) {
-              img.crossOrigin = 'anonymous';
-            }
+          // If it's a remote/local URL (not Data URI), route through proxy-asset to bypass private blob auth & CORS restrictions
+          let logoSrc = effectiveLogo;
+          if (!effectiveLogo.startsWith('data:image/')) {
+            logoSrc = `/api/books/proxy-asset?url=${encodeURIComponent(effectiveLogo)}`;
+            img.crossOrigin = 'anonymous';
           }
 
           const drawLogoOnCanvas = () => {
@@ -264,7 +264,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
           img.onload = drawLogoOnCanvas;
 
           img.onerror = (err) => {
-            console.warn('Primary logo load failed, attempting fallback draw:', err);
+            console.warn('Primary logo load failed, attempting fallback to default brand logo:', err);
             const fallbackImg = new Image();
             fallbackImg.onload = () => {
               const canvasSize = canvas.width;
@@ -297,10 +297,10 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
               resolve();
             };
             fallbackImg.onerror = () => resolve();
-            fallbackImg.src = effectiveLogo;
+            fallbackImg.src = DEFAULT_HOPENIX_LOGO;
           };
 
-          img.src = effectiveLogo;
+          img.src = logoSrc;
         });
       }
     } catch (err) {
