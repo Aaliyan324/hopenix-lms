@@ -206,8 +206,6 @@ router.get('/', authenticateToken, async (req: AuthenticatedRequest, res: Respon
       lessonPermissions.forEach((lp) => assignedBookIds.add(lp.lesson.courseId));
 
       where.id = { in: Array.from(assignedBookIds) };
-    } else if (role === 'STUDENT') {
-      where.published = true;
     }
 
     const books = await prisma.course.findMany({
@@ -217,55 +215,11 @@ router.get('/', authenticateToken, async (req: AuthenticatedRequest, res: Respon
         _count: {
           select: {
             lessons: true,
-            courseAccess: true,
           },
         },
       },
       orderBy: [{ featured: 'desc' }, { createdAt: 'desc' }],
     });
-
-    // If logged-in student, compute progress and bookmark state
-    if (role === 'STUDENT') {
-      const [userProgress, userBookmarks] = await Promise.all([
-        prisma.lessonProgress.findMany({
-          where: { userId, completed: true },
-          select: { lessonId: true },
-        }),
-        prisma.bookBookmark.findMany({
-          where: { userId },
-          select: { bookId: true },
-        }),
-      ]);
-
-      const completedLessonIds = new Set(userProgress.map((p) => p.lessonId));
-      const bookmarkedBookIds = new Set(userBookmarks.map((b) => b.bookId));
-
-      const booksWithPersonalization = await Promise.all(
-        books.map(async (book) => {
-          const lessons = await prisma.lesson.findMany({
-            where: { courseId: book.id, published: true },
-            select: { id: true },
-          });
-
-          const totalLessons = lessons.length;
-          const completedCount = lessons.filter((l) => completedLessonIds.has(l.id)).length;
-          const progressPercent = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
-
-          return formatBook({
-            ...book,
-            qrCodeUrl: book.qrCode?.imageUrl || book.qrCodeUrl,
-            qrCodeData: book.qrCode?.destinationUrl || book.qrCodeData,
-            qrLogo: book.qrCode?.logoUrl || book.qrLogo,
-            isBookmarked: bookmarkedBookIds.has(book.id),
-            progressPercent,
-            completedLessons: completedCount,
-            totalLessons,
-          });
-        })
-      );
-
-      return res.json({ books: booksWithPersonalization });
-    }
 
     // Admin / Editor formatted response
     const formattedBooks = books.map((book) =>
@@ -301,22 +255,17 @@ router.get('/:idOrSlug', optionalAuthenticateToken, async (req: AuthenticatedReq
       include: {
         qrCode: true,
         lessons: {
-          where: (!role || role === 'STUDENT') ? { published: true } : undefined,
+          // Public and editors see only published lessons; admins see all
+          where: role === 'ADMIN' ? undefined : { published: true },
           orderBy: [{ lessonNumber: 'asc' }, { order: 'asc' }],
           include: {
             qrCode: true,
             media: true,
-            permissions: {
-              include: {
-                user: { select: { id: true, name: true, email: true } },
-              },
-            },
           },
         },
         _count: {
           select: {
-            courseAccess: true,
-            bookmarks: true,
+            lessons: true,
           },
         },
       },
@@ -342,63 +291,27 @@ router.get('/:idOrSlug', optionalAuthenticateToken, async (req: AuthenticatedReq
       }
     }
 
-    // Check Guest & Student access: must be published
-    if ((!role || role === 'STUDENT') && !book.published) {
+    // Check public / guest access: must be published
+    if (!role && !book.published) {
       return res.status(403).json({ error: 'This digital book is currently unpublished.' });
     }
 
-    let isBookmarked = false;
-    let lessonsWithProgress = book.lessons.map((l) => ({
+    const lessonsWithQr = book.lessons.map((l) => ({
       ...l,
       qrCodeUrl: l.qrCode?.imageUrl || l.qrCodeUrl,
       qrCodeData: l.qrCode?.destinationUrl || l.qrCodeData,
       qrLogo: l.qrCode?.logoUrl || l.qrLogo,
-      completed: false,
-      isBookmarked: false,
     }));
 
-    if (userId) {
-      const [bookmark, userProgress, lessonBookmarks] = await Promise.all([
-        prisma.bookBookmark.findUnique({
-          where: { userId_bookId: { userId, bookId: book.id } },
-        }),
-        prisma.lessonProgress.findMany({
-          where: { userId },
-        }),
-        prisma.lessonBookmark.findMany({
-          where: { userId },
-          select: { lessonId: true },
-        }),
-      ]);
-
-      isBookmarked = Boolean(bookmark);
-      const completedSet = new Set(userProgress.filter((p) => p.completed).map((p) => p.lessonId));
-      const bookmarkedLessonIds = new Set(lessonBookmarks.map((b) => b.lessonId));
-
-      lessonsWithProgress = book.lessons.map((lesson) => ({
-        ...lesson,
-        qrCodeUrl: lesson.qrCode?.imageUrl || lesson.qrCodeUrl,
-        qrCodeData: lesson.qrCode?.destinationUrl || lesson.qrCodeData,
-        qrLogo: lesson.qrCode?.logoUrl || lesson.qrLogo,
-        completed: completedSet.has(lesson.id),
-        isBookmarked: bookmarkedLessonIds.has(lesson.id),
-      }));
-    }
-
-    const completedCount = lessonsWithProgress.filter((l) => l.completed).length;
-    const totalLessons = lessonsWithProgress.length;
-    const progressPercent = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
+    const totalLessons = lessonsWithQr.length;
 
     const formattedBook = formatBook({
       ...book,
       qrCodeUrl: book.qrCode?.imageUrl || book.qrCodeUrl,
       qrCodeData: book.qrCode?.destinationUrl || book.qrCodeData,
       qrLogo: book.qrCode?.logoUrl || book.qrLogo,
-      isBookmarked,
-      lessons: lessonsWithProgress,
-      completedLessons: completedCount,
+      lessons: lessonsWithQr,
       totalLessons,
-      progressPercent,
     });
 
     return res.json({
@@ -850,53 +763,6 @@ router.delete('/:id/qr', authenticateToken, requireRole('ADMIN'), async (req: Au
   } catch (error) {
     console.error('Delete Book QR error:', error);
     return res.status(500).json({ error: 'Failed to delete book QR code.' });
-  }
-});
-
-// 7. ADMIN Access permissions for student assignment
-router.get('/:id/access', authenticateToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const { id } = req.params;
-    const accessList = await prisma.courseAccess.findMany({
-      where: { courseId: id },
-      include: {
-        user: {
-          select: { id: true, name: true, email: true, role: true, avatar: true },
-        },
-      },
-    });
-    return res.json({ accessList });
-  } catch (error) {
-    return res.status(500).json({ error: 'Failed to fetch book access.' });
-  }
-});
-
-router.post('/:id/access', authenticateToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const { id } = req.params;
-    const { userIds } = req.body;
-
-    if (!Array.isArray(userIds)) {
-      return res.status(400).json({ error: 'userIds must be an array.' });
-    }
-
-    await prisma.courseAccess.deleteMany({ where: { courseId: id } });
-
-    if (userIds.length > 0) {
-      await prisma.courseAccess.createMany({
-        data: userIds.map((userId: string) => ({
-          courseId: id,
-          userId,
-        })),
-      });
-    }
-
-    await createAuditLog(req.user!.userId, 'UPDATE_BOOK_ACCESS', 'Book', id, { assignedCount: userIds.length });
-
-    return res.json({ message: 'Book student access updated successfully.' });
-  } catch (error) {
-    console.error('Update book access error:', error);
-    return res.status(500).json({ error: 'Failed to update book access.' });
   }
 });
 

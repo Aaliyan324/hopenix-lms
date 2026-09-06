@@ -32,7 +32,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     // Redirect user to their role's default dashboard
     if (user.role === 'ADMIN') return <Navigate to="/admin" replace />;
     if (user.role === 'EDITOR') return <Navigate to="/editor" replace />;
-    return <Navigate to="/student" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   return <>{children}</>;

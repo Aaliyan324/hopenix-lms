@@ -8,10 +8,6 @@ async function main() {
 
   // Clean existing data
   await prisma.auditLog.deleteMany();
-  await prisma.lessonProgress.deleteMany();
-  await prisma.courseAccess.deleteMany();
-  await prisma.bookBookmark.deleteMany();
-  await prisma.lessonBookmark.deleteMany();
   await prisma.qRCode.deleteMany();
   await prisma.bookEditorPermission.deleteMany();
   await prisma.lessonEditorPermission.deleteMany();
@@ -23,7 +19,7 @@ async function main() {
   const passwordHash = await bcrypt.hash('password123', 10);
   const adminPasswordHash = await bcrypt.hash('admin123', 10);
 
-  // 1. Create Users
+  // 1. Create Users (Admin and Editors)
   const admin = await prisma.user.create({
     data: {
       name: 'Alex Rivera (Admin)',
@@ -54,29 +50,9 @@ async function main() {
     },
   });
 
-  const student1 = await prisma.user.create({
-    data: {
-      name: 'Emily Watson (Student)',
-      email: 'student1@example.com',
-      passwordHash,
-      role: 'STUDENT',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Emily',
-    },
-  });
+  console.log('✅ Created initial Management Users (Admin & Editors).');
 
-  const student2 = await prisma.user.create({
-    data: {
-      name: 'Michael Chen (Student)',
-      email: 'student2@example.com',
-      passwordHash,
-      role: 'STUDENT',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Michael',
-    },
-  });
-
-  console.log('✅ Created initial Users.');
-
-  // 2. Create Courses
+  // 2. Create Courses / Books
   const course1 = await prisma.course.create({
     data: {
       title: 'React 19 & TypeScript Masterclass',
@@ -107,7 +83,7 @@ async function main() {
     },
   });
 
-  console.log('✅ Created Courses.');
+  console.log('✅ Created Books.');
 
   // 3. Create Lessons for Course 1
   const lesson1 = await prisma.lesson.create({
@@ -256,27 +232,7 @@ export function useLocalStorage&lt;T&gt;(key: string, initialValue: T): [T, (val
 
   console.log('✅ Granted Editor Permissions.');
 
-  // 6. Grant Student Course Access
-  await prisma.courseAccess.createMany({
-    data: [
-      { courseId: course1.id, userId: student1.id },
-      { courseId: course2.id, userId: student1.id },
-      { courseId: course1.id, userId: student2.id },
-    ],
-  });
-
-  console.log('✅ Granted Student Course Access.');
-
-  // 7. Initial Progress
-  await prisma.lessonProgress.create({
-    data: {
-      userId: student1.id,
-      lessonId: lesson1.id,
-      completed: true,
-    },
-  });
-
-  // 8. Initial Audit Logs
+  // 6. Initial Audit Logs
   await prisma.auditLog.createMany({
     data: [
       {

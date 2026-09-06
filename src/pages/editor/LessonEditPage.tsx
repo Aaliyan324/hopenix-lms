@@ -135,7 +135,7 @@ export const LessonEditPage: React.FC = () => {
                 type="text"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Brief summary of what students will learn..."
+                placeholder="Brief summary of what readers will learn..."
                 className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:border-brand-500"
               />
             </div>
@@ -151,7 +151,7 @@ export const LessonEditPage: React.FC = () => {
                 className="w-4 h-4 rounded border-slate-700 bg-slate-950 text-brand-600 focus:ring-brand-500"
               />
               <label htmlFor="lesson-pub-check" className="text-sm font-medium text-slate-200 cursor-pointer">
-                Publish this lesson for student viewing
+                Publish this lesson for public viewing
               </label>
             </div>
           )}

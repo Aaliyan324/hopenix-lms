@@ -549,7 +549,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
               </div>
             </div>
           ) : (
-            /* NON-ADMIN Consumer View (Student / Guest / Editor) */
+            /* Consumer View (Public Viewer / Editor) */
             <div className="flex gap-3 pt-2">
               <Button
                 variant="playful"

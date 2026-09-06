@@ -14,8 +14,8 @@ interface AuthPromptModalProps {
 export const AuthPromptModal: React.FC<AuthPromptModalProps> = ({
   isOpen,
   onClose,
-  title = 'Sign In Required for Personalization',
-  message = 'Sign in or create a student account to save your reading progress, bookmark books and lessons, and access your personal digital library across devices.',
+  title = 'Admin / Editor Sign In Required',
+  message = 'Sign in as an Admin or Editor to manage content, assign lessons, and access portal administration.',
 }) => {
   const navigate = useNavigate();
 
@@ -39,12 +39,12 @@ export const AuthPromptModal: React.FC<AuthPromptModalProps> = ({
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-left space-y-2 text-xs text-slate-300">
           <div className="flex items-center gap-2 text-slate-200 font-semibold">
             <Sparkles className="w-4 h-4 text-brand-400" />
-            With a free Hopenix Student Account:
+            With an Admin or Editor Account:
           </div>
           <ul className="space-y-1.5 pl-6 list-disc text-slate-400">
-            <li>Sync reading progress across all desktop & mobile devices</li>
-            <li>Bookmark unlimited books & individual lessons</li>
-            <li>Track completion percentages & view history</li>
+            <li>Manage digital books, modules, and lessons</li>
+            <li>Create, publish, and edit learning content</li>
+            <li>Manage team roles and system settings</li>
           </ul>
         </div>
 

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { useToast } from '../../components/ui/Toast';
-import { BookOpen, Shield, Edit3, GraduationCap, Lock, Mail, ArrowRight, Sparkles } from 'lucide-react';
+import { BookOpen, Shield, Edit3, Lock, Mail, ArrowRight, Sparkles } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const { login } = useAuth();
@@ -28,7 +28,7 @@ export const LoginPage: React.FC = () => {
 
       if (user.role === 'ADMIN') navigate('/admin');
       else if (user.role === 'EDITOR') navigate('/editor');
-      else navigate('/student');
+      else navigate('/login');
     } catch (err: any) {
       toast(err.message || 'Login failed. Please check your credentials.', 'error');
     } finally {
@@ -117,32 +117,24 @@ export const LoginPage: React.FC = () => {
               <Sparkles className="w-3.5 h-3.5 text-amber-300" />
               Quick Demo Personas
             </p>
-            <div className="grid grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
-                onClick={() => fillDemo('admin@example.com', 'admin123')}
-                className="flex flex-col items-center justify-center p-3 bg-slate-950 border border-purple-500/30 hover:border-purple-400 rounded-2xl text-xs text-slate-200 hover:text-white transition-all group cursor-pointer shadow-md"
+                onClick={() => fillDemo('admin@example.com', 'password123')}
+                className="flex flex-col items-center p-3 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 rounded-2xl transition-all text-center group"
               >
-                <Shield className="w-4 h-4 text-purple-400 mb-1 group-hover:scale-110 transition-transform" />
-                <span className="font-extrabold">Admin</span>
+                <Shield className="w-5 h-5 text-purple-400 mb-1 group-hover:scale-110 transition-transform" />
+                <span className="text-xs font-bold text-white">Admin</span>
+                <span className="text-[10px] text-slate-400">Full Access</span>
               </button>
-
               <button
                 type="button"
                 onClick={() => fillDemo('editor1@example.com', 'password123')}
-                className="flex flex-col items-center justify-center p-3 bg-slate-950 border border-amber-500/30 hover:border-amber-400 rounded-2xl text-xs text-slate-200 hover:text-white transition-all group cursor-pointer shadow-md"
+                className="flex flex-col items-center p-3 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-2xl transition-all text-center group"
               >
-                <Edit3 className="w-4 h-4 text-amber-400 mb-1 group-hover:scale-110 transition-transform" />
-                <span className="font-extrabold">Editor</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => fillDemo('student1@example.com', 'password123')}
-                className="flex flex-col items-center justify-center p-3 bg-slate-950 border border-pink-500/30 hover:border-pink-400 rounded-2xl text-xs text-slate-200 hover:text-white transition-all group cursor-pointer shadow-md"
-              >
-                <GraduationCap className="w-4 h-4 text-pink-400 mb-1 group-hover:scale-110 transition-transform" />
-                <span className="font-extrabold">Student</span>
+                <Edit3 className="w-5 h-5 text-amber-400 mb-1 group-hover:scale-110 transition-transform" />
+                <span className="text-xs font-bold text-white">Editor</span>
+                <span className="text-[10px] text-slate-400">Content Editor</span>
               </button>
             </div>
           </div>

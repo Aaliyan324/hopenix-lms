@@ -127,18 +127,17 @@ router.get('/:idOrSlug', optionalAuthenticateToken, async (req: AuthenticatedReq
       }
     }
 
-    // Check Guest & Student access: must be published
-    if (!role || role === 'STUDENT') {
-      if (!lesson.published || !lesson.course.published) {
-        return res.status(403).json({ error: 'This lesson is currently unpublished.' });
-      }
+    // Public access: must be published
+    if (!role && (!lesson.published || !lesson.course.published)) {
+      return res.status(403).json({ error: 'This lesson is currently unpublished.' });
     }
 
     // Check sibling lessons for Previous / Next navigation
     const siblingLessons = await prisma.lesson.findMany({
       where: {
         courseId: lesson.courseId,
-        published: (!role || role === 'STUDENT') ? true : undefined,
+        // Public viewers only see published lessons; admins see all
+        published: role === 'ADMIN' ? undefined : true,
       },
       select: { id: true, title: true, slug: true, lessonNumber: true, order: true },
       orderBy: [{ lessonNumber: 'asc' }, { order: 'asc' }],
@@ -148,36 +147,11 @@ router.get('/:idOrSlug', optionalAuthenticateToken, async (req: AuthenticatedReq
     const prevLesson = currentIndex > 0 ? siblingLessons[currentIndex - 1] : null;
     const nextLesson = currentIndex < siblingLessons.length - 1 ? siblingLessons[currentIndex + 1] : null;
 
-    let completed = false;
-    let isBookmarked = false;
-
-    if (userId) {
-      const [progress, bookmark] = await Promise.all([
-        prisma.lessonProgress.findUnique({
-          where: { userId_lessonId: { userId, lessonId: lesson.id } },
-        }),
-        prisma.lessonBookmark.findUnique({
-          where: { userId_lessonId: { userId, lessonId: lesson.id } },
-        }),
-      ]);
-      completed = Boolean(progress?.completed);
-      isBookmarked = Boolean(bookmark);
-
-      // Record recent activity timestamp for logged in student
-      await prisma.lessonProgress.upsert({
-        where: { userId_lessonId: { userId, lessonId: lesson.id } },
-        update: { lastReadAt: new Date() },
-        create: { userId, lessonId: lesson.id, completed: false, lastReadAt: new Date() },
-      }).catch(() => {});
-    }
-
     const formattedLesson = formatLesson({
       ...lesson,
       qrCodeUrl: lesson.qrCode?.imageUrl || lesson.qrCodeUrl,
       qrCodeData: lesson.qrCode?.destinationUrl || lesson.qrCodeData,
       qrLogo: lesson.qrCode?.logoUrl || lesson.qrLogo,
-      completed,
-      isBookmarked,
     });
 
     return res.json({

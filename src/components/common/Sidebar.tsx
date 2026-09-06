@@ -9,7 +9,6 @@ import {
   QrCode,
   History,
   CheckSquare,
-  GraduationCap,
   Sparkles,
 } from 'lucide-react';
 
@@ -34,11 +33,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
     { label: 'My Assigned Books', path: '/editor', icon: CheckSquare },
   ];
 
-  const studentNav = [
-    { label: 'My Library & Progress', path: '/student', icon: GraduationCap },
-  ];
-
-  const navItems = role === 'ADMIN' ? adminNav : role === 'EDITOR' ? editorNav : studentNav;
+  const navItems = role === 'ADMIN' ? adminNav : editorNav;
 
   return (
     <aside
@@ -59,7 +54,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
               <NavLink
                 key={item.path}
                 to={item.path}
-                end={item.path === '/admin' || item.path === '/editor' || item.path === '/student'}
+                end={item.path === '/admin' || item.path === '/editor'}
                 onClick={onClose}
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-extrabold transition-all duration-200 ${

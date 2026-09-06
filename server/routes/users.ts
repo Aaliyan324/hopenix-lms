@@ -24,7 +24,7 @@ router.get('/', async (req: AuthenticatedRequest, res: Response) => {
         { email: { contains: search, mode: 'insensitive' } },
       ];
     }
-    if (role && ['ADMIN', 'EDITOR', 'STUDENT'].includes(role.toUpperCase())) {
+    if (role && ['ADMIN', 'EDITOR'].includes(role.toUpperCase())) {
       where.role = role.toUpperCase();
     }
 
@@ -43,7 +43,6 @@ router.get('/', async (req: AuthenticatedRequest, res: Response) => {
           _count: {
             select: {
               permissions: true,
-              courseAccess: true,
             },
           },
         },
@@ -131,7 +130,7 @@ router.patch('/:id', async (req: AuthenticatedRequest, res: Response) => {
     const updateData: any = {};
     if (name) updateData.name = name;
     if (email) updateData.email = email.toLowerCase().trim();
-    if (role && ['ADMIN', 'EDITOR', 'STUDENT'].includes(role)) updateData.role = role;
+    if (role && ['ADMIN', 'EDITOR'].includes(role.toUpperCase())) updateData.role = role.toUpperCase();
     if (typeof isActive === 'boolean') updateData.isActive = isActive;
     if (password) updateData.passwordHash = await hashPassword(password);
 

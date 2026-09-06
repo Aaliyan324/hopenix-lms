@@ -15,18 +15,14 @@ model User {
   name                  String
   email                 String                 @unique
   passwordHash          String
-  role                  String                 @default("STUDENT") // ADMIN, EDITOR, STUDENT
+  role                  String                 @default("EDITOR") // ADMIN, EDITOR
   avatar                String?
   isActive              Boolean                @default(true)
   createdAt             DateTime               @default(now())
   updatedAt             DateTime               @updatedAt
   permissions           LessonEditorPermission[]
   bookEditorPermissions BookEditorPermission[]
-  courseAccess          CourseAccess[]
   auditLogs             AuditLog[]
-  progress              LessonProgress[]
-  bookBookmarks         BookBookmark[]
-  lessonBookmarks       LessonBookmark[]
 
   @@index([email])
   @@index([role])
@@ -57,8 +53,6 @@ model Course {
   createdAt             DateTime               @default(now())
   updatedAt             DateTime               @updatedAt
   lessons               Lesson[]
-  courseAccess          CourseAccess[]
-  bookmarks             BookBookmark[]
   editorPermissions     BookEditorPermission[]
   qrCode                QRCode?
 
@@ -87,8 +81,6 @@ model Lesson {
   updatedAt    DateTime                 @updatedAt
   media        Media[]
   permissions  LessonEditorPermission[]
-  progress     LessonProgress[]
-  bookmarks    LessonBookmark[]
   qrCode       QRCode?
 
   @@unique([courseId, slug])
@@ -153,59 +145,6 @@ model LessonEditorPermission {
   @@index([lessonId])
 }
 
-model CourseAccess {
-  id        String   @id @default(uuid())
-  courseId  String
-  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-
-  @@unique([courseId, userId])
-  @@index([userId])
-  @@index([courseId])
-}
-
-model LessonProgress {
-  id         String   @id @default(uuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lessonId   String
-  lesson     Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  completed  Boolean  @default(false)
-  lastReadAt DateTime @default(now()) @updatedAt
-  updatedAt  DateTime @updatedAt
-
-  @@unique([userId, lessonId])
-  @@index([userId])
-}
-
-model BookBookmark {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  bookId    String
-  book      Course   @relation(fields: [bookId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-
-  @@unique([userId, bookId])
-  @@index([userId])
-  @@index([bookId])
-}
-
-model LessonBookmark {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lessonId  String
-  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-
-  @@unique([userId, lessonId])
-  @@index([userId])
-  @@index([lessonId])
-}
-
 model AuditLog {
   id         String   @id @default(uuid())
   userId     String?
@@ -220,3 +159,4 @@ model AuditLog {
   @@index([entityType])
   @@index([createdAt])
 }
+

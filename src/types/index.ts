@@ -1,4 +1,4 @@
-export type Role = 'ADMIN' | 'EDITOR' | 'STUDENT';
+export type Role = 'ADMIN' | 'EDITOR';
 export type MediaType = 'IMAGE' | 'VIDEO' | 'PDF';
 
 export interface User {
@@ -12,7 +12,6 @@ export interface User {
   updatedAt?: string;
   _count?: {
     permissions?: number;
-    courseAccess?: number;
   };
 }
 
@@ -55,8 +54,6 @@ export interface Lesson {
   updatedAt: string;
   media?: Media[];
   permissions?: LessonEditorPermission[];
-  completed?: boolean;
-  isBookmarked?: boolean;
   course?: {
     id: string;
     title: string;
@@ -96,27 +93,16 @@ export interface Book {
   createdAt: string;
   updatedAt: string;
   lessons?: Lesson[];
-  progressPercent?: number;
-  completedLessons?: number;
   totalLessons?: number;
-  isBookmarked?: boolean;
   _count?: {
     lessons?: number;
-    courseAccess?: number;
-    bookmarks?: number;
   };
 }
 
 // Alias for backward compatibility
 export type Course = Book;
 
-export interface BookAccess {
-  id: string;
-  courseId: string;
-  userId: string;
-  createdAt: string;
-  user?: User;
-}
+// BookAccess removed - no longer needed without student access control
 
 export interface AuditLog {
   id: string;
@@ -132,7 +118,6 @@ export interface AuditLog {
 export interface DashboardStats {
   totalBooks: number;
   totalLessons: number;
-  totalStudents: number;
   totalEditors: number;
   publishedBooks: number;
   publishedLessons: number;

@@ -47,8 +47,8 @@ export const AdminDashboardPage: React.FC = () => {
     return (
       <div className="space-y-6">
         <Skeleton className="h-8 w-64 rounded-xl" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+          {[...Array(5)].map((_, i) => (
             <Skeleton key={i} className="h-32 rounded-2xl" />
           ))}
         </div>
@@ -61,7 +61,6 @@ export const AdminDashboardPage: React.FC = () => {
     { label: 'Published Books', value: stats?.publishedBooks || stats?.publishedCourses || 0, icon: CheckCircle, color: 'text-emerald-300', bg: 'bg-emerald-500/15 border-emerald-500/30' },
     { label: 'Total Lessons', value: stats?.totalLessons || 0, icon: FileText, color: 'text-sky-300', bg: 'bg-sky-500/15 border-sky-500/30' },
     { label: 'Published Lessons', value: stats?.publishedLessons || 0, icon: Eye, color: 'text-teal-300', bg: 'bg-teal-500/15 border-teal-500/30' },
-    { label: 'Students', value: stats?.totalStudents || 0, icon: Users, color: 'text-pink-300', bg: 'bg-pink-500/15 border-pink-500/30' },
     { label: 'Editors', value: stats?.totalEditors || 0, icon: UserCheck, color: 'text-amber-300', bg: 'bg-amber-500/15 border-amber-500/30' },
   ];
 

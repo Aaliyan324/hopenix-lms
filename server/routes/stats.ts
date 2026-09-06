@@ -9,7 +9,6 @@ router.get('/dashboard', authenticateToken, requireRole('ADMIN'), async (req: Au
     const [
       totalBooks,
       totalLessons,
-      totalStudents,
       totalEditors,
       publishedBooks,
       publishedLessons,
@@ -17,7 +16,6 @@ router.get('/dashboard', authenticateToken, requireRole('ADMIN'), async (req: Au
     ] = await Promise.all([
       prisma.course.count(),
       prisma.lesson.count(),
-      prisma.user.count({ where: { role: 'STUDENT' } }),
       prisma.user.count({ where: { role: 'EDITOR' } }),
       prisma.course.count({ where: { published: true } }),
       prisma.lesson.count({ where: { published: true } }),
@@ -34,7 +32,6 @@ router.get('/dashboard', authenticateToken, requireRole('ADMIN'), async (req: Au
       stats: {
         totalBooks,
         totalLessons,
-        totalStudents,
         totalEditors,
         publishedBooks,
         publishedLessons,

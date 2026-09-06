@@ -60,27 +60,6 @@ export const PublicBooksPage: React.FC = () => {
     fetchBooks(search);
   };
 
-  const handleToggleBookmark = async (bookId: string) => {
-    if (!user) {
-      setAuthModalOpen(true);
-      return;
-    }
-
-    try {
-      const data = await apiFetch<{ isBookmarked: boolean; message: string }>(`/bookmarks/books/${bookId}`, {
-        method: 'POST',
-      });
-
-      setBooks((prev) =>
-        prev.map((b) => (b.id === bookId ? { ...b, isBookmarked: data.isBookmarked } : b))
-      );
-
-      toast(data.message, 'success');
-    } catch (err: any) {
-      toast('Unable to save bookmark.', 'error');
-    }
-  };
-
   const categories = Array.from(new Set(books.map((b) => b.category).filter(Boolean))) as string[];
   const featuredBooks = books.filter((b) => b.featured);
 
@@ -173,9 +152,6 @@ export const PublicBooksPage: React.FC = () => {
                 key={book.id}
                 book={book}
                 featured={true}
-                onSaveToggle={() => handleToggleBookmark(book.id)}
-                isSaved={book.isBookmarked}
-                progressPercent={book.progressPercent}
               />
             ))}
           </div>
@@ -213,9 +189,6 @@ export const PublicBooksPage: React.FC = () => {
               <BookCard
                 key={book.id}
                 book={book}
-                onSaveToggle={() => handleToggleBookmark(book.id)}
-                isSaved={book.isBookmarked}
-                progressPercent={book.progressPercent}
               />
             ))}
           </div>

@@ -57,25 +57,6 @@ export const PublicBookDetailPage: React.FC = () => {
     }
   };
 
-  const handleToggleBookmark = async () => {
-    if (!user) {
-      setAuthModalOpen(true);
-      return;
-    }
-
-    if (!book) return;
-
-    try {
-      const data = await apiFetch<{ isBookmarked: boolean; message: string }>(`/bookmarks/books/${book.id}`, {
-        method: 'POST',
-      });
-      setBook({ ...book, isBookmarked: data.isBookmarked });
-      toast(data.message, 'success');
-    } catch (err: any) {
-      toast('Unable to save bookmark.', 'error');
-    }
-  };
-
   if (loading || !book) {
     return (
       <div className="space-y-6 max-w-5xl mx-auto">
@@ -86,18 +67,14 @@ export const PublicBookDetailPage: React.FC = () => {
     );
   }
 
-  const completedCount = book.lessons?.filter((l) => l.completed).length || 0;
   const totalCount = book.lessons?.length || 0;
-  const progressPercent = book.progressPercent || (totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0);
-
   const firstLesson = book.lessons?.[0];
-  const nextLesson = book.lessons?.find((l) => !l.completed) || firstLesson;
 
   return (
     <div className="space-y-10 max-w-5xl mx-auto pb-16">
       {/* Back Button */}
       <Link
-        to={user ? (user.role === 'ADMIN' ? '/admin/books' : user.role === 'EDITOR' ? '/editor' : '/student') : '/login'}
+        to={user ? (user.role === 'ADMIN' ? '/admin/books' : '/editor') : '/login'}
         className="inline-flex items-center gap-2 text-xs font-extrabold text-brand-300 hover:text-white bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl transition-all"
       >
         <ArrowLeft className="w-4 h-4" /> {user ? 'Back to My Library' : 'Back to Login'}
@@ -134,23 +111,12 @@ export const PublicBookDetailPage: React.FC = () => {
 
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={handleToggleBookmark}
-                    className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border text-xs font-extrabold transition-all cursor-pointer ${
-                      book.isBookmarked
-                        ? 'bg-rose-500 text-white border-rose-400 shadow-lg shadow-rose-500/25 scale-105'
-                        : 'bg-slate-950/80 text-slate-300 border-slate-700 hover:text-white hover:border-slate-600'
-                    }`}
-                  >
-                    <Heart className={`w-4 h-4 ${book.isBookmarked ? 'fill-current' : ''}`} />
-                    {book.isBookmarked ? 'Saved to Collection' : 'Save Book'}
-                  </button>
-
-                  <button
                     onClick={() => setQrModalOpen(true)}
-                    className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-700 text-brand-300 hover:text-white hover:border-brand-500 transition-all cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-950/80 border border-slate-700 text-brand-300 hover:text-white hover:border-brand-500 text-xs font-extrabold transition-all cursor-pointer"
                     title="QR Code & Share"
                   >
                     <QrCode className="w-4 h-4" />
+                    <span>Share QR</span>
                   </button>
                 </div>
               </div>
@@ -196,23 +162,14 @@ export const PublicBookDetailPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Reading Actions & Progress */}
+            {/* Reading Actions */}
             <div className="space-y-4 pt-1">
-              {user && (
-                <ReadingProgress
-                  percent={progressPercent}
-                  completedLessons={completedCount}
-                  totalLessons={totalCount}
-                  size="md"
-                />
-              )}
-
-              {nextLesson && (
+              {firstLesson && (
                 <Link
-                  to={`/books/${book.slug}/lessons/${nextLesson.lessonNumber || nextLesson.order}`}
+                  to={`/books/${book.slug}/lessons/${firstLesson.lessonNumber || firstLesson.order}`}
                   className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-brand-600 via-purple-600 to-pink-600 hover:from-brand-500 hover:to-pink-500 text-white text-sm font-extrabold rounded-2xl transition-all shadow-xl shadow-brand-500/25 border border-pink-400/30 hover:scale-[1.02] active:scale-95"
                 >
-                  <span>{user && completedCount > 0 ? 'Continue Reading Quest 🚀' : 'Start Reading Chapter 1 📖'}</span>
+                  <span>Start Reading Chapter 1 📖</span>
                   <Play className="w-4 h-4 fill-white" />
                 </Link>
               )}
@@ -232,42 +189,21 @@ export const PublicBookDetailPage: React.FC = () => {
         <div className="space-y-3">
           {book.lessons?.map((lesson, idx) => {
             const lessonNum = lesson.lessonNumber || idx + 1;
-            const isCompleted = lesson.completed;
-            const isNextToRead = nextLesson?.id === lesson.id;
 
             return (
               <Link
                 key={lesson.id}
                 to={`/books/${book.slug}/lessons/${lessonNum}`}
-                className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-5 rounded-2xl border transition-all duration-300 group ${
-                  isNextToRead
-                    ? 'bg-gradient-to-r from-brand-950/90 to-purple-950/60 border-brand-500/50 shadow-lg shadow-brand-500/15 scale-[1.01]'
-                    : isCompleted
-                    ? 'bg-slate-900/90 border-emerald-500/30 hover:border-emerald-500/60'
-                    : 'bg-slate-900/60 border-slate-800/80 hover:border-purple-500/40'
-                }`}
+                className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-5 rounded-2xl border transition-all duration-300 group bg-slate-900/60 border-slate-800/80 hover:border-purple-500/40"
               >
                 <div className="flex items-center gap-4 mb-2 sm:mb-0">
-                  <div
-                    className={`w-11 h-11 rounded-2xl flex items-center justify-center font-black text-sm shrink-0 border shadow-inner transition-transform group-hover:scale-105 ${
-                      isCompleted
-                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-                        : isNextToRead
-                        ? 'bg-gradient-to-br from-brand-500 to-pink-500 text-white border-pink-400/40'
-                        : 'bg-slate-950 text-slate-400 border-slate-800'
-                    }`}
-                  >
-                    {isCompleted ? <CheckCircle2 className="w-5 h-5" /> : `C${lessonNum}`}
+                  <div className="w-11 h-11 rounded-2xl flex items-center justify-center font-black text-sm shrink-0 border shadow-inner transition-transform group-hover:scale-105 bg-slate-950 text-slate-400 border-slate-800">
+                    {`C${lessonNum}`}
                   </div>
 
                   <div className="space-y-0.5">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-bold text-brand-300">Chapter {lessonNum}</span>
-                      {isNextToRead && (
-                        <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300 border border-pink-500/30">
-                          Current Quest 🚀
-                        </span>
-                      )}
                     </div>
                     <h3 className="text-base font-extrabold text-white group-hover:text-brand-300 transition-colors">
                       {lesson.title}
@@ -298,8 +234,8 @@ export const PublicBookDetailPage: React.FC = () => {
       <AuthPromptModal
         isOpen={authModalOpen}
         onClose={() => setAuthModalOpen(false)}
-        title="Sign In to Save Book"
-        message="Create a free student account to save books to your bookmarks and sync your reading progress across devices."
+        title="Sign In Required"
+        message="Sign in as an Admin or Editor to access administrative and editorial features."
       />
 
       {qrModalOpen && (

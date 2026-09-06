@@ -20,7 +20,7 @@ export const Footer: React.FC = () => {
               </span>
             </Link>
             <p className="text-sm text-slate-400 max-w-sm leading-relaxed">
-              A magical modern digital library where reading feels like an adventure. Explore interactive books, track your reading quest, and expand your horizons.
+              A modern digital library built for institutions and organisations. Explore interactive books and lessons delivered securely through QR codes.
             </p>
             <div className="flex items-center gap-3 text-slate-400 text-xs font-semibold">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-brand-300">
@@ -34,13 +34,7 @@ export const Footer: React.FC = () => {
             <h4 className="text-xs font-black uppercase tracking-wider text-slate-300">Navigation</h4>
             <ul className="space-y-2 text-sm font-semibold text-slate-400">
               <li>
-                <Link to="/books" className="hover:text-brand-300 transition-colors">📚 Digital Library</Link>
-              </li>
-              <li>
-                <Link to="/student" className="hover:text-brand-300 transition-colors">🎓 Student Dashboard</Link>
-              </li>
-              <li>
-                <Link to="/login" className="hover:text-brand-300 transition-colors">🔐 Sign In</Link>
+                <Link to="/login" className="hover:text-brand-300 transition-colors">🔐 Portal Login</Link>
               </li>
             </ul>
           </div>

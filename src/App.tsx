@@ -25,9 +25,6 @@ import { AdminActivityLogsPage } from './pages/admin/AdminActivityLogsPage';
 import { EditorDashboardPage } from './pages/editor/EditorDashboardPage';
 import { LessonEditPage } from './pages/editor/LessonEditPage';
 
-// Student Pages
-import { StudentDashboardPage } from './pages/student/StudentDashboardPage';
-
 // Portal Layout with Navbar, Sidebar, and Footer
 const PortalLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -57,7 +54,7 @@ const RootRedirect: React.FC = () => {
   if (!user) return <Navigate to="/login" replace />;
   if (user.role === 'ADMIN') return <Navigate to="/admin" replace />;
   if (user.role === 'EDITOR') return <Navigate to="/editor" replace />;
-  return <Navigate to="/student" replace />;
+  return <Navigate to="/login" replace />;
 };
 
 export const App: React.FC = () => {
@@ -114,17 +111,6 @@ export const App: React.FC = () => {
             >
               <Route path="/editor" element={<EditorDashboardPage />} />
               <Route path="/editor/lessons/:id/edit" element={<LessonEditPage />} />
-            </Route>
-
-            {/* Protected Student Routes */}
-            <Route
-              element={
-                <ProtectedRoute allowedRoles={['STUDENT']}>
-                  <PortalLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route path="/student" element={<StudentDashboardPage />} />
             </Route>
 
             {/* Catch All */}

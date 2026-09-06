@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Badge } from '../ui/Badge';
-import { BookOpen, LogOut, Menu, X, Shield, LogIn, GraduationCap, ChevronDown, CheckSquare } from 'lucide-react';
+import { BookOpen, LogOut, Menu, X, Shield, LogIn, ChevronDown, CheckSquare } from 'lucide-react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 
 interface NavbarProps {
@@ -9,7 +9,7 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
-  const { user, logout, isAdmin, isEditor, isStudent } = useAuth();
+  const { user, logout, isAdmin, isEditor } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -35,7 +35,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
     if (!user) return '/login';
     if (isAdmin) return '/admin';
     if (isEditor) return '/editor';
-    return '/student';
+    return '/login';
   };
 
   return (
@@ -68,20 +68,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
 
           {/* Desktop Navigation Links (Role Scoped) */}
           <nav className="hidden md:flex items-center gap-2">
-            {isStudent && (
-              <Link
-                to="/student"
-                className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-extrabold transition-all ${
-                  isCurrentPath('/student')
-                    ? 'bg-pink-500/20 text-pink-300 border border-pink-500/40 shadow-sm'
-                    : 'text-slate-300 hover:text-white hover:bg-slate-900/80'
-                }`}
-              >
-                <GraduationCap className="w-4 h-4 text-pink-400" />
-                My Library & Progress
-              </Link>
-            )}
-
             {isEditor && (
               <Link
                 to="/editor"
@@ -148,17 +134,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
                     </div>
 
                     <div className="py-2 space-y-1 px-2">
-                      {isStudent && (
-                        <Link
-                          to="/student"
-                          onClick={() => setDropdownOpen(false)}
-                          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-extrabold text-slate-200 hover:bg-pink-500/10 hover:text-pink-300 transition-colors"
-                        >
-                          <GraduationCap className="w-4 h-4 text-pink-400" />
-                          Student Library
-                        </Link>
-                      )}
-
                       {isEditor && (
                         <Link
                           to="/editor"
@@ -220,16 +195,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-slate-800 bg-slate-950/95 backdrop-blur-xl px-4 py-4 space-y-3 animate-in slide-in-from-top-2">
-          {isStudent && (
-            <Link
-              to="/student"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-extrabold text-slate-200 hover:bg-slate-900"
-            >
-              <GraduationCap className="w-4 h-4 text-pink-400" />
-              Student Library
-            </Link>
-          )}
           {isEditor && (
             <Link
               to="/editor"

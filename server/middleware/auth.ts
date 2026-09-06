@@ -49,13 +49,13 @@ export const optionalAuthenticateToken = (req: AuthenticatedRequest, res: Respon
   next();
 };
 
-export const requireRole = (...allowedRoles: Array<'ADMIN' | 'EDITOR' | 'STUDENT'>) => {
+export const requireRole = (...allowedRoles: Array<'ADMIN' | 'EDITOR'>) => {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     if (!req.user) {
       return res.status(401).json({ error: 'Authentication required.' });
     }
 
-    if (!allowedRoles.includes(req.user.role)) {
+    if (!allowedRoles.includes(req.user.role as 'ADMIN' | 'EDITOR')) {
       return res.status(403).json({ error: 'Forbidden: Insufficient privileges.' });
     }
 
@@ -198,15 +198,6 @@ export const requireCourseReadAccess = async (
   next: NextFunction
 ) => {
   try {
-    if (!req.user) {
-      return res.status(401).json({ error: 'Authentication required.' });
-    }
-
-    // Admins and Editors can view courses if authorized
-    if (req.user.role === 'ADMIN') {
-      return next();
-    }
-
     const courseId = req.params.courseId || req.params.id;
     if (!courseId) {
       return next();
@@ -220,6 +211,19 @@ export const requireCourseReadAccess = async (
 
     if (!course) {
       return res.status(404).json({ error: 'Course not found.' });
+    }
+
+    // Publicly viewable if published
+    if (course.published) {
+      return next();
+    }
+
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required to view unpublished book.' });
+    }
+
+    if (req.user.role === 'ADMIN') {
+      return next();
     }
 
     if (req.user.role === 'EDITOR') {
@@ -247,34 +251,10 @@ export const requireCourseReadAccess = async (
       return next();
     }
 
-    // Check if course is published for Students
-    if (!course.published) {
-      return res.status(403).json({ error: 'This course is currently unpublished.' });
-    }
-
-    // Check course access requirement for Students
-    const accessCount = await prisma.courseAccess.count({
-      where: { courseId: course.id },
-    });
-
-    if (accessCount > 0) {
-      const hasAccess = await prisma.courseAccess.findUnique({
-        where: {
-          courseId_userId: {
-            courseId: course.id,
-            userId: req.user.userId,
-          },
-        },
-      });
-
-      if (!hasAccess) {
-        return res.status(403).json({ error: 'You do not have access to this course.' });
-      }
-    }
-
-    next();
+    return res.status(403).json({ error: 'Access Denied.' });
   } catch (error) {
     console.error('Course access check error:', error);
     res.status(500).json({ error: 'Authorization error.' });
   }
 };
+

@@ -8,7 +8,6 @@ import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { ReadingProgress } from '../../components/ui/ReadingProgress';
 import { useToast } from '../../components/ui/Toast';
-import { AuthPromptModal } from '../../components/auth/AuthPromptModal';
 import {
   ArrowLeft,
   ChevronLeft,
@@ -41,13 +40,8 @@ export const PublicLessonReaderPage: React.FC = () => {
     siblingLessons?: Lesson[];
   }>({});
 
-  const [completed, setCompleted] = useState(false);
-  const [isBookmarked, setIsBookmarked] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [savingProgress, setSavingProgress] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [authActionTitle, setAuthActionTitle] = useState('Sign In Required');
 
   useEffect(() => {
     if (slug && lessonNumber) {
@@ -80,57 +74,10 @@ export const PublicLessonReaderPage: React.FC = () => {
 
       setLesson(lessonData.lesson);
       setNavigation(lessonData.navigation);
-      setCompleted(Boolean(lessonData.lesson.completed));
-      setIsBookmarked(Boolean(lessonData.lesson.isBookmarked));
     } catch (err: any) {
       toast(err.message || 'Failed to load lesson content.', 'error');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleToggleComplete = async () => {
-    if (!user) {
-      setAuthActionTitle('Sign In to Save Reading Progress');
-      setAuthModalOpen(true);
-      return;
-    }
-
-    if (!lesson) return;
-
-    try {
-      setSavingProgress(true);
-      const newStatus = !completed;
-      await apiFetch(`/progress/${lesson.id}`, {
-        method: 'POST',
-        body: JSON.stringify({ completed: newStatus }),
-      });
-      setCompleted(newStatus);
-      toast(newStatus ? 'Lesson marked as completed! 🎉' : 'Lesson marked as uncompleted.', 'success');
-    } catch (err: any) {
-      toast('Failed to update progress.', 'error');
-    } finally {
-      setSavingProgress(false);
-    }
-  };
-
-  const handleToggleLessonBookmark = async () => {
-    if (!user) {
-      setAuthActionTitle('Sign In to Bookmark Lessons');
-      setAuthModalOpen(true);
-      return;
-    }
-
-    if (!lesson) return;
-
-    try {
-      const data = await apiFetch<{ isBookmarked: boolean; message: string }>(`/bookmarks/lessons/${lesson.id}`, {
-        method: 'POST',
-      });
-      setIsBookmarked(data.isBookmarked);
-      toast(data.message, 'success');
-    } catch (err: any) {
-      toast('Unable to save lesson bookmark.', 'error');
     }
   };
 
@@ -179,31 +126,6 @@ export const PublicLessonReaderPage: React.FC = () => {
               <Sparkles className="w-3.5 h-3.5 text-amber-300" />
               Chapter {currentLessonNum} of {totalLessons}
             </span>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleToggleLessonBookmark}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl border text-xs font-extrabold transition-all cursor-pointer ${
-                  isBookmarked
-                    ? 'bg-rose-500 text-white border-rose-400 shadow-md scale-105'
-                    : 'bg-slate-950/80 text-slate-300 border-slate-700 hover:text-white'
-                }`}
-                title="Bookmark Lesson"
-              >
-                <Heart className={`w-4 h-4 ${isBookmarked ? 'fill-current' : ''}`} />
-                {isBookmarked ? 'Bookmarked' : 'Bookmark'}
-              </button>
-
-              <Button
-                variant={completed ? 'secondary' : 'playful'}
-                size="sm"
-                onClick={handleToggleComplete}
-                loading={savingProgress}
-                icon={<CheckCircle2 className={`w-4 h-4 ${completed ? 'text-emerald-400' : ''}`} />}
-              >
-                {completed ? 'Completed ✓' : 'Mark Complete'}
-              </Button>
-            </div>
           </div>
 
           <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-tight">
@@ -381,13 +303,6 @@ export const PublicLessonReaderPage: React.FC = () => {
           })}
         </div>
       </aside>
-
-      <AuthPromptModal
-        isOpen={authModalOpen}
-        onClose={() => setAuthModalOpen(false)}
-        title={authActionTitle}
-        message="Sign in or create a student account to bookmark lessons, mark reading milestones as complete, and sync across devices."
-      />
     </div>
   );
 };

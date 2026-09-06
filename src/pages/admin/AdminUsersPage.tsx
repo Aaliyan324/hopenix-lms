@@ -37,7 +37,7 @@ export const AdminUsersPage: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<Role>('STUDENT');
+  const [role, setRole] = useState<Role>('EDITOR');
   const [isActive, setIsActive] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -65,7 +65,7 @@ export const AdminUsersPage: React.FC = () => {
     setName('');
     setEmail('');
     setPassword('');
-    setRole('STUDENT');
+    setRole('EDITOR');
     setIsActive(true);
     setIsCreateOpen(true);
   };
@@ -130,8 +130,7 @@ export const AdminUsersPage: React.FC = () => {
 
   const getRoleIcon = (userRole: Role) => {
     if (userRole === 'ADMIN') return <Shield className="w-4 h-4 text-brand-400" />;
-    if (userRole === 'EDITOR') return <Edit3 className="w-4 h-4 text-amber-400" />;
-    return <GraduationCap className="w-4 h-4 text-emerald-400" />;
+    return <Edit3 className="w-4 h-4 text-amber-400" />;
   };
 
   return (
@@ -140,7 +139,7 @@ export const AdminUsersPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white">User Account Management</h1>
-          <p className="text-sm text-slate-400">Manage administrator, editor, and student accounts and roles.</p>
+          <p className="text-sm text-slate-400">Manage administrator and editor accounts and roles.</p>
         </div>
         <Button onClick={openCreateModal} variant="primary" icon={<Plus className="w-4 h-4" />}>
           Create New User
@@ -161,7 +160,7 @@ export const AdminUsersPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          {['', 'ADMIN', 'EDITOR', 'STUDENT'].map((r) => (
+          {['', 'ADMIN', 'EDITOR'].map((r) => (
             <button
               key={r}
               onClick={() => setRoleFilter(r)}
@@ -312,7 +311,6 @@ export const AdminUsersPage: React.FC = () => {
               onChange={(e) => setRole(e.target.value as Role)}
               className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:border-brand-500"
             >
-              <option value="STUDENT">STUDENT (Read-Only Course Visitor)</option>
               <option value="EDITOR">EDITOR (Assigned Lesson Content Editor)</option>
               <option value="ADMIN">ADMIN (Full Portal Access)</option>
             </select>

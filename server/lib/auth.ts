@@ -7,7 +7,7 @@ const TOKEN_EXPIRY = '7d';
 export interface TokenPayload {
   userId: string;
   email: string;
-  role: 'ADMIN' | 'EDITOR' | 'STUDENT';
+  role: 'ADMIN' | 'EDITOR';
 }
 
 export const hashPassword = async (password: string): Promise<string> => {

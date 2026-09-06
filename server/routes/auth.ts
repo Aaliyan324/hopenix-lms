@@ -30,7 +30,7 @@ router.post('/login', async (req: AuthenticatedRequest, res: Response) => {
     const token = generateToken({
       userId: user.id,
       email: user.email,
-      role: user.role as 'ADMIN' | 'EDITOR' | 'STUDENT',
+      role: user.role as 'ADMIN' | 'EDITOR',
     });
 
     res.cookie('auth_token', token, {

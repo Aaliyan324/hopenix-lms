@@ -6,11 +6,9 @@ import path from 'path';
 import authRoutes from './routes/auth.js';
 import userRoutes from './routes/users.js';
 import bookRoutes from './routes/books.js';
-import bookmarkRoutes from './routes/bookmarks.js';
 import lessonRoutes from './routes/lessons.js';
 import mediaRoutes from './routes/media.js';
 import statsRoutes from './routes/stats.js';
-import progressRoutes from './routes/progress.js';
 import { StorageService } from './lib/storage.js';
 
 const app = express();
@@ -35,11 +33,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/books', bookRoutes);
 app.use('/api/courses', bookRoutes); // alias for backward compatibility
-app.use('/api/bookmarks', bookmarkRoutes);
 app.use('/api/lessons', lessonRoutes);
 app.use('/api/media', mediaRoutes);
 app.use('/api/stats', statsRoutes);
-app.use('/api/progress', progressRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
