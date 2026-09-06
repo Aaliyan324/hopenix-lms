@@ -3,27 +3,21 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../lib/api';
 import { Lesson, Book } from '../../types';
 import { useAuth } from '../../context/AuthContext';
-import { Button } from '../../components/ui/Button';
-import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
-import { ReadingProgress } from '../../components/ui/ReadingProgress';
 import { useToast } from '../../components/ui/Toast';
 import { getCompanySlug } from '../../lib/slug';
 import {
   ArrowLeft,
   ChevronLeft,
   ChevronRight,
-  CheckCircle2,
   Play,
   Image as ImageIcon,
   Video as VideoIcon,
   FileText,
-  Bookmark,
   ExternalLink,
   X,
   Layers,
   Sparkles,
-  Heart,
   BookOpen,
 } from 'lucide-react';
 
@@ -64,7 +58,7 @@ export const PublicLessonReaderPage: React.FC = () => {
         bookData.book.lessons?.[0];
 
       if (!matchedLesson) {
-        toast('Lesson not found.', 'error');
+        toast('Oopsie! Chapter not found in this rocket.', 'error');
         setLoading(false);
         return;
       }
@@ -77,27 +71,27 @@ export const PublicLessonReaderPage: React.FC = () => {
       setLesson(lessonData.lesson);
       setNavigation(lessonData.navigation);
     } catch (err: any) {
-      toast(err.message || 'Failed to load lesson content.', 'error');
+      toast(err.message || 'Failed to blast off chapter content.', 'error');
     } finally {
       setLoading(false);
     }
   };
 
-  // Interactive background magic generator on click
+  // Interactive background magical click spark generator
   const handlePageClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    
+
     const newSparkle = { id: Date.now(), x, y };
     setSparklesList((prev) => [...prev.slice(-12), newSparkle]);
   };
 
   if (loading || !lesson || !book) {
     return (
-      <div className="space-y-6 max-w-6xl mx-auto px-4 py-8">
-        <Skeleton className="h-8 w-64 rounded-xl bg-slate-800" />
-        <Skeleton className="h-[600px] w-full rounded-3xl bg-slate-800" />
+      <div className="space-y-6 max-w-6xl mx-auto px-4 py-12">
+        <Skeleton className="h-12 w-64 rounded-2xl bg-purple-900/40 border-2 border-pink-500/20" />
+        <Skeleton className="h-[600px] w-full rounded-[2.5rem] bg-purple-950/40 border-2 border-pink-500/25" />
       </div>
     );
   }
@@ -112,29 +106,28 @@ export const PublicLessonReaderPage: React.FC = () => {
   const companySlug = getCompanySlug(book.companyName);
 
   return (
-    <div 
-      className="flex flex-col lg:flex-row gap-8 max-w-7xl mx-auto pb-16 px-4 sm:px-6 relative overflow-hidden cursor-crosshair"
+    <div
+      className="flex flex-col lg:flex-row gap-8 max-w-7xl mx-auto pb-20 px-4 sm:px-6 relative overflow-hidden cursor-crosshair"
       onClick={handlePageClick}
     >
-      {/* Dynamic Animated Floating Elements & Background Magic Kingdom */}
+      {/* Floating Star Stickers & Fun Kid Universe Elements */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden -z-10">
-        <div className="absolute top-12 left-10 text-yellow-300 animate-bounce duration-1000 opacity-70 text-3xl select-none">⭐</div>
-        <div className="absolute top-36 right-16 text-pink-400 animate-pulse opacity-60 text-4xl select-none">💖</div>
-        <div className="absolute top-80 left-12 text-cyan-400 animate-spin duration-3000 opacity-50 text-3xl select-none">✨</div>
-        <div className="absolute top-[45%] right-12 text-purple-400 animate-bounce duration-700 opacity-70 text-4xl select-none">🚀</div>
-        <div className="absolute top-[65%] left-10 text-emerald-400 animate-pulse opacity-60 text-3xl select-none">🎈</div>
+        <div className="absolute top-12 left-10 text-yellow-300 animate-bounce duration-1000 opacity-60 text-3xl select-none">⭐</div>
+        <div className="absolute top-36 right-16 text-pink-400 animate-pulse opacity-50 text-4xl select-none">💖</div>
+        <div className="absolute top-80 left-12 text-cyan-400 animate-spin duration-3000 opacity-40 text-3xl select-none">✨</div>
+        <div className="absolute top-[45%] right-12 text-purple-400 animate-bounce duration-700 opacity-60 text-4xl select-none">🚀</div>
+        <div className="absolute top-[65%] left-10 text-emerald-400 animate-pulse opacity-50 text-3xl select-none">🎈</div>
         <div className="absolute bottom-40 right-20 text-amber-300 animate-bounce duration-1000 opacity-60 text-3xl select-none">🎨</div>
-        <div className="absolute bottom-16 left-1/4 text-indigo-400 animate-pulse opacity-50 text-4xl select-none">🪐</div>
-        <div className="absolute top-1/2 left-4 text-rose-400 animate-bounce duration-500 opacity-60 text-2xl select-none">🍩</div>
+        <div className="absolute bottom-16 left-1/4 text-indigo-400 animate-pulse opacity-40 text-4xl select-none">🪐</div>
+        <div className="absolute top-1/2 left-4 text-rose-400 animate-bounce duration-500 opacity-50 text-2xl select-none">🍩</div>
 
-        {/* Floating Planets & Clouds */}
-        <div className="absolute top-20 right-1/4 text-purple-500/25 animate-pulse duration-700 text-6xl select-none">🛸</div>
-        <div className="absolute bottom-32 left-10 text-pink-500/20 animate-bounce duration-1000 text-5xl select-none">☁️</div>
-        <div className="absolute top-96 right-1/3 text-cyan-500/20 animate-pulse duration-1000 text-6xl select-none">🪐</div>
+        {/* Floating Magic UFOs & Clouds */}
+        <div className="absolute top-20 right-1/4 text-purple-500/20 animate-pulse duration-700 text-6xl select-none">🛸</div>
+        <div className="absolute bottom-32 left-10 text-pink-500/15 animate-bounce duration-1000 text-5xl select-none">☁️</div>
 
         {/* Ambient Glowing Orbs */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-[100px]" />
-        <div className="absolute bottom-1/3 right-1/4 w-96 h-96 bg-pink-600/10 rounded-full blur-[100px]" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/15 rounded-full blur-[120px]" />
+        <div className="absolute bottom-1/3 right-1/4 w-96 h-96 bg-pink-600/15 rounded-full blur-[120px]" />
 
         {/* Click Sparkles */}
         {sparklesList.map((sparkle) => (
@@ -151,85 +144,86 @@ export const PublicLessonReaderPage: React.FC = () => {
       {/* Main Reader Column */}
       <div className="flex-1 space-y-8 min-w-0">
         {/* Top Header & Breadcrumb */}
-        <div className="flex items-center justify-between border-b border-purple-500/15 pb-4">
+        <div className="flex items-center justify-between border-b-2 border-pink-500/20 pb-4">
           <Link
             to={`/${companySlug}/books/${slug}`}
-            className="inline-flex items-center gap-2 text-xs font-extrabold text-brand-300 hover:text-white bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl transition-all"
+            className="inline-flex items-center gap-2 text-xs font-black text-yellow-300 hover:text-white bg-slate-900/90 border-2 border-pink-500/30 px-5 py-2.5 rounded-2xl transition-all shadow-md transform hover:scale-105 active:scale-95"
           >
-            <ArrowLeft className="w-4 h-4" /> Back to {book.title}
+            <ArrowLeft className="w-4 h-4 text-pink-400" /> Back to {book.title}
           </Link>
 
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="lg:hidden flex items-center gap-2 text-xs font-extrabold text-slate-200 bg-slate-900 border border-slate-800 px-3.5 py-2 rounded-xl"
+            className="lg:hidden flex items-center gap-2 text-xs font-black text-white bg-gradient-to-r from-pink-500 to-purple-600 border-2 border-pink-300/40 px-4 py-2.5 rounded-2xl shadow-md active:scale-95"
           >
-            <Layers className="w-4 h-4 text-brand-400" /> Syllabus Drawer
+            <Layers className="w-4 h-4 text-yellow-300" /> Syllabus Drawer
           </button>
         </div>
 
-        {/* Lesson Header Card */}
-        <div className="relative bg-gradient-to-r from-slate-900 via-purple-950/50 to-slate-950 border border-purple-500/25 rounded-3xl p-6 sm:p-8 space-y-4 shadow-2xl overflow-hidden backdrop-blur-xl">
+        {/* Lesson Hero / Header Card with Playful Banner Style */}
+        <div className="relative bg-gradient-to-r from-purple-900 via-indigo-950 to-pink-950 border-4 border-dashed border-pink-500/40 rounded-[2.5rem] p-6 sm:p-10 space-y-5 shadow-[0_0_40px_rgba(236,72,153,0.2)] overflow-hidden backdrop-blur-xl">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <span className="text-xs font-black text-brand-300 bg-brand-500/20 px-3.5 py-1.5 rounded-full border border-brand-500/30 flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              Chapter {currentLessonNum} of {totalLessons}
+            <span className="inline-flex items-center gap-2 bg-yellow-400 text-slate-950 font-black px-4 py-1.5 rounded-full text-xs uppercase tracking-wider shadow-lg transform -rotate-1">
+              <Sparkles className="w-4 h-4 text-purple-900" /> Chapter {currentLessonNum} of {totalLessons} 🚀
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-tight">
+          <h1 className="text-3xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-pink-400 to-cyan-300 tracking-wide drop-shadow-sm">
             {lesson.title}
           </h1>
 
           {lesson.description && (
-            <p className="text-sm text-slate-300 leading-relaxed border-t border-purple-500/20 pt-3 font-medium">
+            <p className="text-sm sm:text-base text-slate-200 font-bold leading-relaxed border-t-2 border-pink-500/20 pt-4">
               {lesson.description}
             </p>
           )}
 
-          {/* Thin Progress bar */}
-          <div className="pt-2">
-            <div className="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-800">
+          {/* Fun Colorful Progress Bar */}
+          <div className="pt-2 space-y-1.5">
+            <div className="flex justify-between items-center text-xs font-black text-yellow-300 uppercase tracking-widest">
+              <span>Adventure Progress</span>
+              <span>{readingPercent}% Completed 🌟</span>
+            </div>
+            <div className="w-full bg-slate-950 rounded-full h-3.5 overflow-hidden border-2 border-pink-500/30 p-0.5">
               <div
-                className="bg-gradient-to-r from-brand-500 to-pink-500 h-full rounded-full transition-all duration-500"
+                className="bg-gradient-to-r from-yellow-400 via-pink-500 to-cyan-400 h-full rounded-full transition-all duration-700 shadow-[0_0_12px_rgba(236,72,153,0.6)]"
                 style={{ width: `${readingPercent}%` }}
               />
             </div>
           </div>
         </div>
 
-        {/* YouTube Video Player */}
+        {/* YouTube Video Player (Fun Kids Style Frame) */}
         {lesson.youtubeVideoId && (
-          <div className="space-y-3">
-            <h3 className="text-base font-extrabold text-white flex items-center gap-2">
-              <VideoIcon className="w-5 h-5 text-rose-500" />
-              Interactive YouTube Video Lecture
+          <div className="space-y-4">
+            <h3 className="text-lg font-black text-white flex items-center gap-2.5">
+              <span className="text-2xl">📺</span> Interactive Video Adventure!
             </h3>
-            <div className="bg-slate-950 border border-purple-500/25 rounded-3xl overflow-hidden shadow-2xl relative w-full aspect-video">
+            <div className="bg-slate-950 border-3 border-pink-500/40 rounded-[2.5rem] overflow-hidden shadow-2xl relative w-full aspect-video p-2 bg-gradient-to-br from-purple-950/80 to-slate-950">
               <iframe
                 src={`https://www.youtube.com/embed/${encodeURIComponent(lesson.youtubeVideoId)}`}
                 title={lesson.title}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
-                className="absolute top-0 left-0 w-full h-full border-0"
+                className="absolute top-2 left-2 right-2 bottom-2 w-[calc(100%-1rem)] h-[calc(100%-1rem)] rounded-[2rem] border-0"
               />
             </div>
           </div>
         )}
 
-        {/* Legacy Video Lectures Section */}
+        {/* Legacy Video Attachments */}
         {videoMedia.length > 0 && (
-          <div className="space-y-3">
-            <h3 className="text-base font-extrabold text-white flex items-center gap-2">
-              <VideoIcon className="w-5 h-5 text-brand-400" />
-              Video Resource Attachment
+          <div className="space-y-4">
+            <h3 className="text-lg font-black text-white flex items-center gap-2.5">
+              <span className="text-2xl">🎬</span> Extra Video Clips
             </h3>
             {videoMedia.map((v) => (
-              <div key={v.id} className="bg-slate-950 border border-purple-500/25 rounded-3xl overflow-hidden shadow-2xl">
-                <video src={v.url} controls className="w-full max-h-[500px] object-contain bg-black" />
-                <div className="p-3.5 bg-slate-900/90 border-t border-slate-800 text-xs font-bold text-slate-300 flex items-center justify-between">
-                  <span>{v.name}</span>
-                  <a href={v.url} target="_blank" rel="noreferrer" className="text-brand-300 hover:text-white hover:underline">
-                    Download Video Resource →
+              <div key={v.id} className="bg-slate-950 border-3 border-purple-500/40 rounded-[2.5rem] overflow-hidden shadow-2xl p-2">
+                <video src={v.url} controls className="w-full max-h-[500px] object-contain rounded-[2rem] bg-black" />
+                <div className="p-4 bg-slate-900/90 text-xs font-bold text-slate-200 flex items-center justify-between">
+                  <span>🚀 {v.name}</span>
+                  <a href={v.url} target="_blank" rel="noreferrer" className="text-yellow-300 hover:text-white font-black underline">
+                    Download Video ↗
                   </a>
                 </div>
               </div>
@@ -239,9 +233,9 @@ export const PublicLessonReaderPage: React.FC = () => {
 
         {/* Rich Lesson Article Content */}
         {lesson.content && (
-          <div className="bg-slate-900/90 border border-purple-500/20 rounded-3xl p-6 sm:p-10 shadow-2xl backdrop-blur-md">
+          <div className="bg-slate-900/90 border-3 border-purple-500/35 rounded-[2.5rem] p-6 sm:p-10 shadow-2xl backdrop-blur-md">
             <div
-              className="prose prose-invert max-w-none prose-headings:font-extrabold prose-headings:text-white prose-p:text-slate-200 prose-p:leading-relaxed prose-a:text-brand-300 prose-a:font-bold prose-code:bg-slate-950 prose-code:text-brand-300 prose-code:px-2 prose-code:py-1 prose-code:rounded-lg prose-pre:bg-slate-950 prose-pre:border prose-pre:border-slate-800"
+              className="prose prose-invert max-w-none prose-headings:font-black prose-headings:text-yellow-350 prose-p:text-slate-100 prose-p:font-bold prose-p:text-base prose-p:leading-relaxed prose-a:text-pink-400 prose-a:font-black prose-code:bg-slate-950 prose-code:text-yellow-300 prose-code:px-2.5 prose-code:py-1.5 prose-code:rounded-xl prose-code:border prose-code:border-pink-500/30 prose-pre:bg-slate-950 prose-pre:border-2 prose-pre:border-purple-500/40 prose-pre:rounded-2xl"
               dangerouslySetInnerHTML={{ __html: lesson.content }}
             />
           </div>
@@ -249,16 +243,15 @@ export const PublicLessonReaderPage: React.FC = () => {
 
         {/* Lesson Diagrams & Visuals */}
         {imageMedia.length > 0 && (
-          <div className="space-y-3">
-            <h3 className="text-base font-extrabold text-white flex items-center gap-2">
-              <ImageIcon className="w-5 h-5 text-pink-400" />
-              Lesson Diagrams & Visual References
+          <div className="space-y-4">
+            <h3 className="text-lg font-black text-white flex items-center gap-2.5">
+              <span className="text-2xl">🎨</span> Magical Story Illustrations
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               {imageMedia.map((img) => (
-                <div key={img.id} className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg p-2.5">
-                  <img src={img.url} alt={img.name} className="w-full h-48 object-cover rounded-xl" />
-                  <p className="text-xs font-bold text-slate-300 p-2 truncate">{img.name}</p>
+                <div key={img.id} className="bg-slate-900 border-2 border-pink-500/30 rounded-3xl overflow-hidden shadow-xl p-3 transform hover:scale-[1.02] transition-transform">
+                  <img src={img.url} alt={img.name} className="w-full h-52 object-cover rounded-2xl border border-purple-500/30" />
+                  <p className="text-xs font-black text-yellow-300 p-3 truncate text-center">✨ {img.name}</p>
                 </div>
               ))}
             </div>
@@ -267,22 +260,23 @@ export const PublicLessonReaderPage: React.FC = () => {
 
         {/* PDF Documents & Attachments */}
         {pdfMedia.length > 0 && (
-          <div className="space-y-3">
-            <h3 className="text-base font-extrabold text-white flex items-center gap-2">
-              <FileText className="w-5 h-5 text-rose-400" />
-              PDF Reference Documents
+          <div className="space-y-4">
+            <h3 className="text-lg font-black text-white flex items-center gap-2.5">
+              <span className="text-2xl">📜</span> Magic Scrolls & Worksheets
             </h3>
             <div className="space-y-3">
               {pdfMedia.map((pdf) => (
                 <div
                   key={pdf.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-slate-900/90 border border-purple-500/20 rounded-2xl min-w-0"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-gradient-to-r from-purple-950/80 to-slate-900/90 border-2 border-purple-500/40 rounded-3xl shadow-lg"
                 >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <FileText className="w-8 h-8 text-rose-400 shrink-0" />
+                  <div className="flex items-center gap-4 min-w-0">
+                    <div className="w-12 h-12 bg-pink-500/20 border-2 border-pink-500/40 rounded-2xl flex items-center justify-center text-2xl shrink-0">
+                      📄
+                    </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-extrabold text-white truncate" title={pdf.name}>{pdf.name}</p>
-                      <p className="text-xs text-slate-400 font-medium">PDF Document</p>
+                      <p className="text-sm font-black text-white truncate" title={pdf.name}>{pdf.name}</p>
+                      <p className="text-xs text-yellow-300 font-bold">PDF Printable Document</p>
                     </div>
                   </div>
 
@@ -290,9 +284,9 @@ export const PublicLessonReaderPage: React.FC = () => {
                     href={pdf.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-4 py-2 bg-slate-950 hover:bg-brand-600 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all border border-slate-800 shrink-0 self-start sm:self-auto"
+                    className="px-5 py-3 bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-slate-950 text-xs font-black rounded-2xl flex items-center justify-center gap-2 transition-all shadow-[0_4px_0_rgb(161,98,7)] active:shadow-none active:translate-y-1 shrink-0 uppercase tracking-wider"
                   >
-                    <ExternalLink className="w-3.5 h-3.5" /> View PDF
+                    <ExternalLink className="w-4 h-4" /> Open Scroll
                   </a>
                 </div>
               ))}
@@ -300,14 +294,14 @@ export const PublicLessonReaderPage: React.FC = () => {
           </div>
         )}
 
-        {/* Bottom Navigation Controls */}
-        <div className="flex items-center justify-between pt-6 border-t border-purple-500/20">
+        {/* Bottom Fun Navigation Controls */}
+        <div className="flex items-center justify-between pt-8 border-t-2 border-pink-500/20">
           {navigation.prevLesson ? (
             <Link
               to={`/${companySlug}/books/${slug}/lessons/${navigation.prevLesson.lessonNumber || navigation.prevLesson.order}`}
-              className="inline-flex items-center gap-2 px-5 py-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-2xl text-xs font-extrabold text-slate-200 transition-all hover:-translate-x-1"
+              className="inline-flex items-center gap-2 px-6 py-4 bg-slate-900 hover:bg-slate-800 border-2 border-purple-500/40 rounded-2xl text-xs font-black text-slate-200 transition-all hover:-translate-x-1 shadow-md uppercase tracking-wider"
             >
-              <ChevronLeft className="w-4 h-4" /> Previous Chapter
+              <ChevronLeft className="w-4 h-4 text-pink-400" /> Previous Chapter
             </Link>
           ) : (
             <div />
@@ -316,9 +310,9 @@ export const PublicLessonReaderPage: React.FC = () => {
           {navigation.nextLesson && (
             <Link
               to={`/${companySlug}/books/${slug}/lessons/${navigation.nextLesson.lessonNumber || navigation.nextLesson.order}`}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 rounded-2xl text-xs font-extrabold text-white transition-all shadow-lg shadow-brand-500/25 border border-purple-400/30 hover:translate-x-1"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-400 hover:to-purple-500 rounded-2xl text-xs font-black text-white transition-all shadow-[0_6px_0_rgb(157,23,77)] active:shadow-none active:translate-y-1.5 border-2 border-pink-300/40 uppercase tracking-wider"
             >
-              Next Chapter <ChevronRight className="w-4 h-4" />
+              Next Chapter <ChevronRight className="w-4 h-4 text-yellow-300" />
             </Link>
           )}
         </div>
@@ -326,24 +320,24 @@ export const PublicLessonReaderPage: React.FC = () => {
 
       {/* Right Table of Contents Sidebar / Drawer */}
       <aside
-        className={`fixed lg:static inset-y-0 right-0 z-30 w-80 bg-slate-950/95 border-l lg:border border-purple-500/20 rounded-none lg:rounded-3xl p-6 overflow-y-auto space-y-6 transform transition-transform duration-200 ${
+        className={`fixed lg:static inset-y-0 right-0 z-30 w-80 bg-slate-950/95 border-l-3 lg:border-3 border-purple-500/30 rounded-none lg:rounded-[2.5rem] p-6 overflow-y-auto space-y-6 transform transition-transform duration-200 ${
           sidebarOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
-        } shrink-0 backdrop-blur-xl`}
+        } shrink-0 backdrop-blur-xl shadow-2xl`}
       >
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="flex items-center justify-between pb-4 border-b-2 border-pink-500/20">
           <div>
-            <h3 className="font-extrabold text-sm text-white flex items-center gap-2 truncate">
-              <BookOpen className="w-4 h-4 text-brand-400 shrink-0" />
+            <h3 className="font-black text-sm text-white flex items-center gap-2 truncate">
+              <BookOpen className="w-4 h-4 text-yellow-300 shrink-0" />
               {book.title}
             </h3>
-            <p className="text-[11px] font-bold text-brand-400 mt-0.5">Syllabus Table of Contents</p>
+            <p className="text-[11px] font-black text-pink-400 mt-1 uppercase tracking-wider">🌟 Mission Syllabus</p>
           </div>
-          <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-slate-400 hover:text-white">
+          <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-slate-400 hover:text-white p-1 bg-slate-900 rounded-xl border border-slate-800">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-3">
           {navigation.siblingLessons?.map((s) => {
             const num = s.lessonNumber || s.order;
             const isActive = s.id === lesson.id;
@@ -352,19 +346,19 @@ export const PublicLessonReaderPage: React.FC = () => {
                 key={s.id}
                 to={`/${companySlug}/books/${slug}/lessons/${num}`}
                 onClick={() => setSidebarOpen(false)}
-                className={`flex items-center justify-between p-3.5 rounded-2xl border text-xs font-extrabold transition-all ${
+                className={`flex items-center justify-between p-4 rounded-2xl border-2 text-xs font-black transition-all transform active:scale-95 ${
                   isActive
-                    ? 'bg-gradient-to-r from-brand-600 to-purple-600 text-white border-pink-400/40 shadow-lg shadow-brand-500/20 scale-[1.02]'
-                    : 'bg-slate-900/60 border-slate-800/80 text-slate-300 hover:border-slate-700'
+                    ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white border-yellow-300 shadow-[0_0_20px_rgba(236,72,153,0.4)] scale-105'
+                    : 'bg-slate-900/80 border-purple-500/20 text-slate-300 hover:border-pink-500/40 hover:bg-slate-900'
                 }`}
               >
-                <div className="flex items-center gap-2.5 truncate">
-                  <span className={`text-xs font-black shrink-0 ${isActive ? 'text-white' : 'text-brand-400'}`}>
+                <div className="flex items-center gap-3 truncate">
+                  <span className={`text-xs font-black shrink-0 px-2.5 py-1 rounded-xl ${isActive ? 'bg-yellow-400 text-slate-950' : 'bg-slate-950 text-yellow-300 border border-purple-500/30'}`}>
                     C{num}
                   </span>
                   <span className="truncate">{s.title}</span>
                 </div>
-                {isActive && <Play className="w-3.5 h-3.5 text-white fill-current shrink-0" />}
+                {isActive && <Play className="w-3.5 h-3.5 text-yellow-300 fill-current shrink-0 animate-bounce" />}
               </Link>
             );
           })}
