@@ -9,6 +9,7 @@ import { Skeleton } from '../../components/ui/Skeleton';
 import { useToast } from '../../components/ui/Toast';
 import { RichTextEditor } from '../../components/editor/RichTextEditor';
 import { MediaUploader } from '../../components/uploads/MediaUploader';
+import { YouTubeVideoSection } from '../../components/editor/YouTubeVideoSection';
 import { ArrowLeft, Save, FileText, CheckCircle2 } from 'lucide-react';
 
 export const LessonEditPage: React.FC = () => {
@@ -25,6 +26,7 @@ export const LessonEditPage: React.FC = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [content, setContent] = useState('');
+  const [youtubeUrl, setYoutubeUrl] = useState<string | null>(null);
   const [published, setPublished] = useState(false);
 
   useEffect(() => {
@@ -39,6 +41,7 @@ export const LessonEditPage: React.FC = () => {
       setTitle(data.lesson.title);
       setDescription(data.lesson.description || '');
       setContent(data.lesson.content || '');
+      setYoutubeUrl(data.lesson.youtubeUrl || null);
       setPublished(data.lesson.published);
     } catch (err: any) {
       toast(err.message || 'Failed to load lesson. You might not have edit permission.', 'error');
@@ -59,6 +62,7 @@ export const LessonEditPage: React.FC = () => {
           title,
           description,
           content,
+          youtubeUrl,
           published,
         }),
       });
@@ -156,6 +160,12 @@ export const LessonEditPage: React.FC = () => {
             </div>
           )}
         </div>
+
+        {/* YouTube Video Section */}
+        <YouTubeVideoSection
+          youtubeUrl={youtubeUrl}
+          onChange={(url) => setYoutubeUrl(url)}
+        />
 
         {/* Rich Text Content Section */}
         <div className="space-y-3">

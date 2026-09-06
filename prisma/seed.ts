@@ -15,6 +15,27 @@ async function main() {
   await prisma.lesson.deleteMany();
   await prisma.course.deleteMany();
   await prisma.user.deleteMany();
+  await prisma.classGrade.deleteMany();
+  await prisma.subject.deleteMany();
+
+  // Seed default Class / Grades
+  const defaultClasses = [
+    'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5', 'Class 6',
+    'Class 7', 'Class 8', 'Class 9', 'Class 10', 'Class 11', 'Class 12',
+  ];
+  for (const className of defaultClasses) {
+    await prisma.classGrade.create({ data: { name: className } });
+  }
+
+  // Seed default Subjects
+  const defaultSubjects = [
+    'Mathematics', 'English', 'Urdu', 'Physics', 'Chemistry',
+    'Biology', 'Computer Science', 'Pakistan Studies', 'Islamiat',
+    'History', 'Geography',
+  ];
+  for (const subjectName of defaultSubjects) {
+    await prisma.subject.create({ data: { name: subjectName } });
+  }
 
   const passwordHash = await bcrypt.hash('password123', 10);
   const adminPasswordHash = await bcrypt.hash('admin123', 10);

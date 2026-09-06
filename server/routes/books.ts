@@ -211,6 +211,8 @@ router.get('/', authenticateToken, async (req: AuthenticatedRequest, res: Respon
     const books = await prisma.course.findMany({
       where,
       include: {
+        classGrade: true,
+        subject: true,
         qrCode: true,
         _count: {
           select: {
@@ -253,6 +255,8 @@ router.get('/:idOrSlug', optionalAuthenticateToken, async (req: AuthenticatedReq
         OR: [{ id: idOrSlug }, { slug: idOrSlug }],
       },
       include: {
+        classGrade: true,
+        subject: true,
         qrCode: true,
         lessons: {
           // Public and editors see only published lessons; admins see all
@@ -336,6 +340,8 @@ router.post('/', authenticateToken, requireRole('ADMIN'), async (req: Authentica
       isbn,
       language,
       readingLevel,
+      classGradeId,
+      subjectId,
       coverImage,
       thumbnail,
       featured,
@@ -357,6 +363,18 @@ router.post('/', authenticateToken, requireRole('ADMIN'), async (req: Authentica
       slug = `${slug}-${Date.now().toString().slice(-4)}`;
     }
 
+    let finalReadingLevel = readingLevel || 'Beginner';
+    if (classGradeId) {
+      const cg = await prisma.classGrade.findUnique({ where: { id: classGradeId } });
+      if (cg) finalReadingLevel = cg.name;
+    }
+
+    let finalCategory = category || 'General';
+    if (subjectId) {
+      const sb = await prisma.subject.findUnique({ where: { id: subjectId } });
+      if (sb) finalCategory = sb.name;
+    }
+
     const book = await prisma.course.create({
       data: {
         title,
@@ -364,11 +382,13 @@ router.post('/', authenticateToken, requireRole('ADMIN'), async (req: Authentica
         description,
         shortDescription: shortDescription || null,
         author: author || 'Hopenix Editorial',
-        category: category || 'General',
+        category: finalCategory,
         publicationYear: publicationYear ? parseInt(publicationYear, 10) : new Date().getFullYear(),
         isbn: isbn || null,
         language: language || 'English',
-        readingLevel: readingLevel || 'Beginner',
+        readingLevel: finalReadingLevel,
+        classGradeId: classGradeId || null,
+        subjectId: subjectId || null,
         coverImage: coverImage || thumbnail || null,
         thumbnail: thumbnail || coverImage || null,
         featured: Boolean(featured),
@@ -376,6 +396,10 @@ router.post('/', authenticateToken, requireRole('ADMIN'), async (req: Authentica
         qrLogo: qrLogo || null,
         readingTime: readingTime || null,
         companyName: companyName || null,
+      },
+      include: {
+        classGrade: true,
+        subject: true,
       },
     });
 
@@ -409,6 +433,8 @@ router.patch('/:id', authenticateToken, requireEditorBookPermission, async (req:
       isbn,
       language,
       readingLevel,
+      classGradeId,
+      subjectId,
       coverImage,
       thumbnail,
       featured,
@@ -429,6 +455,20 @@ router.patch('/:id', authenticateToken, requireEditorBookPermission, async (req:
     if (isbn !== undefined) updateData.isbn = isbn;
     if (language !== undefined) updateData.language = language;
     if (readingLevel !== undefined) updateData.readingLevel = readingLevel;
+    if (classGradeId !== undefined) {
+      updateData.classGradeId = classGradeId || null;
+      if (classGradeId) {
+        const cg = await prisma.classGrade.findUnique({ where: { id: classGradeId } });
+        if (cg) updateData.readingLevel = cg.name;
+      }
+    }
+    if (subjectId !== undefined) {
+      updateData.subjectId = subjectId || null;
+      if (subjectId) {
+        const sb = await prisma.subject.findUnique({ where: { id: subjectId } });
+        if (sb) updateData.category = sb.name;
+      }
+    }
     if (coverImage !== undefined) updateData.coverImage = coverImage;
     if (thumbnail !== undefined) updateData.thumbnail = thumbnail;
     
@@ -446,6 +486,10 @@ router.patch('/:id', authenticateToken, requireEditorBookPermission, async (req:
     const updatedBook = await prisma.course.update({
       where: { id },
       data: updateData,
+      include: {
+        classGrade: true,
+        subject: true,
+      },
     });
 
     await createAuditLog(req.user!.userId, 'UPDATE_BOOK', 'Book', id, updateData);
@@ -522,7 +566,8 @@ router.get('/:idOrSlug/qr', async (req: AuthenticatedRequest, res: Response) => 
     const host = req.get('host') || 'localhost:3000';
     const protocol = req.protocol === 'https' || host.includes('vercel.app') ? 'https' : 'http';
     const baseUrl = process.env.VITE_APP_URL || `${protocol}://${host}`;
-    const bookUrl = `${baseUrl}/books/${book.slug}`;
+    const companySlug = slugify(book.companyName || 'hopenix');
+    const bookUrl = `${baseUrl}/${companySlug}/books/${book.slug}`;
 
     const persistentQr = book.qrCode;
 
@@ -578,7 +623,8 @@ router.post('/:id/qr', authenticateToken, requireRole('ADMIN'), async (req: Auth
     const host = req.get('host') || 'localhost:3000';
     const protocol = req.protocol === 'https' || host.includes('vercel.app') ? 'https' : 'http';
     const baseUrl = process.env.VITE_APP_URL || `${protocol}://${host}`;
-    const bookUrl = `${baseUrl}/books/${book.slug}`;
+    const companySlug = slugify(book.companyName || 'hopenix');
+    const bookUrl = `${baseUrl}/${companySlug}/books/${book.slug}`;
 
     let savedQrImageUrl = book.qrCode?.imageUrl || book.qrCodeUrl;
 
@@ -678,7 +724,8 @@ router.post('/generate-missing-qr', authenticateToken, requireRole('ADMIN'), asy
     let generatedCount = 0;
 
     for (const book of booksWithoutQR) {
-      const bookUrl = `${baseUrl}/books/${book.slug}`;
+      const companySlug = slugify(book.companyName || 'hopenix');
+      const bookUrl = `${baseUrl}/${companySlug}/books/${book.slug}`;
       const qrData = await QRCode.toDataURL(bookUrl, {
         width: 500,
         margin: 2,

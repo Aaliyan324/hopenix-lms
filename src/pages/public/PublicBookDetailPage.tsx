@@ -11,6 +11,7 @@ import { SectionHeader } from '../../components/ui/SectionHeader';
 import { useToast } from '../../components/ui/Toast';
 import { AuthPromptModal } from '../../components/auth/AuthPromptModal';
 import { QRCodeModal } from '../../components/qr/QRCodeModal';
+import { getCompanySlug } from '../../lib/slug';
 import {
   ArrowLeft,
   BookOpen,
@@ -69,6 +70,7 @@ export const PublicBookDetailPage: React.FC = () => {
 
   const totalCount = book.lessons?.length || 0;
   const firstLesson = book.lessons?.[0];
+  const companySlug = getCompanySlug(book.companyName);
 
   return (
     <div className="space-y-10 max-w-5xl mx-auto pb-16">
@@ -166,7 +168,7 @@ export const PublicBookDetailPage: React.FC = () => {
             <div className="space-y-4 pt-1">
               {firstLesson && (
                 <Link
-                  to={`/books/${book.slug}/lessons/${firstLesson.lessonNumber || firstLesson.order}`}
+                  to={`/${companySlug}/books/${book.slug}/lessons/${firstLesson.lessonNumber || firstLesson.order}`}
                   className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-brand-600 via-purple-600 to-pink-600 hover:from-brand-500 hover:to-pink-500 text-white text-sm font-extrabold rounded-2xl transition-all shadow-xl shadow-brand-500/25 border border-pink-400/30 hover:scale-[1.02] active:scale-95"
                 >
                   <span>Start Reading Chapter 1 📖</span>
@@ -193,7 +195,7 @@ export const PublicBookDetailPage: React.FC = () => {
             return (
               <Link
                 key={lesson.id}
-                to={`/books/${book.slug}/lessons/${lessonNum}`}
+                to={`/${companySlug}/books/${book.slug}/lessons/${lessonNum}`}
                 className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-5 rounded-2xl border transition-all duration-300 group bg-slate-900/60 border-slate-800/80 hover:border-purple-500/40"
               >
                 <div className="flex items-center gap-4 mb-2 sm:mb-0">

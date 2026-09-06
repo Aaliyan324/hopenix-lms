@@ -23,15 +23,22 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+import { ClassGrade, Subject } from '../../types';
+import { AddOptionModal } from '../../components/ui/AddOptionModal';
+
 export const AdminBooksPage: React.FC = () => {
   const { toast } = useToast();
 
   const [books, setBooks] = useState<Book[]>([]);
+  const [classGrades, setClassGrades] = useState<ClassGrade[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
 
   // Modal states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isAddClassModalOpen, setIsAddClassModalOpen] = useState(false);
+  const [isAddSubjectModalOpen, setIsAddSubjectModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
   // Selected QR Code Modal
@@ -43,8 +50,10 @@ export const AdminBooksPage: React.FC = () => {
   const [companyName, setCompanyName] = useState('');
   const [description, setDescription] = useState('');
   const [shortDescription, setShortDescription] = useState('');
-  const [category, setCategory] = useState('Computer Science');
-  const [readingLevel, setReadingLevel] = useState('Beginner');
+  const [classGradeId, setClassGradeId] = useState('');
+  const [subjectId, setSubjectId] = useState('');
+  const [category, setCategory] = useState('');
+  const [readingLevel, setReadingLevel] = useState('');
   const [language, setLanguage] = useState('English');
   const [publicationYear, setPublicationYear] = useState('2026');
   const [isbn, setIsbn] = useState('');
@@ -55,7 +64,33 @@ export const AdminBooksPage: React.FC = () => {
 
   useEffect(() => {
     fetchBooks();
+    fetchOptions();
   }, []);
+
+  const fetchOptions = async () => {
+    try {
+      const [cgData, sbData] = await Promise.all([
+        apiFetch<{ classGrades: ClassGrade[] }>('/class-grades'),
+        apiFetch<{ subjects: Subject[] }>('/subjects'),
+      ]);
+      const cgs = cgData.classGrades || [];
+      const sbs = sbData.subjects || [];
+      setClassGrades(cgs);
+      setSubjects(sbs);
+      if (cgs.length > 0 && !classGradeId) {
+        const c9 = cgs.find((c) => c.name.toLowerCase().includes('class 9') || c.name.toLowerCase().includes('grade 9')) || cgs[0];
+        setClassGradeId(c9.id);
+        setReadingLevel(c9.name);
+      }
+      if (sbs.length > 0 && !subjectId) {
+        const math = sbs.find((s) => s.name.toLowerCase().includes('mathematic') || s.name.toLowerCase().includes('computer')) || sbs[0];
+        setSubjectId(math.id);
+        setCategory(math.name);
+      }
+    } catch (err) {
+      console.error('Failed to load options:', err);
+    }
+  };
 
   const fetchBooks = async (searchQuery = search) => {
     try {
@@ -109,6 +144,9 @@ export const AdminBooksPage: React.FC = () => {
 
     try {
       setSaving(true);
+      const selCg = classGrades.find((c) => c.id === classGradeId);
+      const selSb = subjects.find((s) => s.id === subjectId);
+
       await apiFetch('/books', {
         method: 'POST',
         body: JSON.stringify({
@@ -117,8 +155,10 @@ export const AdminBooksPage: React.FC = () => {
           companyName,
           description,
           shortDescription,
-          category,
-          readingLevel,
+          classGradeId,
+          subjectId,
+          category: selSb?.name || category || 'General',
+          readingLevel: selCg?.name || readingLevel || 'Class 9',
           language,
           publicationYear,
           isbn,
@@ -158,8 +198,6 @@ export const AdminBooksPage: React.FC = () => {
     setCompanyName('');
     setDescription('');
     setShortDescription('');
-    setCategory('Computer Science');
-    setReadingLevel('Beginner');
     setLanguage('English');
     setPublicationYear('2026');
     setIsbn('');
@@ -371,31 +409,60 @@ export const AdminBooksPage: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block font-semibold text-slate-300 mb-1">Category</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="font-semibold text-slate-300">CLASS / GRADE</label>
+                <button
+                  type="button"
+                  onClick={() => setIsAddClassModalOpen(true)}
+                  className="text-[11px] font-bold text-brand-400 hover:text-brand-300 transition-colors flex items-center gap-1"
+                >
+                  <Plus className="w-3 h-3" /> Add Another
+                </button>
+              </div>
               <select
-                value={category}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCategory(e.target.value)}
+                value={classGradeId}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                  setClassGradeId(e.target.value);
+                  const cg = classGrades.find((c) => c.id === e.target.value);
+                  if (cg) setReadingLevel(cg.name);
+                }}
                 className="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 rounded-xl px-3 py-2 text-xs text-white outline-none"
               >
-                <option value="Computer Science">Computer Science</option>
-                <option value="Programming">Programming</option>
-                <option value="Design">Design</option>
-                <option value="Mathematics">Mathematics</option>
-                <option value="Science">Science</option>
-                <option value="General">General</option>
+                <option value="">Select Class / Grade...</option>
+                {classGrades.map((cg) => (
+                  <option key={cg.id} value={cg.id}>
+                    {cg.name}
+                  </option>
+                ))}
               </select>
             </div>
 
             <div>
-              <label className="block font-semibold text-slate-300 mb-1">Reading Level</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="font-semibold text-slate-300">SUBJECT</label>
+                <button
+                  type="button"
+                  onClick={() => setIsAddSubjectModalOpen(true)}
+                  className="text-[11px] font-bold text-brand-400 hover:text-brand-300 transition-colors flex items-center gap-1"
+                >
+                  <Plus className="w-3 h-3" /> Add Another
+                </button>
+              </div>
               <select
-                value={readingLevel}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setReadingLevel(e.target.value)}
+                value={subjectId}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                  setSubjectId(e.target.value);
+                  const sb = subjects.find((s) => s.id === e.target.value);
+                  if (sb) setCategory(sb.name);
+                }}
                 className="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 rounded-xl px-3 py-2 text-xs text-white outline-none"
               >
-                <option value="Beginner">Beginner</option>
-                <option value="Intermediate">Intermediate</option>
-                <option value="Advanced">Advanced</option>
+                <option value="">Select Subject...</option>
+                {subjects.map((sb) => (
+                  <option key={sb.id} value={sb.id}>
+                    {sb.name}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -502,6 +569,30 @@ export const AdminBooksPage: React.FC = () => {
           courseTitle={qrModalBook.title}
         />
       )}
+
+      {/* Add Class / Grade Modal */}
+      <AddOptionModal
+        isOpen={isAddClassModalOpen}
+        onClose={() => setIsAddClassModalOpen(false)}
+        type="class"
+        onCreated={(newOption) => {
+          setClassGrades((prev) => [...prev, newOption as ClassGrade]);
+          setClassGradeId(newOption.id);
+          setReadingLevel(newOption.name);
+        }}
+      />
+
+      {/* Add Subject Modal */}
+      <AddOptionModal
+        isOpen={isAddSubjectModalOpen}
+        onClose={() => setIsAddSubjectModalOpen(false)}
+        type="subject"
+        onCreated={(newOption) => {
+          setSubjects((prev) => [...prev, newOption as Subject]);
+          setSubjectId(newOption.id);
+          setCategory(newOption.name);
+        }}
+      />
     </div>
   );
 };

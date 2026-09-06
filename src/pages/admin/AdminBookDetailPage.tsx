@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../lib/api';
-import { Book, Lesson, User } from '../../types';
+import { Book, Lesson, User, ClassGrade, Subject } from '../../types';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Input } from '../../components/ui/Input';
@@ -11,6 +11,8 @@ import { useToast } from '../../components/ui/Toast';
 import { QRCodeModal } from '../../components/qr/QRCodeModal';
 import { RichTextEditor } from '../../components/editor/RichTextEditor';
 import { MediaUploader } from '../../components/uploads/MediaUploader';
+import { AddOptionModal } from '../../components/ui/AddOptionModal';
+import { YouTubeVideoSection } from '../../components/editor/YouTubeVideoSection';
 import {
   ArrowLeft,
   BookOpen,
@@ -43,16 +45,24 @@ export const AdminBookDetailPage: React.FC = () => {
   const [author, setAuthor] = useState('');
   const [description, setDescription] = useState('');
   const [shortDescription, setShortDescription] = useState('');
-  const [category, setCategory] = useState('');
-  const [readingLevel, setReadingLevel] = useState('');
-  const [language, setLanguage] = useState('');
-  const [publicationYear, setPublicationYear] = useState('');
+  const [category, setCategory] = useState('General');
+  const [readingLevel, setReadingLevel] = useState('Class 9');
+  const [language, setLanguage] = useState('English');
+  const [publicationYear, setPublicationYear] = useState('2026');
   const [isbn, setIsbn] = useState('');
   const [coverImage, setCoverImage] = useState('');
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [companyName, setCompanyName] = useState('');
-  const [published, setPublished] = useState(false);
+  const [published, setPublished] = useState(true);
+
+  // Class & Subject options
+  const [classGrades, setClassGrades] = useState<ClassGrade[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [classGradeId, setClassGradeId] = useState('');
+  const [subjectId, setSubjectId] = useState('');
+  const [isAddClassModalOpen, setIsAddClassModalOpen] = useState(false);
+  const [isAddSubjectModalOpen, setIsAddSubjectModalOpen] = useState(false);
 
   // Lesson Create Modal
   const [isLessonModalOpen, setIsLessonModalOpen] = useState(false);
@@ -62,11 +72,28 @@ export const AdminBookDetailPage: React.FC = () => {
   const [lessonDesc, setLessonDesc] = useState('');
   const [lessonContent, setLessonContent] = useState('');
   const [lessonReadingTime, setLessonReadingTime] = useState('');
+  const [lessonYoutubeUrl, setLessonYoutubeUrl] = useState<string | null>(null);
   const [lessonPublished, setLessonPublished] = useState(true);
 
   useEffect(() => {
-    if (id) fetchBook();
+    if (id) {
+      fetchBook();
+      fetchOptions();
+    }
   }, [id]);
+
+  const fetchOptions = async () => {
+    try {
+      const [cgData, sbData] = await Promise.all([
+        apiFetch<{ classGrades: ClassGrade[] }>('/class-grades'),
+        apiFetch<{ subjects: Subject[] }>('/subjects'),
+      ]);
+      setClassGrades(cgData.classGrades || []);
+      setSubjects(sbData.subjects || []);
+    } catch (err) {
+      console.error('Failed to load options:', err);
+    }
+  };
 
   const fetchBook = async () => {
     try {
@@ -81,7 +108,9 @@ export const AdminBookDetailPage: React.FC = () => {
       setDescription(b.description || '');
       setShortDescription(b.shortDescription || '');
       setCategory(b.category || 'General');
-      setReadingLevel(b.readingLevel || 'Beginner');
+      setReadingLevel(b.readingLevel || 'Class 9');
+      setClassGradeId(b.classGradeId || '');
+      setSubjectId(b.subjectId || '');
       setLanguage(b.language || 'English');
       setPublicationYear(b.publicationYear ? String(b.publicationYear) : '2026');
       setIsbn(b.isbn || '');
@@ -102,6 +131,9 @@ export const AdminBookDetailPage: React.FC = () => {
 
     try {
       setSavingBook(true);
+      const selCg = classGrades.find((c) => c.id === classGradeId);
+      const selSb = subjects.find((s) => s.id === subjectId);
+
       await apiFetch(`/books/${id}`, {
         method: 'PATCH',
         body: JSON.stringify({
@@ -109,8 +141,10 @@ export const AdminBookDetailPage: React.FC = () => {
           author,
           description,
           shortDescription,
-          category,
-          readingLevel,
+          classGradeId,
+          subjectId,
+          category: selSb?.name || category || 'General',
+          readingLevel: selCg?.name || readingLevel || 'Class 9',
           language,
           publicationYear,
           isbn,
@@ -147,6 +181,7 @@ export const AdminBookDetailPage: React.FC = () => {
           lessonNumber: parseInt(lessonNumber, 10),
           description: lessonDesc,
           content: lessonContent,
+          youtubeUrl: lessonYoutubeUrl,
           readingTime: lessonReadingTime,
           published: lessonPublished,
         }),
@@ -157,7 +192,7 @@ export const AdminBookDetailPage: React.FC = () => {
       resetLessonForm();
       fetchBook();
     } catch (err: any) {
-      toast('Failed to create lesson.', 'error');
+      toast(err.message || 'Failed to create lesson.', 'error');
     } finally {
       setCreatingLesson(false);
     }
@@ -210,6 +245,7 @@ export const AdminBookDetailPage: React.FC = () => {
     setLessonDesc('');
     setLessonContent('');
     setLessonReadingTime('');
+    setLessonYoutubeUrl(null);
     setLessonPublished(true);
   };
 
@@ -297,31 +333,60 @@ export const AdminBookDetailPage: React.FC = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs">
           <div>
-            <label className="font-semibold text-slate-300 block mb-1">Category</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="font-semibold text-slate-300">CLASS / GRADE</label>
+              <button
+                type="button"
+                onClick={() => setIsAddClassModalOpen(true)}
+                className="text-[11px] font-bold text-brand-400 hover:text-brand-300 transition-colors flex items-center gap-1"
+              >
+                <Plus className="w-3 h-3" /> Add Another
+              </button>
+            </div>
             <select
-              value={category}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCategory(e.target.value)}
+              value={classGradeId}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                setClassGradeId(e.target.value);
+                const cg = classGrades.find((c) => c.id === e.target.value);
+                if (cg) setReadingLevel(cg.name);
+              }}
               className="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 rounded-xl px-3 py-2 text-xs text-white outline-none"
             >
-              <option value="Computer Science">Computer Science</option>
-              <option value="Programming">Programming</option>
-              <option value="Design">Design</option>
-              <option value="Mathematics">Mathematics</option>
-              <option value="Science">Science</option>
-              <option value="General">General</option>
+              <option value="">Select Class / Grade...</option>
+              {classGrades.map((cg) => (
+                <option key={cg.id} value={cg.id}>
+                  {cg.name}
+                </option>
+              ))}
             </select>
           </div>
 
           <div>
-            <label className="font-semibold text-slate-300 block mb-1">Reading Level</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="font-semibold text-slate-300">SUBJECT</label>
+              <button
+                type="button"
+                onClick={() => setIsAddSubjectModalOpen(true)}
+                className="text-[11px] font-bold text-brand-400 hover:text-brand-300 transition-colors flex items-center gap-1"
+              >
+                <Plus className="w-3 h-3" /> Add Another
+              </button>
+            </div>
             <select
-              value={readingLevel}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setReadingLevel(e.target.value)}
+              value={subjectId}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                setSubjectId(e.target.value);
+                const sb = subjects.find((s) => s.id === e.target.value);
+                if (sb) setCategory(sb.name);
+              }}
               className="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 rounded-xl px-3 py-2 text-xs text-white outline-none"
             >
-              <option value="Beginner">Beginner</option>
-              <option value="Intermediate">Intermediate</option>
-              <option value="Advanced">Advanced</option>
+              <option value="">Select Subject...</option>
+              {subjects.map((sb) => (
+                <option key={sb.id} value={sb.id}>
+                  {sb.name}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -516,6 +581,12 @@ export const AdminBookDetailPage: React.FC = () => {
             <RichTextEditor content={lessonContent} onChange={setLessonContent} placeholder="Write lesson article content..." />
           </div>
 
+          {/* YouTube Video Section */}
+          <YouTubeVideoSection
+            youtubeUrl={lessonYoutubeUrl}
+            onChange={(url) => setLessonYoutubeUrl(url)}
+          />
+
           <div className="flex items-center gap-2 pt-2">
             <input
               type="checkbox"
@@ -554,6 +625,30 @@ export const AdminBookDetailPage: React.FC = () => {
           lessonNumber={lessonQrTarget?.lessonNumber}
         />
       )}
+
+      {/* Add Class / Grade Modal */}
+      <AddOptionModal
+        isOpen={isAddClassModalOpen}
+        onClose={() => setIsAddClassModalOpen(false)}
+        type="class"
+        onCreated={(newOption) => {
+          setClassGrades((prev) => [...prev, newOption as ClassGrade]);
+          setClassGradeId(newOption.id);
+          setReadingLevel(newOption.name);
+        }}
+      />
+
+      {/* Add Subject Modal */}
+      <AddOptionModal
+        isOpen={isAddSubjectModalOpen}
+        onClose={() => setIsAddSubjectModalOpen(false)}
+        type="subject"
+        onCreated={(newOption) => {
+          setSubjects((prev) => [...prev, newOption as Subject]);
+          setSubjectId(newOption.id);
+          setCategory(newOption.name);
+        }}
+      />
     </div>
   );
 };

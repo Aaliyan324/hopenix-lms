@@ -28,6 +28,26 @@ model User {
   @@index([role])
 }
 
+model ClassGrade {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  books     Course[]
+
+  @@index([name])
+}
+
+model Subject {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  books     Course[]
+
+  @@index([name])
+}
+
 model Course {
   id                    String                 @id @default(uuid())
   title                 String
@@ -42,6 +62,10 @@ model Course {
   isbn                  String?
   language              String?                @default("English")
   readingLevel          String?
+  classGradeId          String?
+  classGrade            ClassGrade?            @relation(fields: [classGradeId], references: [id], onDelete: SetNull)
+  subjectId             String?
+  subject               Subject?               @relation(fields: [subjectId], references: [id], onDelete: SetNull)
   featured              Boolean                @default(false)
   published             Boolean                @default(false)
   qrLogo                String?
@@ -59,29 +83,33 @@ model Course {
   @@index([slug])
   @@index([published])
   @@index([category])
+  @@index([classGradeId])
+  @@index([subjectId])
 }
 
 model Lesson {
-  id           String                   @id @default(uuid())
-  courseId     String
-  course       Course                   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  title        String
-  slug         String
-  description  String?
-  content      String?
-  lessonNumber Int                      @default(1)
-  readingTime  String?
-  order        Int                      @default(0)
-  published    Boolean                  @default(false)
-  qrLogo       String?
-  qrCodeData   String?
-  qrCodeUrl    String?
-  qrGeneratedAt DateTime?
-  createdAt    DateTime                 @default(now())
-  updatedAt    DateTime                 @updatedAt
-  media        Media[]
-  permissions  LessonEditorPermission[]
-  qrCode       QRCode?
+  id             String                   @id @default(uuid())
+  courseId       String
+  course         Course                   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title          String
+  slug           String
+  description    String?
+  content        String?
+  youtubeUrl     String?
+  youtubeVideoId String?
+  lessonNumber   Int                      @default(1)
+  readingTime    String?
+  order          Int                      @default(0)
+  published      Boolean                  @default(false)
+  qrLogo         String?
+  qrCodeData     String?
+  qrCodeUrl      String?
+  qrGeneratedAt  DateTime?
+  createdAt      DateTime                 @default(now())
+  updatedAt      DateTime                 @updatedAt
+  media          Media[]
+  permissions    LessonEditorPermission[]
+  qrCode         QRCode?
 
   @@unique([courseId, slug])
   @@index([courseId])

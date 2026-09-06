@@ -27,7 +27,7 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
   onMediaChanged,
 }) => {
   const { toast } = useToast();
-  const [selectedType, setSelectedType] = useState<MediaType>('IMAGE');
+  const [selectedType, setSelectedType] = useState<'IMAGE' | 'PDF'>('IMAGE');
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [mediaToDelete, setMediaToDelete] = useState<Media | null>(null);
@@ -41,10 +41,6 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
     // Validate size and mime type
     if (selectedType === 'IMAGE' && !file.type.startsWith('image/')) {
       toast('Selected file is not an image (PNG, JPG, WEBP).', 'error');
-      return;
-    }
-    if (selectedType === 'VIDEO' && !file.type.startsWith('video/')) {
-      toast('Selected file is not a video (MP4, WEBM, MOV).', 'error');
       return;
     }
     if (selectedType === 'PDF' && file.type !== 'application/pdf') {
@@ -105,7 +101,7 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
     <div className="space-y-6">
       {/* Upload Controls */}
       <div className="p-6 bg-slate-900 border border-slate-800 rounded-2xl">
-        <h4 className="text-base font-semibold text-white mb-4">Upload Media Content</h4>
+        <h4 className="text-base font-semibold text-white mb-4">Upload Lesson Media (Images & PDFs)</h4>
 
         {/* Media Type Tabs */}
         <div className="flex items-center gap-2 mb-4 p-1 bg-slate-950 rounded-xl border border-slate-800 w-fit">
@@ -118,16 +114,6 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
           >
             <Image className="w-4 h-4" />
             Image (PNG/JPG/WEBP)
-          </button>
-          <button
-            type="button"
-            onClick={() => setSelectedType('VIDEO')}
-            className={`flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
-              selectedType === 'VIDEO' ? 'bg-brand-600 text-white shadow' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <Video className="w-4 h-4" />
-            Video (MP4/WEBM)
           </button>
           <button
             type="button"
@@ -149,7 +135,6 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
           </p>
           <p className="text-xs text-slate-400">
             {selectedType === 'IMAGE' && 'PNG, JPG, WEBP up to 10MB'}
-            {selectedType === 'VIDEO' && 'MP4, WEBM, MOV up to 100MB'}
             {selectedType === 'PDF' && 'PDF files up to 25MB'}
           </p>
 
@@ -159,8 +144,6 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
             accept={
               selectedType === 'IMAGE'
                 ? 'image/png,image/jpeg,image/webp'
-                : selectedType === 'VIDEO'
-                ? 'video/mp4,video/webm,video/quicktime'
                 : 'application/pdf'
             }
             onChange={handleFileUpload}

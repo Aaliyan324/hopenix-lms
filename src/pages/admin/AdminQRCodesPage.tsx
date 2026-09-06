@@ -8,6 +8,8 @@ import { useToast } from '../../components/ui/Toast';
 import { QRCodeModal } from '../../components/qr/QRCodeModal';
 import { QrCode, ChevronDown, ChevronUp, Layers, BookOpen, Sparkles, CheckCircle2, Clock } from 'lucide-react';
 
+import { getCompanySlug } from '../../lib/slug';
+
 interface BookWithLessons extends Book {
   lessons?: Lesson[];
 }
@@ -180,7 +182,7 @@ export const AdminQRCodesPage: React.FC = () => {
                         )}
                       </div>
                       <p className="text-xs text-slate-400">By {book.author || 'Hopenix'}</p>
-                      <p className="text-xs text-brand-400 font-mono mt-0.5">/books/{book.slug}</p>
+                      <p className="text-xs text-brand-400 font-mono mt-0.5">/{getCompanySlug(book.companyName)}/books/{book.slug}</p>
                       <p className="text-xs text-slate-500 mt-0.5">{lessonCount} lesson{lessonCount !== 1 ? 's' : ''}</p>
                     </div>
                   </div>
@@ -245,7 +247,7 @@ export const AdminQRCodesPage: React.FC = () => {
                                 )}
                               </div>
                               <p className="text-xs text-brand-400 font-mono">
-                                /books/{book.slug}/lessons/{num}
+                                /{getCompanySlug(book.companyName)}/books/{book.slug}/lessons/{num}
                               </p>
                             </div>
                           </div>

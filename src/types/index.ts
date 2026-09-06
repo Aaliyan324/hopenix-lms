@@ -34,6 +34,20 @@ export interface LessonEditorPermission {
   user?: User;
 }
 
+export interface ClassGrade {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Subject {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Lesson {
   id: string;
   courseId: string;
@@ -42,6 +56,8 @@ export interface Lesson {
   slug: string;
   description?: string | null;
   content?: string | null;
+  youtubeUrl?: string | null;
+  youtubeVideoId?: string | null;
   lessonNumber: number;
   readingTime?: string | null;
   order: number;
@@ -59,12 +75,14 @@ export interface Lesson {
     title: string;
     slug: string;
     published?: boolean;
+    companyName?: string | null;
   };
   book?: {
     id: string;
     title: string;
     slug: string;
     published?: boolean;
+    companyName?: string | null;
   };
 }
 
@@ -82,6 +100,10 @@ export interface Book {
   isbn?: string | null;
   language?: string | null;
   readingLevel?: string | null;
+  classGradeId?: string | null;
+  classGrade?: ClassGrade | null;
+  subjectId?: string | null;
+  subject?: Subject | null;
   featured?: boolean;
   published: boolean;
   qrLogo?: string | null;

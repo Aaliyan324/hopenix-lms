@@ -22,6 +22,39 @@ const slugify = (text: string) =>
     .replace(/[\s_-]+/g, '-')
     .replace(/^-+|-+$/g, '');
 
+export function extractYouTubeVideoId(url: string): string | null {
+  if (!url || typeof url !== 'string') return null;
+  const trimmed = url.trim();
+  if (!trimmed) return null;
+
+  try {
+    const parsed = new URL(trimmed.startsWith('http://') || trimmed.startsWith('https://') ? trimmed : `https://${trimmed}`);
+    const host = parsed.hostname.toLowerCase();
+
+    if (!['youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtu.be'].includes(host)) {
+      return null;
+    }
+
+    let videoId: string | null = null;
+    if (host === 'youtu.be') {
+      videoId = parsed.pathname.slice(1).split('/')[0];
+    } else if (parsed.pathname.startsWith('/watch')) {
+      videoId = parsed.searchParams.get('v');
+    } else if (parsed.pathname.startsWith('/shorts/')) {
+      videoId = parsed.pathname.split('/shorts/')[1]?.split('/')[0] || null;
+    } else if (parsed.pathname.startsWith('/embed/')) {
+      videoId = parsed.pathname.split('/embed/')[1]?.split('/')[0] || null;
+    }
+
+    if (videoId && /^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
+      return videoId;
+    }
+  } catch (err) {
+    return null;
+  }
+  return null;
+}
+
 // Get assigned lessons for logged in Editor
 router.get('/editor/assigned', authenticateToken, requireRole('EDITOR'), async (req: AuthenticatedRequest, res: Response) => {
   try {
@@ -171,7 +204,7 @@ router.get('/:idOrSlug', optionalAuthenticateToken, async (req: AuthenticatedReq
 // Create Lesson (ADMIN)
 router.post('/', authenticateToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { courseId, bookId, title, description, content, published, lessonNumber, readingTime } = req.body;
+    const { courseId, bookId, title, description, content, published, lessonNumber, readingTime, youtubeUrl } = req.body;
     const targetBookId = bookId || courseId;
 
     if (!targetBookId || !title) {
@@ -181,6 +214,16 @@ router.post('/', authenticateToken, requireRole('ADMIN'), async (req: Authentica
     const book = await prisma.course.findUnique({ where: { id: targetBookId } });
     if (!book) {
       return res.status(404).json({ error: 'Parent book not found.' });
+    }
+
+    let youtubeVideoId: string | null = null;
+    let finalYoutubeUrl: string | null = null;
+    if (youtubeUrl && typeof youtubeUrl === 'string' && youtubeUrl.trim()) {
+      youtubeVideoId = extractYouTubeVideoId(youtubeUrl);
+      if (!youtubeVideoId) {
+        return res.status(400).json({ error: 'Please enter a valid YouTube video URL.' });
+      }
+      finalYoutubeUrl = youtubeUrl.trim();
     }
 
     // Calculate next order and lessonNumber
@@ -208,6 +251,8 @@ router.post('/', authenticateToken, requireRole('ADMIN'), async (req: Authentica
         slug,
         description: description || null,
         content: content || null,
+        youtubeUrl: finalYoutubeUrl,
+        youtubeVideoId: youtubeVideoId,
         lessonNumber: newLessonNumber,
         readingTime: readingTime || null,
         order: newOrder,
@@ -231,7 +276,7 @@ router.post('/', authenticateToken, requireRole('ADMIN'), async (req: Authentica
 router.patch('/:id', authenticateToken, requireLessonEditPermission, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { title, description, content, published, order, lessonNumber, readingTime } = req.body;
+    const { title, description, content, published, order, lessonNumber, readingTime, youtubeUrl } = req.body;
     const { role } = req.user!;
 
     const existingLesson = await prisma.lesson.findUnique({ where: { id } });
@@ -246,6 +291,20 @@ router.patch('/:id', authenticateToken, requireLessonEditPermission, async (req:
     }
     if (description !== undefined) updateData.description = description;
     if (content !== undefined) updateData.content = content;
+
+    if (youtubeUrl !== undefined) {
+      if (youtubeUrl === null || youtubeUrl === '') {
+        updateData.youtubeUrl = null;
+        updateData.youtubeVideoId = null;
+      } else {
+        const vid = extractYouTubeVideoId(youtubeUrl);
+        if (!vid) {
+          return res.status(400).json({ error: 'Please enter a valid YouTube video URL.' });
+        }
+        updateData.youtubeUrl = youtubeUrl.trim();
+        updateData.youtubeVideoId = vid;
+      }
+    }
     
     // Editors cannot toggle published status unless Admin
     if (role === 'ADMIN' && typeof published === 'boolean') {
@@ -383,7 +442,7 @@ router.get('/:id/qr', async (req: AuthenticatedRequest, res: Response) => {
       include: {
         qrCode: true,
         course: {
-          select: { id: true, title: true, slug: true, qrLogo: true },
+          select: { id: true, title: true, slug: true, qrLogo: true, companyName: true },
         },
       },
     });
@@ -395,7 +454,8 @@ router.get('/:id/qr', async (req: AuthenticatedRequest, res: Response) => {
     const host = req.get('host') || 'localhost:3000';
     const protocol = req.protocol === 'https' || host.includes('vercel.app') ? 'https' : 'http';
     const baseUrl = process.env.VITE_APP_URL || `${protocol}://${host}`;
-    const lessonUrl = `${baseUrl}/books/${lesson.course.slug}/lessons/${lesson.lessonNumber}`;
+    const companySlug = slugify(lesson.course.companyName || 'hopenix');
+    const lessonUrl = `${baseUrl}/${companySlug}/books/${lesson.course.slug}/lessons/${lesson.lessonNumber}`;
 
     const persistentQr = lesson.qrCode;
 
@@ -432,7 +492,7 @@ router.post('/:id/qr', authenticateToken, requireRole('ADMIN'), async (req: Auth
       include: {
         qrCode: true,
         course: {
-          select: { id: true, title: true, slug: true, qrLogo: true },
+          select: { id: true, title: true, slug: true, qrLogo: true, companyName: true },
         },
       },
     });
@@ -464,7 +524,8 @@ router.post('/:id/qr', authenticateToken, requireRole('ADMIN'), async (req: Auth
     const host = req.get('host') || 'localhost:3000';
     const protocol = req.protocol === 'https' || host.includes('vercel.app') ? 'https' : 'http';
     const baseUrl = process.env.VITE_APP_URL || `${protocol}://${host}`;
-    const lessonUrl = `${baseUrl}/books/${lesson.course.slug}/lessons/${lesson.lessonNumber}`;
+    const companySlug = slugify(lesson.course.companyName || 'hopenix');
+    const lessonUrl = `${baseUrl}/${companySlug}/books/${lesson.course.slug}/lessons/${lesson.lessonNumber}`;
 
     let savedQrImageUrl = lesson.qrCode?.imageUrl || lesson.qrCodeUrl;
 
@@ -558,7 +619,7 @@ router.post('/generate-missing-qr', authenticateToken, requireRole('ADMIN'), asy
         qrCodeUrl: null,
       },
       include: {
-        course: { select: { slug: true } },
+        course: { select: { slug: true, companyName: true } },
       },
     });
 
@@ -569,7 +630,8 @@ router.post('/generate-missing-qr', authenticateToken, requireRole('ADMIN'), asy
     let generatedCount = 0;
 
     for (const lesson of lessonsWithoutQR) {
-      const lessonUrl = `${baseUrl}/books/${lesson.course.slug}/lessons/${lesson.lessonNumber}`;
+      const companySlug = slugify(lesson.course.companyName || 'hopenix');
+      const lessonUrl = `${baseUrl}/${companySlug}/books/${lesson.course.slug}/lessons/${lesson.lessonNumber}`;
       const qrData = await QRCode.toDataURL(lessonUrl, {
         width: 500,
         margin: 2,

@@ -7,6 +7,8 @@ import { Navbar } from './components/common/Navbar';
 import { Sidebar } from './components/common/Sidebar';
 import { Footer } from './components/common/Footer';
 
+import { ScrollToTop } from './components/common/ScrollToTop';
+
 // Public Direct QR Access Pages & Auth
 import { PublicBookDetailPage } from './pages/public/PublicBookDetailPage';
 import { PublicLessonReaderPage } from './pages/public/PublicLessonReaderPage';
@@ -60,6 +62,7 @@ const RootRedirect: React.FC = () => {
 export const App: React.FC = () => {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <ToastProvider>
         <AuthProvider>
           <Routes>
@@ -71,7 +74,11 @@ export const App: React.FC = () => {
               <Route path="/" element={<RootRedirect />} />
               <Route path="/books" element={<RootRedirect />} />
               
-              {/* Direct QR Code Access Paths for Books & Lessons */}
+              {/* Canonical Company-Based Routes for Books & Lessons */}
+              <Route path="/:company/books/:slug" element={<PublicBookDetailPage />} />
+              <Route path="/:company/books/:slug/lessons/:lessonNumber" element={<PublicLessonReaderPage />} />
+
+              {/* Direct Legacy QR Code Access Paths for Backward Compatibility */}
               <Route path="/books/:slug" element={<PublicBookDetailPage />} />
               <Route path="/books/:slug/lessons/:lessonNumber" element={<PublicLessonReaderPage />} />
               

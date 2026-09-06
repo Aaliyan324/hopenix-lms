@@ -8,6 +8,7 @@ import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { ReadingProgress } from '../../components/ui/ReadingProgress';
 import { useToast } from '../../components/ui/Toast';
+import { getCompanySlug } from '../../lib/slug';
 import {
   ArrowLeft,
   ChevronLeft,
@@ -97,6 +98,7 @@ export const PublicLessonReaderPage: React.FC = () => {
   const currentLessonNum = lesson.lessonNumber || lesson.order || 1;
   const totalLessons = navigation.siblingLessons?.length || 1;
   const readingPercent = Math.round((currentLessonNum / totalLessons) * 100);
+  const companySlug = getCompanySlug(book.companyName);
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 max-w-7xl mx-auto pb-16">
@@ -105,7 +107,7 @@ export const PublicLessonReaderPage: React.FC = () => {
         {/* Top Header & Breadcrumb */}
         <div className="flex items-center justify-between border-b border-purple-500/15 pb-4">
           <Link
-            to={`/books/${slug}`}
+            to={`/${companySlug}/books/${slug}`}
             className="inline-flex items-center gap-2 text-xs font-extrabold text-brand-300 hover:text-white bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl transition-all"
           >
             <ArrowLeft className="w-4 h-4" /> Back to {book.title}
@@ -149,12 +151,31 @@ export const PublicLessonReaderPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Video Lectures Section */}
+        {/* YouTube Video Player */}
+        {lesson.youtubeVideoId && (
+          <div className="space-y-3">
+            <h3 className="text-base font-extrabold text-white flex items-center gap-2">
+              <VideoIcon className="w-5 h-5 text-rose-500" />
+              Interactive YouTube Video Lecture
+            </h3>
+            <div className="bg-slate-950 border border-purple-500/25 rounded-3xl overflow-hidden shadow-2xl relative w-full aspect-video">
+              <iframe
+                src={`https://www.youtube.com/embed/${encodeURIComponent(lesson.youtubeVideoId)}`}
+                title={lesson.title}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                className="absolute top-0 left-0 w-full h-full border-0"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Legacy Video Lectures Section */}
         {videoMedia.length > 0 && (
           <div className="space-y-3">
             <h3 className="text-base font-extrabold text-white flex items-center gap-2">
               <VideoIcon className="w-5 h-5 text-brand-400" />
-              Interactive Video Lecture
+              Video Resource Attachment
             </h3>
             {videoMedia.map((v) => (
               <div key={v.id} className="bg-slate-950 border border-purple-500/25 rounded-3xl overflow-hidden shadow-2xl">
@@ -237,7 +258,7 @@ export const PublicLessonReaderPage: React.FC = () => {
         <div className="flex items-center justify-between pt-6 border-t border-purple-500/20">
           {navigation.prevLesson ? (
             <Link
-              to={`/books/${slug}/lessons/${navigation.prevLesson.lessonNumber || navigation.prevLesson.order}`}
+              to={`/${companySlug}/books/${slug}/lessons/${navigation.prevLesson.lessonNumber || navigation.prevLesson.order}`}
               className="inline-flex items-center gap-2 px-5 py-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-2xl text-xs font-extrabold text-slate-200 transition-all hover:-translate-x-1"
             >
               <ChevronLeft className="w-4 h-4" /> Previous Chapter
@@ -248,7 +269,7 @@ export const PublicLessonReaderPage: React.FC = () => {
 
           {navigation.nextLesson && (
             <Link
-              to={`/books/${slug}/lessons/${navigation.nextLesson.lessonNumber || navigation.nextLesson.order}`}
+              to={`/${companySlug}/books/${slug}/lessons/${navigation.nextLesson.lessonNumber || navigation.nextLesson.order}`}
               className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 rounded-2xl text-xs font-extrabold text-white transition-all shadow-lg shadow-brand-500/25 border border-purple-400/30 hover:translate-x-1"
             >
               Next Chapter <ChevronRight className="w-4 h-4" />
@@ -283,7 +304,7 @@ export const PublicLessonReaderPage: React.FC = () => {
             return (
               <Link
                 key={s.id}
-                to={`/books/${slug}/lessons/${num}`}
+                to={`/${companySlug}/books/${slug}/lessons/${num}`}
                 onClick={() => setSidebarOpen(false)}
                 className={`flex items-center justify-between p-3.5 rounded-2xl border text-xs font-extrabold transition-all ${
                   isActive
