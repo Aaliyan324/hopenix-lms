@@ -10,30 +10,13 @@ import {
   Download,
   Copy,
   RefreshCw,
-  Image as ImageIcon,
   Check,
-  Upload,
-  Trash2,
   BookOpen,
   Layers,
   Sparkles,
   Save,
   AlertTriangle,
 } from 'lucide-react';
-
-/** Default Hopenix Brand Logo (SVG Data URI) used when no custom logo is uploaded */
-const DEFAULT_HOPENIX_LOGO = `data:image/svg+xml;utf8,${encodeURIComponent(`
-<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
-  <defs>
-    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#9333ea;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#4c1d95;stop-opacity:1" />
-    </linearGradient>
-  </defs>
-  <rect width="120" height="120" rx="28" fill="url(#grad)"/>
-  <path d="M35 30 L35 90 M85 30 L85 90 M35 60 L85 60" stroke="#ffffff" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
-`)}`;
 
 interface QRCodeModalProps {
   isOpen: boolean;
@@ -68,7 +51,6 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [copied, setCopied] = useState(false);
   const [targetUrl, setTargetUrl] = useState('');
   const [persistedQrUrl, setPersistedQrUrl] = useState<string | null>(null);
@@ -80,8 +62,6 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
   // Customization Settings (Admin only)
   const [fgColor, setFgColor] = useState('#2e1065');
   const [bgColor, setBgColor] = useState('#ffffff');
-  const [logoUrl, setLogoUrl] = useState<string | null>(DEFAULT_HOPENIX_LOGO);
-  const [logoSize, setLogoSize] = useState<'small' | 'medium' | 'large'>('medium');
   const [qrWidth] = useState<number>(400);
 
   useEffect(() => {
@@ -92,9 +72,9 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
 
   useEffect(() => {
     if (targetUrl && canvasRef.current) {
-      renderQRWithLogo();
+      renderQR();
     }
-  }, [targetUrl, fgColor, bgColor, logoUrl, logoSize, qrWidth]);
+  }, [targetUrl, fgColor, bgColor, qrWidth]);
 
   const fetchQRDetails = async () => {
     try {
@@ -102,19 +82,16 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
       if (isLessonMode && lessonId) {
         const data = await apiFetch<{
           lessonUrl?: string;
-          qrLogo?: string;
           qrCodeUrl?: string;
           logoConfig?: any;
           hasPersistedQR?: boolean;
         }>(`/lessons/${lessonId}/qr`);
         setTargetUrl(data.lessonUrl || '');
-        setLogoUrl(data.qrLogo || DEFAULT_HOPENIX_LOGO);
         if (data.logoConfig) {
           try {
             const parsed = typeof data.logoConfig === 'string' ? JSON.parse(data.logoConfig) : data.logoConfig;
             if (parsed.fgColor) setFgColor(parsed.fgColor);
             if (parsed.bgColor) setBgColor(parsed.bgColor);
-            if (parsed.logoSize) setLogoSize(parsed.logoSize);
           } catch {}
         }
         if (data.qrCodeUrl) {
@@ -126,20 +103,17 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
       } else {
         const data = await apiFetch<{
           bookUrl?: string;
-          qrLogo?: string;
           qrCodeUrl?: string;
           logoConfig?: any;
           hasPersistedQR?: boolean;
         }>(`/books/${courseId}/qr`);
         const url = data.bookUrl || `${window.location.origin}/books/${courseId}`;
         setTargetUrl(url);
-        setLogoUrl(data.qrLogo || DEFAULT_HOPENIX_LOGO);
         if (data.logoConfig) {
           try {
             const parsed = typeof data.logoConfig === 'string' ? JSON.parse(data.logoConfig) : data.logoConfig;
             if (parsed.fgColor) setFgColor(parsed.fgColor);
             if (parsed.bgColor) setBgColor(parsed.bgColor);
-            if (parsed.logoSize) setLogoSize(parsed.logoSize);
           } catch {}
         }
         if (data.qrCodeUrl) {
@@ -156,49 +130,11 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
     }
   };
 
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      toast('Please select an image file for the logo.', 'error');
-      return;
-    }
-
-    try {
-      setUploadingLogo(true);
-      const formData = new FormData();
-      formData.append('logo', file);
-
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/books/upload-qr-logo', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
-
-      const resData = await response.json();
-      if (!response.ok) {
-        throw new Error(resData.error || 'Failed to upload logo.');
-      }
-
-      setLogoUrl(resData.url);
-      toast('Brand logo uploaded permanently! ✨', 'success');
-    } catch (err: any) {
-      toast(err.message || 'Logo upload failed.', 'error');
-    } finally {
-      setUploadingLogo(false);
-    }
-  };
-
-  const renderQRWithLogo = async (): Promise<void> => {
+  const renderQR = async (): Promise<void> => {
     const canvas = canvasRef.current;
     if (!canvas || !targetUrl) return;
 
     try {
-      // 1. Render QR canvas
       await QRCode.toCanvas(canvas, targetUrl, {
         width: qrWidth,
         margin: 2,
@@ -208,101 +144,6 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
           light: bgColor,
         },
       });
-
-      const effectiveLogo = logoUrl || DEFAULT_HOPENIX_LOGO;
-
-      if (effectiveLogo) {
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-
-        await new Promise<void>((resolve) => {
-          const img = new Image();
-
-          // If it's a remote/local URL (not Data URI), route through proxy-asset to bypass private blob auth & CORS restrictions
-          let logoSrc = effectiveLogo;
-          if (!effectiveLogo.startsWith('data:image/')) {
-            logoSrc = `/api/books/proxy-asset?url=${encodeURIComponent(effectiveLogo)}`;
-            img.crossOrigin = 'anonymous';
-          }
-
-          const drawLogoOnCanvas = () => {
-            const canvasSize = canvas.width;
-            let logoPercent = 0.22;
-            if (logoSize === 'small') logoPercent = 0.16;
-            if (logoSize === 'large') logoPercent = 0.28;
-
-            const logoDimension = canvasSize * logoPercent;
-            const center = canvasSize / 2;
-            const x = center - logoDimension / 2;
-            const y = center - logoDimension / 2;
-
-            const padding = 6;
-            const bgX = x - padding;
-            const bgY = y - padding;
-            const bgSize = logoDimension + padding * 2;
-
-            ctx.save();
-            ctx.fillStyle = bgColor;
-            ctx.beginPath();
-            if (typeof ctx.roundRect === 'function') {
-              ctx.roundRect(bgX, bgY, bgSize, bgSize, 12);
-            } else {
-              ctx.rect(bgX, bgY, bgSize, bgSize);
-            }
-            ctx.fill();
-
-            // Border around logo background badge
-            ctx.strokeStyle = fgColor;
-            ctx.lineWidth = 2;
-            ctx.stroke();
-            ctx.restore();
-
-            ctx.drawImage(img, x, y, logoDimension, logoDimension);
-            resolve();
-          };
-
-          img.onload = drawLogoOnCanvas;
-
-          img.onerror = (err) => {
-            console.warn('Primary logo load failed, attempting fallback to default brand logo:', err);
-            const fallbackImg = new Image();
-            fallbackImg.onload = () => {
-              const canvasSize = canvas.width;
-              let logoPercent = 0.22;
-              if (logoSize === 'small') logoPercent = 0.16;
-              if (logoSize === 'large') logoPercent = 0.28;
-
-              const logoDimension = canvasSize * logoPercent;
-              const center = canvasSize / 2;
-              const x = center - logoDimension / 2;
-              const y = center - logoDimension / 2;
-
-              const padding = 6;
-              const bgX = x - padding;
-              const bgY = y - padding;
-              const bgSize = logoDimension + padding * 2;
-
-              ctx.save();
-              ctx.fillStyle = bgColor;
-              ctx.beginPath();
-              if (typeof ctx.roundRect === 'function') {
-                ctx.roundRect(bgX, bgY, bgSize, bgSize, 12);
-              } else {
-                ctx.rect(bgX, bgY, bgSize, bgSize);
-              }
-              ctx.fill();
-              ctx.restore();
-
-              ctx.drawImage(fallbackImg, x, y, logoDimension, logoDimension);
-              resolve();
-            };
-            fallbackImg.onerror = () => resolve();
-            fallbackImg.src = DEFAULT_HOPENIX_LOGO;
-          };
-
-          img.src = logoSrc;
-        });
-      }
     } catch (err) {
       console.error('Render QR error:', err);
     }
@@ -314,8 +155,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
 
     try {
       setSaving(true);
-      // Guarantee logo is fully drawn onto canvas before capturing dataURL
-      await renderQRWithLogo();
+      await renderQR();
       const qrDataUrl = canvas.toDataURL('image/png');
       const endpoint = isLessonMode ? `/lessons/${lessonId}/qr` : `/books/${courseId}/qr`;
 
@@ -326,8 +166,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
         method: 'POST',
         body: JSON.stringify({
           qrDataUrl,
-          logoUrl,
-          logoConfig: { fgColor, bgColor, logoSize },
+          logoConfig: { fgColor, bgColor },
           regenerate: isRegenerate,
         }),
       });
@@ -423,80 +262,27 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
           {/* ADMIN Customization Controls */}
           {isAdmin ? (
             <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                {/* Logo Settings */}
-                <div className="space-y-3 p-4 bg-slate-900/80 rounded-2xl border border-slate-800">
-                  <label className="font-extrabold text-white flex items-center gap-2">
-                    <ImageIcon className="w-4 h-4 text-brand-300" />
-                    Center Brand Logo
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <label className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-950 hover:bg-brand-600 border border-slate-800 rounded-xl cursor-pointer text-white font-extrabold transition-all shadow-md">
-                      <Upload className="w-4 h-4 text-brand-300" />
-                      <span>{uploadingLogo ? 'Uploading...' : 'Upload Logo'}</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleLogoUpload}
-                        disabled={uploadingLogo}
-                        className="hidden"
-                      />
-                    </label>
-                    {logoUrl && logoUrl !== DEFAULT_HOPENIX_LOGO && (
-                      <button
-                        onClick={() => setLogoUrl(DEFAULT_HOPENIX_LOGO)}
-                        className="p-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 border border-rose-500/40 transition-colors"
-                        title="Reset to Default Brand Logo"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
+              {/* Color Controls */}
+              <div className="space-y-3 p-4 bg-slate-900/80 rounded-2xl border border-slate-800">
+                <label className="font-extrabold text-white">QR Code Palette</label>
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <label className="font-bold text-slate-300 block mb-1">Foreground</label>
+                    <input
+                      type="color"
+                      value={fgColor}
+                      onChange={(e) => setFgColor(e.target.value)}
+                      className="w-full h-10 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer p-1"
+                    />
                   </div>
-
-                  {logoUrl && (
-                    <div className="space-y-1.5 pt-1">
-                      <label className="font-bold text-slate-300">Logo Size</label>
-                      <div className="grid grid-cols-3 gap-2">
-                        {(['small', 'medium', 'large'] as const).map((sz) => (
-                          <button
-                            key={sz}
-                            onClick={() => setLogoSize(sz)}
-                            className={`py-1.5 rounded-lg border font-bold capitalize transition-all ${
-                              logoSize === sz
-                                ? 'bg-brand-600 text-white border-brand-500'
-                                : 'bg-slate-950 text-slate-400 border-slate-800'
-                            }`}
-                          >
-                            {sz}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Color Controls */}
-                <div className="space-y-3 p-4 bg-slate-900/80 rounded-2xl border border-slate-800">
-                  <label className="font-extrabold text-white">QR Code Palette</label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="font-bold text-slate-300 block mb-1">Foreground</label>
-                      <input
-                        type="color"
-                        value={fgColor}
-                        onChange={(e) => setFgColor(e.target.value)}
-                        className="w-full h-10 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer p-1"
-                      />
-                    </div>
-                    <div>
-                      <label className="font-bold text-slate-300 block mb-1">Background</label>
-                      <input
-                        type="color"
-                        value={bgColor}
-                        onChange={(e) => setBgColor(e.target.value)}
-                        className="w-full h-10 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer p-1"
-                      />
-                    </div>
+                  <div>
+                    <label className="font-bold text-slate-300 block mb-1">Background</label>
+                    <input
+                      type="color"
+                      value={bgColor}
+                      onChange={(e) => setBgColor(e.target.value)}
+                      className="w-full h-10 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer p-1"
+                    />
                   </div>
                 </div>
               </div>
