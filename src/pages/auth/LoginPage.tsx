@@ -111,33 +111,7 @@ export const LoginPage: React.FC = () => {
             </Button>
           </form>
 
-          {/* Quick Fill Demo Personas */}
-          <div className="pt-5 border-t border-purple-500/20 space-y-3">
-            <p className="text-xs font-extrabold text-slate-400 text-center uppercase tracking-wider flex items-center justify-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              Quick Demo Personas
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => fillDemo('admin@example.com', 'admin123')}
-                className="flex flex-col items-center p-3 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 rounded-2xl transition-all text-center group"
-              >
-                <Shield className="w-5 h-5 text-purple-400 mb-1 group-hover:scale-110 transition-transform" />
-                <span className="text-xs font-bold text-white">Admin</span>
-                <span className="text-[10px] text-slate-400">Full Access</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => fillDemo('editor1@example.com', 'password123')}
-                className="flex flex-col items-center p-3 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-2xl transition-all text-center group"
-              >
-                <Edit3 className="w-5 h-5 text-amber-400 mb-1 group-hover:scale-110 transition-transform" />
-                <span className="text-xs font-bold text-white">Editor</span>
-                <span className="text-[10px] text-slate-400">Content Editor</span>
-              </button>
-            </div>
-          </div>
+          
         </div>
       </div>
     </div>
