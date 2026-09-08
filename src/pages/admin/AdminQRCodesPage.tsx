@@ -8,8 +8,6 @@ import { useToast } from '../../components/ui/Toast';
 import { QRCodeModal } from '../../components/qr/QRCodeModal';
 import { QrCode, ChevronDown, ChevronUp, Layers, BookOpen, Sparkles, CheckCircle2, Clock } from 'lucide-react';
 
-import { getCompanySlug } from '../../lib/slug';
-
 interface BookWithLessons extends Book {
   lessons?: Lesson[];
 }
@@ -112,24 +110,25 @@ export const AdminQRCodesPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto pb-16">
+    <div className="space-y-8 max-w-4xl mx-auto pb-16">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <QrCode className="w-6 h-6 text-brand-400" />
+          <h1 className="text-2xl sm:text-3xl font-serif font-bold text-stone-900 tracking-tight flex items-center gap-2">
+            <QrCode className="w-6 h-6 text-stone-900" />
             Digital Book QR Code Studio
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-stone-500 mt-1 font-medium">
             Generate, preview, customize, and download persistent QR codes for books and lessons.
           </p>
         </div>
 
         <Button
-          variant="playful"
+          variant="primary"
           size="md"
           loading={bulkLoading}
           onClick={handleGenerateMissingQRs}
+          className="bg-stone-900 hover:bg-stone-800 text-stone-50 text-xs font-semibold rounded-xl shadow-xs transition-all"
           icon={<Sparkles className="w-4 h-4 text-amber-300" />}
         >
           Generate Missing QR Codes
@@ -143,7 +142,7 @@ export const AdminQRCodesPage: React.FC = () => {
           ))}
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {books.map((book) => {
             const isExpanded = expandedBooks.has(book.id);
             const lessonCount = book.lessons?.length ?? book._count?.lessons ?? 0;
@@ -152,7 +151,7 @@ export const AdminQRCodesPage: React.FC = () => {
             return (
               <div
                 key={book.id}
-                className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl hover:border-slate-700 transition-all"
+                className="border border-stone-200 rounded-2xl overflow-hidden bg-white shadow-xs transition-all"
               >
                 {/* Book Row */}
                 <div className="flex items-center justify-between p-5 gap-4">
@@ -164,105 +163,118 @@ export const AdminQRCodesPage: React.FC = () => {
                         'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=400&q=80'
                       }
                       alt={book.title}
-                      className="w-14 h-18 rounded-xl object-cover border border-slate-800 shrink-0"
+                      className="w-14 h-18 rounded-xl object-cover border border-stone-200 shrink-0"
                       style={{ height: '4.5rem' }}
                     />
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
-                        <BookOpen className="w-4 h-4 text-brand-400 shrink-0" />
-                        <h3 className="font-bold text-base text-white truncate">{book.title}</h3>
+                        <BookOpen className="w-4 h-4 text-stone-900 shrink-0" />
+                        <h3 className="font-semibold text-sm text-stone-900 truncate">{book.title}</h3>
                         {hasBookQR ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-300">
                             <CheckCircle2 className="w-3 h-3" /> Persistent QR
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-300">
                             <Clock className="w-3 h-3" /> Not Generated
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-slate-400">By {book.author || 'Hopenix'}</p>
-                      <p className="text-xs text-brand-400 font-mono mt-0.5">/{getCompanySlug(book.companyName)}/books/{book.slug}</p>
-                      <p className="text-xs text-slate-500 mt-0.5">{lessonCount} lesson{lessonCount !== 1 ? 's' : ''}</p>
+                      <p className="text-[11px] text-stone-500">{lessonCount} lessons</p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Badge variant={book.published ? 'success' : 'slate'} size="sm">
+                          {book.published ? 'Published' : 'Draft'}
+                        </Badge>
+                      </div>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
                     <Button
-                      variant={hasBookQR ? 'outline' : 'primary'}
+                      variant="outline"
                       size="sm"
                       onClick={() => openBookQR(book)}
-                      icon={<QrCode className="w-4 h-4" />}
+                      className="border-stone-200 bg-white hover:bg-stone-50 text-stone-700 text-xs font-semibold rounded-xl"
+                      icon={<QrCode className="w-3.5 h-3.5" />}
                     >
-                      {hasBookQR ? 'View / Edit QR' : 'Generate QR'}
+                      Book QR
                     </Button>
-
-                    {lessonCount > 0 && (
-                      <button
-                        onClick={() => toggleExpand(book.id)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs text-slate-300 font-semibold transition-colors"
-                        title={isExpanded ? 'Collapse lessons' : 'Show lesson QR codes'}
-                      >
-                        <Layers className="w-3.5 h-3.5 text-brand-400" />
-                        Lessons
-                        {isExpanded ? (
-                          <ChevronUp className="w-3.5 h-3.5" />
-                        ) : (
-                          <ChevronDown className="w-3.5 h-3.5" />
-                        )}
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => toggleExpand(book.id)}
+                      className="inline-flex items-center justify-center w-8 h-8 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-500 hover:text-stone-700 transition-colors"
+                      title={isExpanded ? 'Collapse lessons' : 'Expand lessons'}
+                    >
+                      {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    </button>
                   </div>
                 </div>
 
-                {/* Lesson Rows (expandable) */}
-                {isExpanded && book.lessons && book.lessons.length > 0 && (
-                  <div className="border-t border-slate-800 divide-y divide-slate-800/60">
-                    {book.lessons.map((lesson, idx) => {
-                      const num = lesson.lessonNumber || idx + 1;
-                      const hasLessonQR = Boolean(lesson.qrCodeUrl);
+                {/* Expanded Lessons Body */}
+                {isExpanded && (
+                  <div className="border-t border-stone-200 divide-y divide-stone-100 bg-stone-50/80">
+                    <div className="px-5 py-3.5 flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <Layers className="w-4 h-4 text-stone-900 shrink-0" />
+                        <div>
+                          <p className="text-xs font-bold text-stone-900">Book Lessons</p>
+                          <p className="text-[10px] text-stone-500 leading-tight">
+                            Manage individual lesson QR codes and downloads
+                          </p>
+                        </div>
+                      </div>
+                    </div>
 
-                      return (
-                        <div
-                          key={lesson.id}
-                          className="flex items-center justify-between px-5 py-3 bg-slate-950/60 hover:bg-slate-950 transition-colors"
-                        >
-                          <div className="flex items-center gap-3 min-w-0">
-                            <span className="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center font-bold text-xs text-brand-400 shrink-0">
-                              L{num}
-                            </span>
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-2">
-                                <p className="text-sm font-semibold text-white truncate">
-                                  Lesson {num}: {lesson.title}
-                                </p>
-                                {hasLessonQR ? (
-                                  <span className="text-[10px] font-extrabold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded-md border border-emerald-500/30">
-                                    QR Active
-                                  </span>
-                                ) : (
-                                  <span className="text-[10px] font-extrabold text-amber-400 bg-amber-950/80 px-2 py-0.5 rounded-md border border-amber-500/30">
-                                    No QR
+                    {(book.lessons?.length || 0) > 0 ? (
+                      <div className="px-5 py-2 space-y-0.5">
+                        {book.lessons!.map((lesson, idx) => {
+                          const hasLessonQR = Boolean(lesson.qrCodeUrl);
+                          const isLast = idx === book.lessons!.length - 1;
+
+                          return (
+                            <div
+                              key={lesson.id}
+                              className={`flex items-center justify-between py-2.5 ${!isLast ? 'border-b border-stone-100' : ''}`}
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <span className="text-[10px] font-mono font-bold text-stone-700 shrink-0 w-8">
+                                  L{lesson.lessonNumber || idx + 1}
+                                </span>
+                                <span className="text-xs text-stone-800 truncate">{lesson.title}</span>
+                                {!lesson.published && (
+                                  <span className="text-[9px] font-bold text-stone-500 bg-stone-100 px-1.5 py-0.5 rounded shrink-0">
+                                    Draft
                                   </span>
                                 )}
                               </div>
-                              <p className="text-xs text-brand-400 font-mono">
-                                /{getCompanySlug(book.companyName)}/books/{book.slug}/lessons/{num}
-                              </p>
+                              <div className="flex items-center gap-2 shrink-0 ml-3">
+                                {hasLessonQR ? (
+                                  <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-300">
+                                    QR Ready
+                                  </span>
+                                ) : (
+                                  <span className="text-[9px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-300">
+                                    No QR
+                                  </span>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => openLessonQR(book, lesson, idx)}
+                                  className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 text-xs font-semibold transition-all shadow-xs gap-1.5"
+                                >
+                                  <QrCode className="w-3.5 h-3.5 text-stone-500" />
+                                  <span>View QR</span>
+                                </button>
+                              </div>
                             </div>
-                          </div>
-
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openLessonQR(book, lesson, idx)}
-                            icon={<QrCode className="w-3.5 h-3.5 text-brand-400" />}
-                          >
-                            {hasLessonQR ? 'View QR' : 'Generate QR'}
-                          </Button>
-                        </div>
-                      );
-                    })}
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="px-5 py-6 text-center text-xs text-stone-500 font-medium">
+                        No lessons available for this book yet.
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -271,24 +283,16 @@ export const AdminQRCodesPage: React.FC = () => {
         </div>
       )}
 
-      {/* Shared QR Modal */}
-      {qrOpen && (
-        <QRCodeModal
-          isOpen={qrOpen}
-          onClose={() => {
-            setQrOpen(false);
-            setQrLessonId(undefined);
-            setQrLessonTitle(undefined);
-            setQrLessonNumber(undefined);
-            fetchBooks();
-          }}
-          courseId={qrCourseId}
-          courseTitle={qrCourseTitle}
-          lessonId={qrLessonId}
-          lessonTitle={qrLessonTitle}
-          lessonNumber={qrLessonNumber}
-        />
-      )}
+      {/* QR Code Modal Component */}
+      <QRCodeModal
+        isOpen={qrOpen}
+        onClose={() => setQrOpen(false)}
+        courseId={qrCourseId}
+        courseTitle={qrCourseTitle}
+        lessonId={qrLessonId}
+        lessonTitle={qrLessonTitle}
+        lessonNumber={qrLessonNumber}
+      />
     </div>
   );
 };
