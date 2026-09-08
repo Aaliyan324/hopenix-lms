@@ -13,7 +13,6 @@ import {
   Check,
   BookOpen,
   Layers,
-  Sparkles,
   Save,
   AlertTriangle,
 } from 'lucide-react';
@@ -60,7 +59,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
   const [confirmRegenOpen, setConfirmRegenOpen] = useState(false);
 
   // Customization Settings (Admin only)
-  const [fgColor, setFgColor] = useState('#2e1065');
+  const [fgColor, setFgColor] = useState('#1c1917');
   const [bgColor, setBgColor] = useState('#ffffff');
   const [qrWidth] = useState<number>(400);
 
@@ -202,60 +201,59 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
       : `${courseTitle}_QR`.replace(/[^a-zA-Z0-9]/g, '_');
     a.download = `${safeName}.png`;
     a.click();
-    toast('High-resolution PNG downloaded! 🎉', 'success');
+    toast('High-resolution PNG downloaded!', 'success');
   };
 
   const modalTitle = isLessonMode
     ? isAdmin ? 'Lesson QR Code Studio' : 'Lesson QR Code'
-    : isAdmin ? 'Book QR Code Studio' : 'Book QR Code';
+    : isAdmin ? 'Publication QR Code' : 'Book QR Code';
 
   return (
     <>
       <Modal isOpen={isOpen} onClose={onClose} title={modalTitle} maxWidth="xl">
         <div className="space-y-6">
           {/* Header Info Banner */}
-          <div className="text-center space-y-1 bg-gradient-to-r from-purple-950/60 to-slate-900 p-4 rounded-2xl border border-purple-500/20">
+          <div className="text-center space-y-1 bg-stone-50 p-4 rounded-xl border border-stone-200">
             {isLessonMode ? (
               <>
                 <div className="flex items-center justify-center gap-2 mb-1">
-                  <Layers className="w-4 h-4 text-brand-300" />
-                  <span className="text-xs text-brand-300 font-extrabold">
+                  <Layers className="w-4 h-4 text-stone-600" />
+                  <span className="text-xs text-stone-600 font-semibold">
                     {courseTitle} — Chapter {lessonNumber}
                   </span>
                 </div>
-                <h4 className="text-base font-extrabold text-white">{lessonTitle}</h4>
+                <h4 className="text-base font-serif font-bold text-stone-900">{lessonTitle}</h4>
               </>
             ) : (
               <>
                 <div className="flex items-center justify-center gap-2 mb-1">
-                  <BookOpen className="w-4 h-4 text-brand-300" />
-                  <span className="text-xs text-brand-300 font-extrabold">Digital Book QR</span>
+                  <BookOpen className="w-4 h-4 text-stone-600" />
+                  <span className="text-xs text-stone-600 font-semibold">Digital Publication</span>
                 </div>
-                <h4 className="text-base font-extrabold text-white">{courseTitle}</h4>
+                <h4 className="text-base font-serif font-bold text-stone-900">{courseTitle}</h4>
               </>
             )}
-            <p className="text-xs text-brand-300 font-mono truncate max-w-lg mx-auto">{targetUrl}</p>
+            <p className="text-xs text-stone-500 font-mono truncate max-w-lg mx-auto">{targetUrl}</p>
           </div>
 
           {/* QR Canvas Preview Area */}
-          <div className="flex flex-col items-center justify-center p-6 bg-slate-950 rounded-3xl border border-purple-500/20 space-y-4">
+          <div className="flex flex-col items-center justify-center p-6 bg-stone-100 rounded-xl border border-stone-200 space-y-4">
             {loading ? (
               <div className="flex items-center justify-center" style={{ width: 320, height: 320 }}>
-                <RefreshCw className="w-10 h-10 text-brand-400 animate-spin" />
+                <RefreshCw className="w-8 h-8 text-stone-600 animate-spin" />
               </div>
             ) : (
-              <div className="p-4 bg-white rounded-3xl shadow-2xl inline-block border-4 border-purple-500/30">
+              <div className="p-4 bg-white rounded-xl shadow-md inline-block border border-stone-200">
                 <canvas
                   ref={canvasRef}
                   style={{ display: 'block', width: 320, height: 320 }}
                 />
               </div>
             )}
-            <p className="text-xs font-bold text-slate-300 text-center flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-amber-300" />
+            <p className="text-xs text-stone-600 text-center font-medium">
               {isLessonMode
-                ? 'Scan to open chapter directly on any smartphone.'
-                : 'Scan to open full digital book library page.'}
+                ? 'Scan to open chapter directly on mobile.'
+                : 'Scan to view digital publication online.'}
             </p>
           </div>
 
@@ -263,25 +261,25 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
           {isAdmin ? (
             <div className="space-y-4">
               {/* Color Controls */}
-              <div className="space-y-3 p-4 bg-slate-900/80 rounded-2xl border border-slate-800">
-                <label className="font-extrabold text-white">QR Code Palette</label>
+              <div className="space-y-3 p-4 bg-stone-50 rounded-xl border border-stone-200">
+                <label className="font-semibold text-stone-900 text-sm">QR Code Palette</label>
                 <div className="grid grid-cols-2 gap-3 text-xs">
                   <div>
-                    <label className="font-bold text-slate-300 block mb-1">Foreground</label>
+                    <label className="font-medium text-stone-600 block mb-1">Foreground Color</label>
                     <input
                       type="color"
                       value={fgColor}
                       onChange={(e) => setFgColor(e.target.value)}
-                      className="w-full h-10 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer p-1"
+                      className="w-full h-9 bg-white border border-stone-300 rounded cursor-pointer p-1"
                     />
                   </div>
                   <div>
-                    <label className="font-bold text-slate-300 block mb-1">Background</label>
+                    <label className="font-medium text-stone-600 block mb-1">Background Color</label>
                     <input
                       type="color"
                       value={bgColor}
                       onChange={(e) => setBgColor(e.target.value)}
-                      className="w-full h-10 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer p-1"
+                      className="w-full h-9 bg-white border border-stone-300 rounded cursor-pointer p-1"
                     />
                   </div>
                 </div>
@@ -291,32 +289,31 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 {!hasPersisted ? (
                   <Button
-                    variant="playful"
+                    variant="primary"
                     size="md"
-                    className="flex-1 rounded-xl"
+                    className="flex-1"
                     loading={saving}
                     onClick={() => handleSaveOrRegenerate(false)}
                     icon={<Save className="w-4 h-4" />}
                   >
-                    Generate & Save Permanent QR
+                    Save QR Code
                   </Button>
                 ) : (
                   <Button
                     variant="outline"
                     size="md"
-                    className="flex-1 rounded-xl text-amber-300 border-amber-500/30 hover:bg-amber-500/10"
+                    className="flex-1"
                     loading={saving}
                     onClick={() => setConfirmRegenOpen(true)}
                     icon={<RefreshCw className="w-4 h-4" />}
                   >
-                    Regenerate QR Code
+                    Regenerate QR
                   </Button>
                 )}
 
                 <Button
                   variant="secondary"
                   size="md"
-                  className="rounded-xl"
                   onClick={downloadPNG}
                   icon={<Download className="w-4 h-4" />}
                 >
@@ -326,11 +323,10 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
                 <Button
                   variant="ghost"
                   size="md"
-                  className="rounded-xl"
                   onClick={copyLink}
-                  icon={copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                  icon={copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
                 >
-                  {copied ? 'Copied!' : 'Copy Link'}
+                  {copied ? 'Copied' : 'Copy Link'}
                 </Button>
               </div>
             </div>
@@ -338,20 +334,20 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
             /* Consumer View (Public Viewer / Editor) */
             <div className="flex gap-3 pt-2">
               <Button
-                variant="playful"
+                variant="primary"
                 size="md"
-                className="flex-1 rounded-xl"
+                className="flex-1"
                 onClick={downloadPNG}
                 icon={<Download className="w-4 h-4" />}
               >
-                Download QR Image
+                Download QR Code
               </Button>
               <Button
                 variant="secondary"
                 size="md"
-                className="flex-1 rounded-xl"
+                className="flex-1"
                 onClick={copyLink}
-                icon={copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                icon={copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
               >
                 {copied ? 'Copied!' : 'Copy Link'}
               </Button>
@@ -368,10 +364,10 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
         maxWidth="sm"
       >
         <div className="space-y-4 text-xs">
-          <div className="flex items-start gap-3 p-4 bg-amber-950/40 border border-amber-500/30 rounded-2xl text-amber-200">
-            <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-            <p className="leading-relaxed">
-              Regenerating this QR code may invalidate the existing QR configuration. Are you sure you want to proceed?
+          <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-lg text-amber-900">
+            <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <p className="leading-normal">
+              Regenerating this QR code may update the stored QR artwork. Are you sure you want to proceed?
             </p>
           </div>
 
@@ -384,7 +380,6 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
               size="sm"
               loading={saving}
               onClick={() => handleSaveOrRegenerate(true)}
-              className="bg-amber-600 hover:bg-amber-500 border-amber-500"
             >
               Confirm Regeneration
             </Button>
@@ -394,3 +389,4 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
     </>
   );
 };
+

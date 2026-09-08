@@ -15,24 +15,24 @@ export const Badge: React.FC<BadgeProps> = ({
   size = 'sm',
   className,
 }) => {
-  const baseStyles = 'inline-flex items-center font-bold rounded-full border backdrop-blur-md shadow-xs transition-all';
+  const baseStyles = 'inline-flex items-center font-medium rounded-md border transition-all';
 
   const variants = {
-    brand: 'bg-brand-500/15 text-brand-300 border-brand-500/30',
-    purple: 'bg-purple-500/15 text-purple-300 border-purple-500/30',
-    pink: 'bg-pink-500/15 text-pink-300 border-pink-500/30',
-    amber: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
-    orange: 'bg-orange-500/15 text-orange-300 border-orange-500/30',
-    sky: 'bg-sky-500/15 text-sky-300 border-sky-500/30',
-    success: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
-    warning: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
-    danger: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
-    slate: 'bg-slate-800/80 text-slate-300 border-slate-700',
+    brand: 'bg-stone-100 text-stone-800 border-stone-300',
+    purple: 'bg-stone-100 text-stone-800 border-stone-300',
+    pink: 'bg-rose-50 text-rose-800 border-rose-200',
+    amber: 'bg-amber-50 text-amber-900 border-amber-200',
+    orange: 'bg-orange-50 text-orange-900 border-orange-200',
+    sky: 'bg-sky-50 text-sky-900 border-sky-200',
+    success: 'bg-emerald-50 text-emerald-900 border-emerald-200',
+    warning: 'bg-amber-50 text-amber-900 border-amber-200',
+    danger: 'bg-red-50 text-red-800 border-red-200',
+    slate: 'bg-stone-100 text-stone-700 border-stone-200',
   };
 
   const sizes = {
-    sm: 'px-2.5 py-0.5 text-[11px] tracking-wide',
-    md: 'px-3 py-1 text-xs tracking-wide',
+    sm: 'px-2 py-0.5 text-[11px] tracking-wide',
+    md: 'px-2.5 py-1 text-xs tracking-wide',
   };
 
   return (
@@ -41,3 +41,4 @@ export const Badge: React.FC<BadgeProps> = ({
     </span>
   );
 };
+

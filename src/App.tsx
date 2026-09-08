@@ -34,7 +34,7 @@ const PortalLayout: React.FC = () => {
   const showSidebar = Boolean(user && (user.role === 'ADMIN' || user.role === 'EDITOR'));
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-brand-500 selection:text-white">
+    <div className="min-h-screen bg-stone-50 text-stone-900 flex flex-col font-sans selection:bg-stone-900 selection:text-stone-50">
       <Navbar onToggleSidebar={showSidebar ? () => setSidebarOpen(!sidebarOpen) : undefined} />
       <div className="flex flex-1 relative">
         {showSidebar && <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />}
@@ -48,6 +48,7 @@ const PortalLayout: React.FC = () => {
     </div>
   );
 };
+
 
 // Root index & unauthenticated entry redirector
 const RootRedirect: React.FC = () => {

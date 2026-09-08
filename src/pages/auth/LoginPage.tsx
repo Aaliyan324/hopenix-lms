@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { useToast } from '../../components/ui/Toast';
-import { BookOpen, Shield, Edit3, Lock, Mail, ArrowRight, Sparkles } from 'lucide-react';
+import { BookOpen, Lock, Mail, ArrowRight } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const { login } = useAuth();
@@ -24,7 +24,7 @@ export const LoginPage: React.FC = () => {
     try {
       setLoading(true);
       const user = await login(email, password);
-      toast(`Welcome back, ${user.name}! ✨`, 'success');
+      toast(`Welcome back, ${user.name}`, 'success');
 
       if (user.role === 'ADMIN') navigate('/admin');
       else if (user.role === 'EDITOR') navigate('/editor');
@@ -36,64 +36,54 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const fillDemo = (demoEmail: string, demoPass: string) => {
-    setEmail(demoEmail);
-    setPassword(demoPass);
-  };
-
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col justify-center items-center p-4 relative overflow-hidden">
-      {/* Background Gradients */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-brand-600/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-600/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-
-      <div className="w-full max-w-md space-y-8 z-10">
+    <div className="min-h-screen bg-stone-50 flex flex-col justify-center items-center p-4 relative">
+      <div className="w-full max-w-md space-y-6 z-10">
         {/* Header Branding */}
-        <div className="text-center space-y-3">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-gradient-to-tr from-brand-600 via-purple-600 to-pink-500 shadow-2xl shadow-brand-500/40 mb-2 border border-pink-400/30 animate-float">
-            <BookOpen className="w-8 h-8 text-white fill-current" />
+        <div className="text-center space-y-2">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-stone-900 shadow-sm mb-2 text-stone-50">
+            <BookOpen className="w-7 h-7 fill-current" />
           </div>
-          <h1 className="text-3xl font-black text-white tracking-tight">
-            Hopenix<span className="text-pink-500">.</span>
+          <h1 className="font-serif text-3xl font-bold text-stone-900 tracking-tight">
+            Hopenix<span className="text-stone-400">.</span>
           </h1>
-          <p className="text-sm font-medium text-slate-300">
-            Welcome to your magical reading adventure
+          <p className="text-xs font-medium text-stone-600 uppercase tracking-widest">
+            Editorial Publishing Portal
           </p>
         </div>
 
         {/* Login Form Card */}
-        <div className="bg-slate-900/90 border border-purple-500/25 rounded-3xl p-8 shadow-2xl backdrop-blur-xl space-y-6">
+        <div className="bg-white border border-stone-200 rounded-xl p-8 shadow-sm space-y-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-extrabold text-slate-300 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider mb-1.5">
                 Email Address
               </label>
               <div className="relative">
-                <Mail className="w-5 h-5 text-brand-400 absolute left-4 top-1/2 -translate-y-1/2" />
+                <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@example.com"
-                  className="w-full pl-12 pr-4 py-3.5 bg-slate-950/80 border border-purple-500/20 focus:border-pink-400 focus:ring-4 focus:ring-pink-500/20 rounded-2xl text-white placeholder-slate-500 text-sm font-medium focus:outline-none transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 bg-white border border-stone-300 rounded-lg text-stone-900 placeholder-stone-400 text-sm focus:outline-none focus:border-stone-800 focus:ring-1 focus:ring-stone-800 transition-colors"
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-extrabold text-slate-300 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider mb-1.5">
                 Password
               </label>
               <div className="relative">
-                <Lock className="w-5 h-5 text-brand-400 absolute left-4 top-1/2 -translate-y-1/2" />
+                <Lock className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-12 pr-4 py-3.5 bg-slate-950/80 border border-purple-500/20 focus:border-pink-400 focus:ring-4 focus:ring-pink-500/20 rounded-2xl text-white placeholder-slate-500 text-sm font-medium focus:outline-none transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 bg-white border border-stone-300 rounded-lg text-stone-900 placeholder-stone-400 text-sm focus:outline-none focus:border-stone-800 focus:ring-1 focus:ring-stone-800 transition-colors"
                   required
                 />
               </div>
@@ -101,19 +91,18 @@ export const LoginPage: React.FC = () => {
 
             <Button
               type="submit"
-              variant="playful"
+              variant="primary"
               size="lg"
-              className="w-full mt-2 rounded-2xl"
+              className="w-full mt-2"
               loading={loading}
-              icon={<ArrowRight className="w-5 h-5" />}
+              icon={<ArrowRight className="w-4 h-4" />}
             >
-              Sign In to Adventure
+              Sign In
             </Button>
           </form>
-
-          
         </div>
       </div>
     </div>
   );
 };
+

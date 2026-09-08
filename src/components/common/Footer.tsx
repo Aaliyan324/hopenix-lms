@@ -1,69 +1,61 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Sparkles, Heart, Compass, Github, Shield, HelpCircle } from 'lucide-react';
+import { BookOpen, Shield, Compass, Book } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="mt-20 border-t border-slate-800/80 bg-slate-950/80 backdrop-blur-md relative overflow-hidden">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-brand-500/50 to-transparent" />
-      
+    <footer className="mt-20 border-t border-stone-200 bg-white relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
           {/* Brand Column */}
-          <div className="space-y-4 md:col-span-2">
-            <Link to="/books" className="inline-flex items-center gap-2.5 group">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-600 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-brand-500/25 group-hover:scale-105 transition-transform">
-                <BookOpen className="w-5 h-5 fill-current" />
+          <div className="space-y-3 md:col-span-2">
+            <Link to="/login" className="inline-flex items-center gap-2.5 group">
+              <div className="w-8 h-8 rounded-lg bg-stone-900 flex items-center justify-center text-stone-50 shadow-xs">
+                <BookOpen className="w-4 h-4 fill-current" />
               </div>
-              <span className="font-black text-2xl tracking-tight text-white group-hover:text-brand-300 transition-colors">
-                Hopenix<span className="text-pink-500">.</span>
+              <span className="font-serif font-bold text-xl tracking-tight text-stone-900">
+                Hopenix<span className="text-stone-400">.</span>
               </span>
             </Link>
-            <p className="text-sm text-slate-400 max-w-sm leading-relaxed">
-              A modern digital library built for institutions and organisations. Explore interactive books and lessons delivered securely through QR codes.
+            <p className="text-xs text-stone-600 max-w-sm leading-relaxed font-sans">
+              A modern digital library and publishing platform for institutions. Explore interactive e-books and lessons delivered through secure QR code access.
             </p>
-            <div className="flex items-center gap-3 text-slate-400 text-xs font-semibold">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-brand-300">
-                <Sparkles className="w-3.5 h-3.5" /> Interactive E-Books
-              </span>
-            </div>
           </div>
 
           {/* Quick Links */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-black uppercase tracking-wider text-slate-300">Navigation</h4>
-            <ul className="space-y-2 text-sm font-semibold text-slate-400">
+          <div className="space-y-2.5">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-stone-900">Navigation</h4>
+            <ul className="space-y-1.5 text-xs text-stone-600 font-medium">
               <li>
-                <Link to="/login" className="hover:text-brand-300 transition-colors">🔐 Portal Login</Link>
+                <Link to="/login" className="hover:text-stone-900 transition-colors">Portal Login</Link>
               </li>
             </ul>
           </div>
 
           {/* Platform Info */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-black uppercase tracking-wider text-slate-300">Platform</h4>
-            <ul className="space-y-2 text-sm font-semibold text-slate-400">
+          <div className="space-y-2.5">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-stone-900">Platform</h4>
+            <ul className="space-y-1.5 text-xs text-stone-600 font-medium">
               <li className="flex items-center gap-2">
-                <Shield className="w-4 h-4 text-emerald-400" /> Safe & Ad-Free
+                <Shield className="w-3.5 h-3.5 text-stone-700" /> Secure & Ad-Free
               </li>
               <li className="flex items-center gap-2">
-                <Compass className="w-4 h-4 text-sky-400" /> Self-Paced Learning
+                <Compass className="w-3.5 h-3.5 text-stone-700" /> Self-Paced Reader
               </li>
               <li className="flex items-center gap-2">
-                <Heart className="w-4 h-4 text-pink-400" /> Built for Readers
+                <Book className="w-3.5 h-3.5 text-stone-700" /> Editorial Publishing
               </li>
             </ul>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-slate-800/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-medium">
-          <p>© {new Date().getFullYear()} Hopenix E-Book Platform. All rights reserved.</p>
-          <p className="flex items-center gap-1">
-            Made with <Heart className="w-3.5 h-3.5 text-rose-500 fill-current inline" /> for curious minds ✨
-          </p>
+        <div className="pt-6 border-t border-stone-200/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-stone-500 font-medium">
+          <p>© {new Date().getFullYear()} Hopenix Digital Publishing. All rights reserved.</p>
+          <p className="text-stone-500">Designed for modern reading experiences.</p>
         </div>
       </div>
     </footer>
   );
 };
+

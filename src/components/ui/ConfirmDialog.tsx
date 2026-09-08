@@ -25,9 +25,9 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} maxWidth="sm">
       <div className="space-y-4">
-        <div className="flex items-center gap-3 p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400">
-          <AlertTriangle className="w-6 h-6 shrink-0" />
-          <p className="text-sm font-medium">{message}</p>
+        <div className="flex items-center gap-3 p-3.5 bg-red-50 border border-red-200 rounded-lg text-red-800">
+          <AlertTriangle className="w-5 h-5 shrink-0 text-red-600" />
+          <p className="text-sm font-medium leading-normal">{message}</p>
         </div>
 
         <div className="flex items-center justify-end gap-3 pt-2">
@@ -42,3 +42,4 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     </Modal>
   );
 };
+

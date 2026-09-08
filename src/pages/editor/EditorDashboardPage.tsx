@@ -63,12 +63,14 @@ export const EditorDashboardPage: React.FC = () => {
   return (
     <div className="space-y-10 max-w-7xl mx-auto pb-16">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <CheckSquare className="w-6 h-6 text-amber-400" />
-          Editor Dashboard & Assigned E-Books
-        </h1>
-        <p className="text-sm text-slate-400 mt-1">
+      <div className="bg-white border border-stone-200 rounded-xl p-6 sm:p-8 shadow-xs">
+        <div className="flex items-center gap-3 mb-1">
+          <CheckSquare className="w-6 h-6 text-stone-700" />
+          <h1 className="text-2xl font-serif font-bold text-stone-900">
+            Editor Dashboard & Assigned E-Books
+          </h1>
+        </div>
+        <p className="text-sm text-stone-500 font-sans mt-1 ml-9">
           Books and lessons explicitly assigned to your editor account. You can edit rich text, media, and chapter content for your assigned items.
         </p>
       </div>
@@ -76,15 +78,15 @@ export const EditorDashboardPage: React.FC = () => {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(6)].map((_, i) => (
-            <Skeleton key={i} className="h-52 rounded-2xl" />
+            <Skeleton key={i} className="h-52 rounded-xl" />
           ))}
         </div>
       ) : (
         <div className="space-y-10">
           {/* Assigned Books Section */}
           <div className="space-y-4">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-2">
-              <BookOpen className="w-5 h-5 text-brand-400" />
+            <h2 className="text-lg font-serif font-bold text-stone-900 flex items-center gap-2 border-b border-stone-200 pb-3">
+              <BookOpen className="w-5 h-5 text-stone-700" />
               Assigned Books ({assignedBooks.length})
             </h2>
 
@@ -92,44 +94,44 @@ export const EditorDashboardPage: React.FC = () => {
               <EmptyState
                 title="No assigned books"
                 description="You currently don't have entire books assigned to you by an administrator."
-                icon={<BookOpen className="w-8 h-8 text-slate-500" />}
+                icon={<BookOpen className="w-8 h-8 text-stone-400" />}
               />
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {assignedBooks.map((book) => (
                   <div
                     key={book.id}
-                    className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col justify-between hover:border-slate-700 transition-all space-y-4"
+                    className="bg-white border border-stone-200 rounded-xl p-5 shadow-xs hover:shadow-md hover:border-stone-300 transition-all duration-200 flex flex-col justify-between space-y-4"
                   >
                     <div className="flex gap-4">
                       <img
                         src={book.coverImage || book.thumbnail || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=400&q=80'}
                         alt={book.title}
-                        className="w-16 h-20 rounded-xl object-cover border border-slate-800 shrink-0"
+                        className="w-16 h-20 rounded-lg object-cover border border-stone-200 shrink-0"
                       />
                       <div className="min-w-0 flex-1">
                         <Badge variant={book.published ? 'success' : 'slate'} size="sm" className="mb-1">
                           {book.published ? 'Published' : 'Draft'}
                         </Badge>
-                        <h3 className="font-bold text-base text-white truncate">{book.title}</h3>
-                        <p className="text-xs text-slate-400 truncate">By {book.author || 'Editorial'}</p>
-                        <p className="text-xs text-brand-400 font-mono mt-1">{book.totalLessons || 0} Lessons</p>
+                        <h3 className="font-serif font-bold text-base text-stone-900 truncate">{book.title}</h3>
+                        <p className="text-xs text-stone-500 truncate">By {book.author || 'Editorial'}</p>
+                        <p className="text-xs text-stone-600 font-semibold mt-1">{book.totalLessons || 0} Lessons</p>
                       </div>
                     </div>
 
-                    <div className="pt-3 border-t border-slate-800 flex items-center justify-between gap-2">
+                    <div className="pt-3 border-t border-stone-100 flex items-center justify-between gap-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => openBookQR(book)}
-                        icon={<QrCode className="w-3.5 h-3.5 text-brand-400" />}
+                        icon={<QrCode className="w-3.5 h-3.5" />}
                       >
                         View QR
                       </Button>
 
                       <Link
                         to={`/admin/books/${book.id}/edit`}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-stone-900 hover:bg-stone-800 text-stone-50 text-xs font-semibold rounded-lg transition-colors shadow-xs"
                       >
                         <Edit className="w-3.5 h-3.5" />
                         Edit Book
@@ -143,8 +145,8 @@ export const EditorDashboardPage: React.FC = () => {
 
           {/* Assigned Lessons Section */}
           <div className="space-y-4">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-2">
-              <Layers className="w-5 h-5 text-amber-400" />
+            <h2 className="text-lg font-serif font-bold text-stone-900 flex items-center gap-2 border-b border-stone-200 pb-3">
+              <Layers className="w-5 h-5 text-amber-600" />
               Assigned Lessons ({assignedLessons.length})
             </h2>
 
@@ -152,19 +154,19 @@ export const EditorDashboardPage: React.FC = () => {
               <EmptyState
                 title="No assigned lessons"
                 description="You currently don't have individual lessons assigned to you by an administrator."
-                icon={<CheckSquare className="w-8 h-8 text-amber-400" />}
+                icon={<CheckSquare className="w-8 h-8 text-stone-400" />}
               />
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {assignedLessons.map((lesson) => (
                   <div
                     key={lesson.id}
-                    className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col justify-between hover:border-slate-700 transition-all space-y-4"
+                    className="bg-white border border-stone-200 rounded-xl p-5 shadow-xs hover:shadow-md hover:border-stone-300 transition-all duration-200 flex flex-col justify-between space-y-4"
                   >
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-semibold text-brand-400 flex items-center gap-1 truncate">
-                          <Layers className="w-3.5 h-3.5 shrink-0" />
+                        <span className="text-xs font-semibold text-stone-600 flex items-center gap-1 truncate">
+                          <Layers className="w-3.5 h-3.5 shrink-0 text-stone-500" />
                           {lesson.course?.title || lesson.book?.title || 'Book'}
                         </span>
                         <Badge variant={lesson.published ? 'success' : 'slate'} size="sm">
@@ -172,27 +174,27 @@ export const EditorDashboardPage: React.FC = () => {
                         </Badge>
                       </div>
 
-                      <h3 className="font-bold text-base text-white mb-1">
+                      <h3 className="font-serif font-bold text-base text-stone-900 mb-1">
                         Lesson #{lesson.lessonNumber || lesson.order}: {lesson.title}
                       </h3>
                       {lesson.description && (
-                        <p className="text-xs text-slate-400 line-clamp-2">{lesson.description}</p>
+                        <p className="text-xs text-stone-500 line-clamp-2 font-sans">{lesson.description}</p>
                       )}
                     </div>
 
-                    <div className="pt-3 border-t border-slate-800 flex items-center justify-between gap-2">
+                    <div className="pt-3 border-t border-stone-100 flex items-center justify-between gap-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => openLessonQR(lesson)}
-                        icon={<QrCode className="w-3.5 h-3.5 text-brand-400" />}
+                        icon={<QrCode className="w-3.5 h-3.5" />}
                       >
                         View QR
                       </Button>
 
                       <Link
                         to={`/editor/lessons/${lesson.id}/edit`}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-stone-900 hover:bg-stone-800 text-stone-50 text-xs font-semibold rounded-lg transition-colors shadow-xs"
                       >
                         <Edit className="w-3.5 h-3.5" />
                         Edit Content
@@ -221,3 +223,4 @@ export const EditorDashboardPage: React.FC = () => {
     </div>
   );
 };
+

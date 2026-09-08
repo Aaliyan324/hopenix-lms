@@ -9,7 +9,6 @@ import {
   QrCode,
   History,
   CheckSquare,
-  Sparkles,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -37,17 +36,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
 
   return (
     <aside
-      className={`fixed lg:static inset-y-0 left-0 z-30 w-64 bg-slate-950/95 border-r border-purple-500/15 transform transition-transform duration-200 ease-in-out ${
+      className={`fixed lg:static inset-y-0 left-0 z-30 w-64 bg-stone-50 border-r border-stone-200 transform transition-transform duration-200 ease-in-out ${
         isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-      } flex flex-col justify-between backdrop-blur-xl`}
+      } flex flex-col justify-between backdrop-blur-md`}
     >
       <div className="p-4 space-y-6">
-        <div className="px-3 py-2 text-[11px] font-black text-brand-400 uppercase tracking-widest flex items-center gap-1.5">
-          <Sparkles className="w-3.5 h-3.5" />
-          {role ? `${role} WORKSPACE` : 'MAGICAL PORTAL'}
+        <div className="px-3 py-2 text-[10px] font-semibold text-stone-500 uppercase tracking-widest flex items-center gap-1.5 border-b border-stone-200">
+          {role ? `${role} WORKSPACE` : 'EDITORIAL PORTAL'}
         </div>
 
-        <nav className="space-y-1.5">
+        <nav className="space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -57,10 +55,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
                 end={item.path === '/admin' || item.path === '/editor'}
                 onClick={onClose}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-extrabold transition-all duration-200 ${
+                  `flex items-center gap-3 px-3.5 py-2.5 rounded-md text-xs font-medium transition-all duration-150 ${
                     isActive
-                      ? 'bg-gradient-to-r from-brand-600 to-purple-600 text-white shadow-lg shadow-brand-500/25 border border-pink-400/30 scale-[1.02]'
-                      : 'text-slate-400 hover:text-white hover:bg-slate-900/80'
+                      ? 'bg-stone-900 text-stone-50 shadow-xs'
+                      : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/60'
                   }`
                 }
               >
@@ -72,10 +70,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
         </nav>
       </div>
 
-      <div className="p-4 border-t border-slate-900 text-[11px] text-slate-500 text-center space-y-1">
-        <p className="font-extrabold text-slate-300">Hopenix E-Book Portal</p>
-        <p className="text-[10px] text-brand-400 font-semibold">Private Digital Library</p>
+      <div className="p-4 border-t border-stone-200 text-[11px] text-stone-500 text-center space-y-1">
+        <p className="font-semibold text-stone-800">Hopenix E-Book Portal</p>
+        <p className="text-[10px] text-stone-500 font-medium">Digital Library Platform</p>
       </div>
     </aside>
   );
 };
+

@@ -38,27 +38,27 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         {toasts.map((item) => (
           <div
             key={item.id}
-            className={`pointer-events-auto flex items-center justify-between p-4 rounded-xl border shadow-xl backdrop-blur-md transition-all duration-300 animate-in slide-in-from-bottom-5 ${
+            className={`pointer-events-auto flex items-center justify-between p-3.5 rounded-lg border shadow-md transition-all duration-200 animate-in slide-in-from-bottom-3 ${
               item.type === 'success'
-                ? 'bg-emerald-950/90 border-emerald-800 text-emerald-200'
+                ? 'bg-white border-emerald-300 text-emerald-950'
                 : item.type === 'error'
-                ? 'bg-rose-950/90 border-rose-800 text-rose-200'
-                : 'bg-blue-950/90 border-blue-800 text-blue-200'
+                ? 'bg-white border-red-300 text-red-950'
+                : 'bg-white border-stone-300 text-stone-900'
             }`}
           >
             <div className="flex items-center gap-3">
               {item.type === 'success' ? (
-                <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
               ) : item.type === 'error' ? (
-                <AlertCircle className="w-5 h-5 text-rose-400 shrink-0" />
+                <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
               ) : (
-                <Info className="w-5 h-5 text-blue-400 shrink-0" />
+                <Info className="w-5 h-5 text-stone-600 shrink-0" />
               )}
               <span className="text-sm font-medium">{item.message}</span>
             </div>
             <button
               onClick={() => removeToast(item.id)}
-              className="text-slate-400 hover:text-white p-1 rounded-md transition-colors"
+              className="text-stone-400 hover:text-stone-700 p-1 rounded-md transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -76,3 +76,4 @@ export const useToast = () => {
   }
   return context;
 };
+

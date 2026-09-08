@@ -13,8 +13,8 @@ export const Card: React.FC<CardProps> = ({ children, className, hoverable = fal
     <div
       className={twMerge(
         clsx(
-          'bg-slate-900/95 border border-slate-800/80 rounded-2xl p-6 shadow-xl backdrop-blur-md transition-all duration-300',
-          hoverable && 'hover:-translate-y-1 hover:border-brand-500/40 hover:shadow-brand-500/10 hover:shadow-2xl',
+          'bg-white border border-stone-200/80 rounded-xl p-6 shadow-sm transition-all duration-200',
+          hoverable && 'hover:-translate-y-0.5 hover:border-stone-300 hover:shadow-md',
           className
         )
       )}
@@ -24,3 +24,4 @@ export const Card: React.FC<CardProps> = ({ children, className, hoverable = fal
     </div>
   );
 };
+

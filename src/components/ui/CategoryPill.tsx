@@ -18,20 +18,20 @@ export const CategoryPill: React.FC<CategoryPillProps> = ({
   return (
     <button
       onClick={onClick}
-      className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer shrink-0 select-none ${
+      className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-medium transition-all duration-150 cursor-pointer shrink-0 select-none ${
         active
-          ? 'bg-gradient-to-r from-brand-600 via-purple-600 to-pink-600 text-white shadow-lg shadow-brand-500/25 scale-105 border border-pink-400/30'
-          : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 hover:border-slate-700'
+          ? 'bg-stone-900 text-stone-50 border border-stone-900 shadow-xs'
+          : 'bg-white hover:bg-stone-100 text-stone-700 border border-stone-200'
       }`}
     >
-      {emoji && <span className="text-sm">{emoji}</span>}
+      {emoji && <span className="text-xs">{emoji}</span>}
       <span>{label}</span>
       {typeof count === 'number' && (
         <span
-          className={`text-[10px] px-2 py-0.5 rounded-full font-extrabold ${
+          className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${
             active
-              ? 'bg-white/20 text-white'
-              : 'bg-slate-800 text-slate-400'
+              ? 'bg-stone-800 text-stone-200'
+              : 'bg-stone-100 text-stone-500'
           }`}
         >
           {count}
@@ -40,3 +40,4 @@ export const CategoryPill: React.FC<CategoryPillProps> = ({
     </button>
   );
 };
+

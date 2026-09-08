@@ -45,20 +45,20 @@ export const Modal: React.FC<ModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 bg-stone-900/40 backdrop-blur-xs transition-opacity"
         onClick={onClose}
       />
 
       {/* Modal Dialog */}
       <div
-        className={`relative w-full ${widthClasses[maxWidth]} bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl z-10 overflow-hidden transform transition-all animate-in fade-in zoom-in-95 duration-200`}
+        className={`relative w-full ${widthClasses[maxWidth]} bg-white border border-stone-200 rounded-xl shadow-xl z-10 overflow-hidden transform transition-all animate-in fade-in zoom-in-95 duration-150`}
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/50">
-          <h3 className="text-lg font-semibold text-white">{title}</h3>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-stone-100 bg-stone-50/50">
+          <h3 className="text-lg font-serif font-bold text-stone-900">{title}</h3>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors focus:outline-none"
+            className="p-1 rounded-md text-stone-400 hover:text-stone-800 hover:bg-stone-100 transition-colors focus:outline-none"
           >
             <X className="w-5 h-5" />
           </button>
@@ -70,3 +70,4 @@ export const Modal: React.FC<ModalProps> = ({
     </div>
   );
 };
+

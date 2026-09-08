@@ -1,5 +1,4 @@
 import React from 'react';
-import { Trophy, Star, Sparkles, BookOpen, Flame, Award } from 'lucide-react';
 
 interface AchievementBadgeProps {
   icon?: string;
@@ -18,17 +17,17 @@ export const AchievementBadge: React.FC<AchievementBadgeProps> = ({
 }) => {
   return (
     <div
-      className={`relative flex items-center gap-4 p-4 rounded-2xl border transition-all duration-300 ${
+      className={`relative flex items-center gap-4 p-4 rounded-xl border transition-all duration-200 ${
         unlocked
-          ? 'bg-gradient-to-r from-brand-950/80 to-slate-900 border-brand-500/40 shadow-lg shadow-brand-500/10'
-          : 'bg-slate-900/40 border-slate-800/60 opacity-65'
+          ? 'bg-white border-stone-300 shadow-xs'
+          : 'bg-stone-50 border-stone-200 opacity-75'
       }`}
     >
       <div
-        className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0 border shadow-inner ${
+        className={`w-11 h-11 rounded-lg flex items-center justify-center text-xl shrink-0 border ${
           unlocked
-            ? 'bg-gradient-to-br from-brand-500 to-pink-500 text-white border-pink-400/40 animate-bounce-subtle'
-            : 'bg-slate-800 text-slate-500 border-slate-700'
+            ? 'bg-stone-900 text-stone-50 border-stone-800'
+            : 'bg-stone-100 text-stone-400 border-stone-200'
         }`}
       >
         {icon}
@@ -36,20 +35,21 @@ export const AchievementBadge: React.FC<AchievementBadgeProps> = ({
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <h4 className={`text-sm font-extrabold truncate ${unlocked ? 'text-white' : 'text-slate-400'}`}>
+          <h4 className={`text-sm font-serif font-bold truncate ${unlocked ? 'text-stone-900' : 'text-stone-500'}`}>
             {title}
           </h4>
           {unlocked && (
-            <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-              Unlocked!
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
+              Completed
             </span>
           )}
         </div>
-        <p className="text-xs text-slate-300 truncate mt-0.5">{description}</p>
+        <p className="text-xs text-stone-600 truncate mt-0.5 font-sans">{description}</p>
         {progressText && !unlocked && (
-          <p className="text-[11px] font-semibold text-brand-400 mt-1">{progressText}</p>
+          <p className="text-[11px] font-medium text-stone-500 mt-1">{progressText}</p>
         )}
       </div>
     </div>
   );
 };
+
