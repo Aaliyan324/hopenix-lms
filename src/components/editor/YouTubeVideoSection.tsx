@@ -86,30 +86,32 @@ export const YouTubeVideoSection: React.FC<YouTubeVideoSectionProps> = ({ youtub
   const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null;
 
   return (
-    <div className="bg-white border border-stone-200 rounded-2xl p-6 space-y-4 shadow-xs hover:shadow-md transition-shadow">
+    <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 space-y-5 shadow-editorial hover:shadow-editorial transition-shadow">
       <div className="flex items-center justify-between">
-        <h4 className="text-base font-serif font-bold text-stone-900 flex items-center gap-2">
-          <Youtube className="w-5 h-5 text-rose-500" />
+        <h4 className="text-lg font-serif font-bold text-slate-900 flex items-center gap-2.5">
+          <div className="p-2 rounded-2xl bg-rose-50 border border-rose-100 text-rose-600">
+            <Youtube className="w-5 h-5" />
+          </div>
           YouTube Video Lecture
         </h4>
         {videoId && !isEditing && (
-          <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full">
             <CheckCircle2 className="w-3.5 h-3.5" /> Video Linked
           </span>
         )}
       </div>
 
       {!isEditing && videoId && thumbnailUrl ? (
-        <div className="space-y-4">
+        <div className="space-y-5">
           {/* Visual Thumbnail Card */}
-          <div className="relative group rounded-2xl overflow-hidden border border-stone-200 bg-stone-50 max-w-lg aspect-video shadow-sm">
+          <div className="relative group rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 max-w-xl aspect-video shadow-editorial">
             <img src={thumbnailUrl} alt="YouTube Video Thumbnail" className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-stone-950/30 flex items-center justify-center group-hover:bg-stone-950/20 transition-colors">
-              <div className="w-16 h-16 rounded-full bg-rose-600/90 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform group-hover:bg-rose-500">
+            <div className="absolute inset-0 bg-slate-950/40 flex items-center justify-center group-hover:bg-slate-950/30 transition-colors">
+              <div className="w-16 h-16 rounded-full bg-rose-600/90 text-white flex items-center justify-center shadow-lg shadow-rose-500/30 group-hover:scale-110 transition-transform group-hover:bg-rose-500">
                 <Play className="w-8 h-8 fill-current ml-1" />
               </div>
             </div>
-            <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-stone-200 text-[11px] font-mono text-stone-600 truncate shadow-sm">
+            <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-md px-3.5 py-2 rounded-xl border border-slate-200 text-[11px] font-mono text-slate-600 truncate shadow-sm">
               ID: {videoId} • {inputUrl}
             </div>
           </div>
@@ -119,26 +121,26 @@ export const YouTubeVideoSection: React.FC<YouTubeVideoSectionProps> = ({ youtub
             <button
               type="button"
               onClick={() => setIsEditing(true)}
-              className="inline-flex items-center gap-2 px-3 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold rounded-lg border border-stone-200 transition-all"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl border border-slate-200 transition-all shadow-xs"
             >
-              <RefreshCw className="w-3.5 h-3.5" />
+              <RefreshCw className="w-4 h-4" />
               Replace Video
             </button>
             <button
               type="button"
               onClick={handleRemove}
-              className="inline-flex items-center gap-2 px-3 py-1.5 text-rose-600 hover:text-rose-700 hover:bg-rose-50 text-xs font-semibold rounded-lg border border-rose-200 transition-all"
+              className="inline-flex items-center gap-2 px-4 py-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50 text-sm font-semibold rounded-xl border border-rose-200 transition-all shadow-xs"
             >
-              <Trash2 className="w-3.5 h-3.5" />
+              <Trash2 className="w-4 h-4" />
               Remove Video
             </button>
           </div>
         </div>
       ) : (
-        <form onSubmit={handleAddOrUpdate} className="space-y-3">
-          <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-stone-600">YouTube Video URL</label>
-            <div className="flex flex-col sm:flex-row gap-2">
+        <form onSubmit={handleAddOrUpdate} className="space-y-4">
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-slate-700">YouTube Video URL</label>
+            <div className="flex flex-col sm:flex-row gap-3">
               <input
                 type="text"
                 placeholder="https://www.youtube.com/watch?v=VIDEO_ID"
@@ -147,11 +149,11 @@ export const YouTubeVideoSection: React.FC<YouTubeVideoSectionProps> = ({ youtub
                   setInputUrl(e.target.value);
                   if (error) setError(null);
                 }}
-                className="flex-1 bg-stone-50 border border-stone-200 focus:border-stone-400 rounded-xl px-4 py-2.5 text-sm text-stone-900 placeholder-stone-400 outline-none transition-colors"
+                className="flex-1 bg-slate-50 border border-slate-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition-all"
               />
               <button
                 type="submit"
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-stone-900 hover:bg-stone-800 text-stone-50 text-xs font-semibold rounded-lg transition-all whitespace-nowrap"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-xl transition-all shadow-md shadow-orange-500/25 whitespace-nowrap"
               >
                 <Youtube className="w-4 h-4" />
                 {videoId ? 'Update Video' : 'Add Video'}
@@ -160,14 +162,14 @@ export const YouTubeVideoSection: React.FC<YouTubeVideoSectionProps> = ({ youtub
           </div>
 
           {error && (
-            <p className="text-xs text-rose-600 font-semibold flex items-center gap-1.5">
+            <p className="text-sm text-rose-600 font-semibold flex items-center gap-2 bg-rose-50 border border-rose-100 px-3 py-2 rounded-xl">
               <AlertCircle className="w-4 h-4" />
               {error}
             </p>
           )}
 
-          <p className="text-[11px] text-stone-500 font-medium">
-            Supports YouTube URLs from <code className="bg-stone-100 px-1.5 py-0.5 rounded text-stone-700">youtube.com</code>, <code className="bg-stone-100 px-1.5 py-0.5 rounded text-stone-700">youtu.be</code>, <code className="bg-stone-100 px-1.5 py-0.5 rounded text-stone-700">/shorts/</code>, and <code className="bg-stone-100 px-1.5 py-0.5 rounded text-stone-700">/embed/</code> formats.
+          <p className="text-xs text-slate-500 font-medium leading-relaxed">
+            Supports YouTube URLs from <code className="bg-slate-100 px-1.5 py-0.5 rounded-md text-slate-700 font-mono text-[11px]">youtube.com</code>, <code className="bg-slate-100 px-1.5 py-0.5 rounded-md text-slate-700 font-mono text-[11px]">youtu.be</code>, <code className="bg-slate-100 px-1.5 py-0.5 rounded-md text-slate-700 font-mono text-[11px]">/shorts/</code>, and <code className="bg-slate-100 px-1.5 py-0.5 rounded-md text-slate-700 font-mono text-[11px]">/embed/</code> formats.
           </p>
         </form>
       )}
