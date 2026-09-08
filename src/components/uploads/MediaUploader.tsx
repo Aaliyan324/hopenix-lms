@@ -38,7 +38,6 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate size and mime type
     if (selectedType === 'IMAGE' && !file.type.startsWith('image/')) {
       toast('Selected file is not an image (PNG, JPG, WEBP).', 'error');
       return;
@@ -100,16 +99,18 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
   return (
     <div className="space-y-6">
       {/* Upload Controls */}
-      <div className="p-6 bg-slate-900 border border-slate-800 rounded-2xl">
-        <h4 className="text-base font-semibold text-white mb-4">Upload Lesson Media (Images & PDFs)</h4>
+      <div className="p-6 bg-white border border-stone-200 rounded-2xl shadow-xs">
+        <h4 className="text-base font-serif font-bold text-stone-900 mb-4">Upload Lesson Media (Images & PDFs)</h4>
 
         {/* Media Type Tabs */}
-        <div className="flex items-center gap-2 mb-4 p-1 bg-slate-950 rounded-xl border border-slate-800 w-fit">
+        <div className="flex items-center gap-2 mb-4 p-1 bg-stone-100 rounded-xl border border-stone-200 w-fit">
           <button
             type="button"
             onClick={() => setSelectedType('IMAGE')}
-            className={`flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
-              selectedType === 'IMAGE' ? 'bg-brand-600 text-white shadow' : 'text-slate-400 hover:text-white'
+            className={`flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+              selectedType === 'IMAGE' 
+                ? 'bg-stone-900 text-white shadow-sm' 
+                : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200'
             }`}
           >
             <Image className="w-4 h-4" />
@@ -118,8 +119,10 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
           <button
             type="button"
             onClick={() => setSelectedType('PDF')}
-            className={`flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
-              selectedType === 'PDF' ? 'bg-brand-600 text-white shadow' : 'text-slate-400 hover:text-white'
+            className={`flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+              selectedType === 'PDF' 
+                ? 'bg-stone-900 text-white shadow-sm' 
+                : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200'
             }`}
           >
             <FileText className="w-4 h-4" />
@@ -128,12 +131,12 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
         </div>
 
         {/* Dropzone Box */}
-        <label className="relative flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-700 hover:border-brand-500 bg-slate-950/50 hover:bg-slate-950 rounded-2xl cursor-pointer transition-all">
-          <UploadCloud className="w-10 h-10 text-brand-400 mb-2 animate-bounce" />
-          <p className="text-sm font-medium text-white mb-1">
+        <label className="relative flex flex-col items-center justify-center p-8 border-2 border-dashed border-stone-300 hover:border-stone-500 bg-stone-50 hover:bg-stone-100 rounded-2xl cursor-pointer transition-all group">
+          <UploadCloud className="w-10 h-10 text-stone-600 mb-2 group-hover:scale-110 transition-transform" />
+          <p className="text-sm font-semibold text-stone-700 mb-1">
             Click to upload or drag & drop {selectedType.toLowerCase()} file
           </p>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-stone-500 font-medium">
             {selectedType === 'IMAGE' && 'PNG, JPG, WEBP up to 10MB'}
             {selectedType === 'PDF' && 'PDF files up to 25MB'}
           </p>
@@ -154,13 +157,13 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
         {/* Progress Bar */}
         {uploading && (
           <div className="mt-4 space-y-2">
-            <div className="flex justify-between text-xs text-slate-300">
+            <div className="flex justify-between text-xs text-stone-600 font-medium">
               <span>Uploading {selectedType}...</span>
               <span>{uploadProgress}%</span>
             </div>
-            <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-stone-200 rounded-full h-2 overflow-hidden">
               <div
-                className="bg-brand-500 h-full transition-all duration-300 rounded-full"
+                className="bg-stone-900 h-full transition-all duration-300 rounded-full"
                 style={{ width: `${uploadProgress}%` }}
               />
             </div>
@@ -170,9 +173,9 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
 
       {/* Media Attachments List */}
       <div>
-        <h4 className="text-sm font-semibold text-slate-300 mb-3">Attached Lesson Media ({mediaList.length})</h4>
+        <h4 className="text-sm font-semibold text-stone-600 mb-3">Attached Lesson Media ({mediaList.length})</h4>
         {mediaList.length === 0 ? (
-          <p className="text-xs text-slate-500 italic p-4 bg-slate-900/50 rounded-xl border border-slate-800 text-center">
+          <p className="text-xs text-stone-500 italic p-4 bg-stone-50 rounded-xl border border-stone-200 text-center">
             No media attachments uploaded for this lesson yet.
           </p>
         ) : (
@@ -180,50 +183,50 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
             {mediaList.map((item) => (
               <div
                 key={item.id}
-                className="group relative p-4 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl shadow-lg transition-all flex flex-col justify-between"
+                className="group relative p-4 bg-white border border-stone-200 hover:border-stone-300 rounded-xl shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <span className="flex items-center gap-2 text-xs font-semibold text-brand-400 bg-brand-500/10 px-2.5 py-1 rounded-md border border-brand-500/20">
+                    <span className="flex items-center gap-2 text-xs font-semibold text-stone-700 bg-stone-100 px-2.5 py-1 rounded-lg border border-stone-200">
                       {item.type === 'IMAGE' && <Image className="w-3.5 h-3.5" />}
                       {item.type === 'VIDEO' && <Video className="w-3.5 h-3.5" />}
                       {item.type === 'PDF' && <FileText className="w-3.5 h-3.5" />}
                       {item.type}
                     </span>
-                    <span className="text-[11px] text-slate-400">{formatFileSize(item.size)}</span>
+                    <span className="text-[11px] text-stone-500 font-medium">{formatFileSize(item.size)}</span>
                   </div>
 
                   {/* Thumbnail / File Box */}
                   {item.type === 'IMAGE' && (
-                    <div className="w-full h-32 rounded-lg overflow-hidden mb-3 bg-slate-950 border border-slate-800 relative">
+                    <div className="w-full h-32 rounded-lg overflow-hidden mb-3 bg-stone-100 border border-stone-200 relative">
                       <img src={item.url} alt={item.name} className="w-full h-full object-cover" />
                     </div>
                   )}
 
                   {item.type === 'VIDEO' && (
-                    <div className="w-full h-32 rounded-lg overflow-hidden mb-3 bg-slate-950 border border-slate-800 relative">
+                    <div className="w-full h-32 rounded-lg overflow-hidden mb-3 bg-stone-100 border border-stone-200 relative">
                       <video src={item.url} className="w-full h-full object-cover" />
                     </div>
                   )}
 
                   {item.type === 'PDF' && (
-                    <div className="w-full h-32 rounded-lg mb-3 bg-slate-950 border border-slate-800 flex flex-col items-center justify-center p-4 text-slate-400">
-                      <FileText className="w-10 h-10 text-rose-400 mb-1" />
-                      <span className="text-xs text-slate-300 font-medium truncate max-w-full">{item.name}</span>
+                    <div className="w-full h-32 rounded-lg mb-3 bg-stone-100 border border-stone-200 flex flex-col items-center justify-center p-4 text-stone-500">
+                      <FileText className="w-10 h-10 text-rose-500 mb-1" />
+                      <span className="text-xs text-stone-700 font-medium truncate max-w-full">{item.name}</span>
                     </div>
                   )}
 
-                  <p className="text-xs font-medium text-white truncate mb-1" title={item.name}>
+                  <p className="text-xs font-semibold text-stone-800 truncate mb-1" title={item.name}>
                     {item.name}
                   </p>
                 </div>
 
-                <div className="flex items-center justify-between pt-3 border-t border-slate-800 mt-2">
+                <div className="flex items-center justify-between pt-3 border-t border-stone-100 mt-2">
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => setPreviewMedia(item)}
-                      className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                      className="p-1.5 text-stone-500 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
                       title="Preview Media"
                     >
                       <Eye className="w-4 h-4" />
@@ -232,7 +235,7 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
                       href={item.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-1.5 text-slate-400 hover:text-brand-400 hover:bg-slate-800 rounded-lg transition-colors"
+                      className="p-1.5 text-stone-500 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
                       title="Open in new tab"
                     >
                       <ExternalLink className="w-4 h-4" />
@@ -242,7 +245,7 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
                   <button
                     type="button"
                     onClick={() => setMediaToDelete(item)}
-                    className="p-1.5 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg transition-colors"
+                    className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors"
                     title="Delete Media"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -266,13 +269,17 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
 
       {/* Preview Lightbox / Modal */}
       {previewMedia && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md">
-          <div className="relative max-w-4xl w-full bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl">
-            <div className="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
-              <h3 className="text-base font-semibold text-white">{previewMedia.name}</h3>
-              <Button variant="ghost" size="sm" onClick={() => setPreviewMedia(null)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/80 backdrop-blur-sm">
+          <div className="relative max-w-4xl w-full bg-white border border-stone-200 rounded-2xl p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-4 border-b border-stone-100 pb-3">
+              <h3 className="text-base font-serif font-bold text-stone-900">{previewMedia.name}</h3>
+              <button
+                type="button"
+                onClick={() => setPreviewMedia(null)}
+                className="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold rounded-lg border border-stone-200 transition-all"
+              >
                 Close
-              </Button>
+              </button>
             </div>
 
             <div className="max-h-[70vh] overflow-auto flex justify-center">
@@ -283,7 +290,7 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
                 <video src={previewMedia.url} controls autoPlay className="max-h-[65vh] rounded-xl" />
               )}
               {previewMedia.type === 'PDF' && (
-                <iframe src={previewMedia.url} className="w-full h-[60vh] rounded-xl border border-slate-800" />
+                <iframe src={previewMedia.url} className="w-full h-[60vh] rounded-xl border border-stone-200" />
               )}
             </div>
           </div>

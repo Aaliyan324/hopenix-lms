@@ -77,9 +77,9 @@ export const LessonEditPage: React.FC = () => {
 
   if (loading || !lesson) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-96 w-full rounded-2xl" />
+      <div className="space-y-6 max-w-5xl mx-auto">
+        <Skeleton className="h-8 w-48 rounded-xl" />
+        <Skeleton className="h-96 w-full rounded-3xl" />
       </div>
     );
   }
@@ -87,29 +87,34 @@ export const LessonEditPage: React.FC = () => {
   const backUrl = isAdmin ? `/admin/books/${lesson.courseId}/edit` : '/editor';
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto pb-12">
+    <div className="space-y-10 max-w-6xl mx-auto pb-16">
       {/* Top Back Navigation */}
       <div className="flex items-center justify-between">
         <Link
           to={backUrl}
-          className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
+          className="inline-flex items-center gap-2 text-xs font-semibold text-stone-500 hover:text-stone-900 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Book Editor
         </Link>
 
-        <Button onClick={handleSave} variant="primary" loading={saving} icon={<Save className="w-4 h-4" />}>
-          Save Changes
-        </Button>
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-stone-900 hover:bg-stone-800 text-stone-50 text-xs font-semibold rounded-lg transition-all disabled:opacity-50"
+        >
+          <Save className="w-4 h-4" />
+          {saving ? 'Saving...' : 'Save Changes'}
+        </button>
       </div>
 
       {/* Main Form */}
       <form onSubmit={handleSave} className="space-y-8">
         {/* Header Metadata Card */}
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div className="bg-white border border-stone-200 rounded-2xl p-6 sm:p-8 space-y-6 shadow-xs hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between border-b border-stone-100 pb-4">
             <div>
-              <span className="text-xs font-semibold text-brand-400">Book: {lesson.course?.title}</span>
-              <h1 className="text-2xl font-extrabold text-white mt-1">Lesson Content Studio</h1>
+              <span className="text-xs font-semibold text-stone-500">Book: {lesson.course?.title}</span>
+              <h1 className="text-2xl font-serif font-bold text-stone-900 mt-1">Lesson Content Studio</h1>
             </div>
             <Badge variant={published ? 'success' : 'slate'}>
               {published ? 'Published' : 'Draft'}
@@ -118,7 +123,7 @@ export const LessonEditPage: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+              <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider mb-1.5">
                 Lesson Title
               </label>
               <input
@@ -126,13 +131,13 @@ export const LessonEditPage: React.FC = () => {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g. 01. React Core Architecture"
-                className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:border-brand-500"
+                className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 focus:border-stone-400 rounded-xl text-stone-900 text-sm outline-none transition-colors"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+              <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider mb-1.5">
                 Short Summary / Description
               </label>
               <input
@@ -140,7 +145,7 @@ export const LessonEditPage: React.FC = () => {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Brief summary of what readers will learn..."
-                className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:border-brand-500"
+                className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 focus:border-stone-400 rounded-xl text-stone-900 text-sm outline-none transition-colors"
               />
             </div>
           </div>
@@ -152,9 +157,9 @@ export const LessonEditPage: React.FC = () => {
                 id="lesson-pub-check"
                 checked={published}
                 onChange={(e) => setPublished(e.target.checked)}
-                className="w-4 h-4 rounded border-slate-700 bg-slate-950 text-brand-600 focus:ring-brand-500"
+                className="w-4 h-4 rounded border-stone-300 text-stone-700 focus:ring-stone-400 bg-stone-50"
               />
-              <label htmlFor="lesson-pub-check" className="text-sm font-medium text-slate-200 cursor-pointer">
+              <label htmlFor="lesson-pub-check" className="text-sm font-medium text-stone-700 cursor-pointer">
                 Publish this lesson for public viewing
               </label>
             </div>
@@ -162,25 +167,29 @@ export const LessonEditPage: React.FC = () => {
         </div>
 
         {/* YouTube Video Section */}
-        <YouTubeVideoSection
-          youtubeUrl={youtubeUrl}
-          onChange={(url) => setYoutubeUrl(url)}
-        />
+        <div className="bg-white border border-stone-200 rounded-2xl p-6 sm:p-8 shadow-xs">
+          <YouTubeVideoSection
+            youtubeUrl={youtubeUrl}
+            onChange={(url) => setYoutubeUrl(url)}
+          />
+        </div>
 
         {/* Rich Text Content Section */}
-        <div className="space-y-3">
-          <h3 className="text-lg font-bold text-white flex items-center gap-2">
-            <FileText className="w-5 h-5 text-brand-400" />
-            Lesson Article Content
-          </h3>
-          <p className="text-xs text-slate-400">
-            Write structured, formatted lesson text with headings, lists, code snippets, blockquotes, and tables.
-          </p>
+        <div className="bg-white border border-stone-200 rounded-2xl p-6 sm:p-8 space-y-4 shadow-xs">
+          <div>
+            <h3 className="text-lg font-serif font-bold text-stone-900 flex items-center gap-2">
+              <FileText className="w-5 h-5 text-stone-600" />
+              Lesson Article Content
+            </h3>
+            <p className="text-xs text-stone-500 font-medium mt-1">
+              Write structured, formatted lesson text with headings, lists, code snippets, blockquotes, and tables.
+            </p>
+          </div>
           <RichTextEditor content={content} onChange={setContent} />
         </div>
 
         {/* Media Upload Section */}
-        <div className="pt-4 border-t border-slate-800">
+        <div className="bg-white border border-stone-200 rounded-2xl p-6 sm:p-8 shadow-xs">
           <MediaUploader
             lessonId={lesson.id}
             mediaList={lesson.media || []}
@@ -189,13 +198,22 @@ export const LessonEditPage: React.FC = () => {
         </div>
 
         {/* Bottom Save Bar */}
-        <div className="flex items-center justify-end gap-4 pt-6 border-t border-slate-800">
-          <Button type="button" variant="outline" onClick={() => navigate(backUrl)}>
+        <div className="flex items-center justify-end gap-4 pt-6 border-t border-stone-200">
+          <button
+            type="button"
+            onClick={() => navigate(backUrl)}
+            className="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold rounded-lg border border-stone-200 transition-all"
+          >
             Cancel
-          </Button>
-          <Button type="submit" variant="primary" loading={saving} icon={<Save className="w-4 h-4" />}>
-            Save All Changes
-          </Button>
+          </button>
+          <button
+            type="submit"
+            disabled={saving}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-stone-900 hover:bg-stone-800 text-stone-50 text-xs font-semibold rounded-lg transition-all disabled:opacity-50"
+          >
+            <Save className="w-4 h-4" />
+            {saving ? 'Saving...' : 'Save All Changes'}
+          </button>
         </div>
       </form>
     </div>
