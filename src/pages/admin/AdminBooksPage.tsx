@@ -20,6 +20,7 @@ import {
   Upload,
   Building2,
   X,
+  Shield,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -206,30 +207,47 @@ export const AdminBooksPage: React.FC = () => {
     setPublished(true);
   };
 
+  if (loading && books.length === 0) {
+    return (
+      <div className="space-y-6 max-w-7xl mx-auto pb-16">
+        <Skeleton className="h-8 w-64 rounded-xl" />
+        <div className="space-y-3">
+          {[...Array(5)].map((_, i) => (
+            <Skeleton key={i} className="h-20 w-full rounded-xl" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-8 max-w-7xl mx-auto pb-16">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <BookOpen className="w-6 h-6 text-brand-400" />
+    <div className="space-y-10 max-w-7xl mx-auto pb-16">
+      {/* Header Banner */}
+      <div className="bg-white border border-stone-200 rounded-2xl p-6 sm:p-8 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-stone-100 border border-stone-200 text-stone-700 text-xs font-semibold tracking-wide">
+            <BookOpen className="w-4 h-4 text-stone-600" />
+            Digital Catalog Management
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-serif font-bold text-stone-900 tracking-tight">
             Digital Books Catalog Management
           </h1>
-          <p className="text-sm text-slate-400">Publish, manage lessons, and generate QR codes for e-books.</p>
+          <p className="text-xs sm:text-sm text-stone-500 max-w-2xl font-medium">
+            Publish, manage lessons, and generate QR codes for e-books.
+          </p>
         </div>
 
-        <Button
-          variant="primary"
+        <button
           onClick={() => setIsCreateModalOpen(true)}
-          icon={<Plus className="w-4 h-4" />}
-          className="shadow-lg shadow-brand-500/20"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-stone-900 hover:bg-stone-800 text-stone-50 text-xs font-semibold rounded-lg transition-all shadow-xs shrink-0"
         >
+          <Plus className="w-4 h-4" />
           Create New Book
-        </Button>
+        </button>
       </div>
 
       {/* Search & Actions Bar */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="bg-white border border-stone-200 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs">
         <form
           onSubmit={(e: React.FormEvent) => {
             e.preventDefault();
@@ -237,38 +255,36 @@ export const AdminBooksPage: React.FC = () => {
           }}
           className="relative w-full sm:w-80"
         >
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder="Search books..."
             value={search}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 outline-none"
+            className="w-full bg-stone-50 border border-stone-200 focus:border-stone-900 rounded-lg pl-9 pr-4 py-2 text-xs text-stone-900 placeholder-stone-400 outline-none transition-colors"
           />
         </form>
 
-        <span className="text-xs text-slate-400">Total Books: <strong className="text-white">{books.length}</strong></span>
+        <span className="text-xs font-semibold text-stone-500">
+          Total Books: <strong className="text-stone-900 font-bold">{books.length}</strong>
+        </span>
       </div>
 
       {/* Books Table / Grid */}
-      {loading ? (
-        <div className="space-y-3">
-          {[...Array(5)].map((_, i) => (
-            <Skeleton key={i} className="h-20 w-full rounded-2xl" />
-          ))}
+      {books.length === 0 ? (
+        <div className="bg-white border border-stone-200 rounded-xl p-8 shadow-xs">
+          <EmptyState
+            title="No books found"
+            description="Click 'Create New Book' to add your first digital book to the e-book portal."
+            actionText="Create Book"
+            onAction={() => setIsCreateModalOpen(true)}
+          />
         </div>
-      ) : books.length === 0 ? (
-        <EmptyState
-          title="No books found"
-          description="Click 'Create New Book' to add your first digital book to the e-book portal."
-          actionText="Create Book"
-          onAction={() => setIsCreateModalOpen(true)}
-        />
       ) : (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+        <div className="bg-white border border-stone-200 rounded-xl overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-300">
-              <thead className="bg-slate-950 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+            <table className="w-full text-left text-xs text-stone-600">
+              <thead className="bg-stone-50 text-stone-500 uppercase text-[10px] tracking-wider border-b border-stone-200 font-semibold">
                 <tr>
                   <th className="px-6 py-4">Book Details</th>
                   <th className="px-4 py-4">Category / Level</th>
@@ -277,40 +293,40 @@ export const AdminBooksPage: React.FC = () => {
                   <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/80">
+              <tbody className="divide-y divide-stone-100">
                 {books.map((book) => (
-                  <tr key={book.id} className="hover:bg-slate-950/50 transition-colors">
+                  <tr key={book.id} className="hover:bg-stone-50/80 transition-colors">
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3.5">
                         <img
                           src={book.coverImage || book.thumbnail || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=300&q=80'}
                           alt={book.title}
-                          className="w-10 h-12 object-cover rounded-lg border border-slate-800 shrink-0"
+                          className="w-10 h-12 object-cover rounded-lg border border-stone-200 shrink-0 shadow-xs"
                         />
                         <div>
                           <Link
                             to={`/admin/books/${book.id}/edit`}
-                            className="font-semibold text-white text-sm hover:text-brand-400 transition-colors line-clamp-1"
+                            className="font-semibold text-stone-900 text-sm hover:text-stone-700 transition-colors line-clamp-1"
                           >
                             {book.title}
                           </Link>
-                          <p className="text-[11px] text-slate-400">By {book.author || 'Hopenix'}</p>
+                          <p className="text-[11px] text-stone-500 font-medium">By {book.author || 'Hopenix'}</p>
                         </div>
                       </div>
                     </td>
 
                     <td className="px-4 py-4">
                       <div className="space-y-1">
-                        <Badge variant="brand" size="sm">
+                        <Badge variant="slate" size="sm">
                           {book.category || 'General'}
                         </Badge>
-                        <p className="text-[11px] text-slate-400">{book.readingLevel || 'Beginner'}</p>
+                        <p className="text-[11px] text-stone-500 font-medium">{book.readingLevel || 'Beginner'}</p>
                       </div>
                     </td>
 
-                    <td className="px-4 py-4 font-semibold text-white">
-                      <span className="inline-flex items-center gap-1">
-                        <Layers className="w-3.5 h-3.5 text-brand-400" />
+                    <td className="px-4 py-4 font-semibold text-stone-900">
+                      <span className="inline-flex items-center gap-1.5">
+                        <Layers className="w-3.5 h-3.5 text-stone-600" />
                         {book._count?.lessons ?? book.totalLessons ?? 0} Lessons
                       </span>
                     </td>
@@ -322,26 +338,25 @@ export const AdminBooksPage: React.FC = () => {
                     </td>
 
                     <td className="px-6 py-4 text-right space-x-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
+                      <button
                         onClick={() => setQrModalBook({ id: book.id, title: book.title })}
-                        icon={<QrCode className="w-3.5 h-3.5 text-brand-400" />}
+                        className="inline-flex items-center justify-center p-1.5 rounded-lg border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 transition-all shadow-xs"
                         title="Generate QR Code"
-                      />
-                      <Link to={`/admin/books/${book.id}/edit`}>
-                        <Button variant="outline" size="sm" icon={<Edit className="w-3.5 h-3.5" />}>
-                          Edit
-                        </Button>
+                      >
+                        <QrCode className="w-3.5 h-3.5 text-stone-700" />
+                      </button>
+                      <Link to={`/admin/books/${book.id}/edit`} className="inline-block">
+                        <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-stone-200 bg-white hover:bg-stone-50 text-xs font-semibold text-stone-700 transition-all shadow-xs">
+                          <Edit className="w-3.5 h-3.5" /> Edit
+                        </span>
                       </Link>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-rose-400 hover:bg-rose-500/10"
+                      <button
                         onClick={() => handleDeleteBook(book.id, book.title)}
-                        icon={<Trash2 className="w-3.5 h-3.5" />}
+                        className="inline-flex items-center justify-center p-1.5 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 transition-all shadow-xs"
                         title="Delete Book"
-                      />
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -377,7 +392,7 @@ export const AdminBooksPage: React.FC = () => {
 
           {/* Company Name */}
           <div className="relative">
-            <Building2 className="w-3.5 h-3.5 text-brand-400 absolute left-3 top-8 pointer-events-none" />
+            <Building2 className="w-3.5 h-3.5 text-stone-500 absolute left-3 top-8 pointer-events-none" />
             <Input
               label="Company / Publisher Name"
               placeholder="e.g. Hopenix Inc., Acme Corp"
@@ -387,13 +402,13 @@ export const AdminBooksPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block font-semibold text-slate-300 mb-1">Book Description / Overview *</label>
+            <label className="block font-semibold text-stone-700 mb-1">Book Description / Overview *</label>
             <textarea
               rows={3}
               placeholder="Detailed description of the e-book..."
               value={description}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 rounded-xl p-3 text-xs text-white placeholder-slate-500 outline-none"
+              className="w-full bg-stone-50 border border-stone-200 focus:border-stone-900 rounded-xl p-3 text-xs text-stone-900 placeholder-stone-400 outline-none transition-colors"
               required
             />
           </div>
@@ -410,11 +425,11 @@ export const AdminBooksPage: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="font-semibold text-slate-300">CLASS / GRADE</label>
+                <label className="font-semibold text-stone-700">CLASS / GRADE</label>
                 <button
                   type="button"
                   onClick={() => setIsAddClassModalOpen(true)}
-                  className="text-[11px] font-bold text-brand-400 hover:text-brand-300 transition-colors flex items-center gap-1"
+                  className="text-[11px] font-bold text-stone-900 hover:underline transition-colors flex items-center gap-1"
                 >
                   <Plus className="w-3 h-3" /> Add Another
                 </button>
@@ -426,7 +441,7 @@ export const AdminBooksPage: React.FC = () => {
                   const cg = classGrades.find((c) => c.id === e.target.value);
                   if (cg) setReadingLevel(cg.name);
                 }}
-                className="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 rounded-xl px-3 py-2 text-xs text-white outline-none"
+                className="w-full bg-stone-50 border border-stone-200 focus:border-stone-900 rounded-xl px-3 py-2 text-xs text-stone-900 outline-none"
               >
                 <option value="">Select Class / Grade...</option>
                 {classGrades.map((cg) => (
@@ -439,11 +454,11 @@ export const AdminBooksPage: React.FC = () => {
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="font-semibold text-slate-300">SUBJECT</label>
+                <label className="font-semibold text-stone-700">SUBJECT</label>
                 <button
                   type="button"
                   onClick={() => setIsAddSubjectModalOpen(true)}
-                  className="text-[11px] font-bold text-brand-400 hover:text-brand-300 transition-colors flex items-center gap-1"
+                  className="text-[11px] font-bold text-stone-900 hover:underline transition-colors flex items-center gap-1"
                 >
                   <Plus className="w-3 h-3" /> Add Another
                 </button>
@@ -455,7 +470,7 @@ export const AdminBooksPage: React.FC = () => {
                   const sb = subjects.find((s) => s.id === e.target.value);
                   if (sb) setCategory(sb.name);
                 }}
-                className="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 rounded-xl px-3 py-2 text-xs text-white outline-none"
+                className="w-full bg-stone-50 border border-stone-200 focus:border-stone-900 rounded-xl px-3 py-2 text-xs text-stone-900 outline-none"
               >
                 <option value="">Select Subject...</option>
                 {subjects.map((sb) => (
@@ -475,35 +490,35 @@ export const AdminBooksPage: React.FC = () => {
 
           {/* Cover Image: file upload + URL fallback */}
           <div className="space-y-2">
-            <label className="block font-semibold text-slate-300">Cover Image</label>
+            <label className="block font-semibold text-stone-700">Cover Image</label>
             <div className="flex gap-3 items-start">
               {/* Preview */}
               <div className="relative shrink-0">
                 <img
                   src={coverPreview || coverImage || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=200&q=80'}
                   alt="Cover preview"
-                  className="w-20 h-24 object-cover rounded-xl border border-slate-700 bg-slate-800"
+                  className="w-20 h-24 object-cover rounded-xl border border-stone-200 bg-stone-100 shadow-xs"
                 />
                 {(coverPreview || coverImage) && (
                   <button
                     type="button"
                     onClick={() => { setCoverImage(''); setCoverPreview(null); }}
-                    className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-rose-500 hover:bg-rose-400 flex items-center justify-center transition-colors"
+                    className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-rose-500 hover:bg-rose-600 flex items-center justify-center transition-colors shadow-xs"
                     title="Remove cover"
                   >
                     <X className="w-3 h-3 text-white" />
                   </button>
                 )}
                 {uploadingCover && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-slate-900/70 rounded-xl">
-                    <div className="w-5 h-5 border-2 border-brand-400 border-t-transparent rounded-full animate-spin" />
+                  <div className="absolute inset-0 flex items-center justify-center bg-stone-900/50 rounded-xl">
+                    <div className="w-5 h-5 border-2 border-stone-50 border-t-transparent rounded-full animate-spin" />
                   </div>
                 )}
               </div>
 
               <div className="flex-1 space-y-2">
                 {/* File upload button */}
-                <label className="inline-flex items-center gap-2 px-3 py-2 bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold rounded-xl cursor-pointer transition-colors w-full justify-center">
+                <label className="inline-flex items-center gap-2 px-3 py-2 bg-stone-900 hover:bg-stone-800 text-stone-50 text-xs font-semibold rounded-xl cursor-pointer transition-colors w-full justify-center shadow-xs">
                   <Upload className="w-4 h-4" />
                   {uploadingCover ? 'Uploading…' : 'Upload from Device'}
                   <input
@@ -523,7 +538,7 @@ export const AdminBooksPage: React.FC = () => {
                     setCoverImage(e.target.value);
                     setCoverPreview(null);
                   }}
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 outline-none"
+                  className="w-full bg-stone-50 border border-stone-200 focus:border-stone-900 rounded-xl px-3 py-2 text-xs text-stone-900 placeholder-stone-400 outline-none transition-colors"
                 />
               </div>
             </div>
@@ -542,20 +557,28 @@ export const AdminBooksPage: React.FC = () => {
               id="published-toggle"
               checked={published}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPublished(e.target.checked)}
-              className="w-4 h-4 rounded border-slate-800 text-brand-600 focus:ring-brand-500 bg-slate-950"
+              className="w-4 h-4 rounded border-stone-300 text-stone-900 focus:ring-stone-900 bg-stone-50 cursor-pointer"
             />
-            <label htmlFor="published-toggle" className="text-xs text-slate-300 font-semibold cursor-pointer">
+            <label htmlFor="published-toggle" className="text-xs text-stone-700 font-semibold cursor-pointer">
               Publish immediately (visible in public library)
             </label>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
-            <Button variant="outline" type="button" onClick={() => setIsCreateModalOpen(false)}>
+          <div className="flex justify-end gap-3 pt-4 border-t border-stone-200">
+            <button
+              type="button"
+              onClick={() => setIsCreateModalOpen(false)}
+              className="px-4 py-2 border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 font-semibold rounded-lg text-xs transition-all shadow-xs"
+            >
               Cancel
-            </Button>
-            <Button variant="primary" type="submit" loading={saving}>
-              Create E-Book
-            </Button>
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="px-5 py-2 bg-stone-900 hover:bg-stone-800 text-stone-50 font-semibold rounded-lg text-xs transition-all shadow-xs disabled:opacity-50"
+            >
+              {saving ? 'Creating...' : 'Create E-Book'}
+            </button>
           </div>
         </form>
       </Modal>
