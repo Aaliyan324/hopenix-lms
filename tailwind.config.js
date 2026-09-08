@@ -13,25 +13,25 @@ export default {
       },
       colors: {
         brand: {
-          50: '#fafaf9',
-          100: '#f5f5f4',
-          200: '#e7e5e4',
-          300: '#d6d3d1',
-          400: '#a8a29e',
-          500: '#78716c',
-          600: '#57534e',
-          700: '#44403c',
-          800: '#292524',
-          900: '#1c1917',
-          950: '#0c0a09',
+          50: '#fff7ed',
+          100: '#ffedd5',
+          200: '#fed7aa',
+          300: '#fdba74',
+          400: '#fb923c',
+          500: '#f97316',
+          600: '#ea580c',
+          700: '#c2410c',
+          800: '#9a3412',
+          900: '#7c2d12',
+          950: '#431407',
         },
         editorial: {
-          burgundy: '#8b1e2d',
-          terracotta: '#c85a32',
-          ink: '#191816',
-          warmWhite: '#faf8f5',
+          burgundy: '#9a3412',
+          terracotta: '#ea580c',
+          ink: '#0f172a',
+          warmWhite: '#f8fafc',
           surface: '#ffffff',
-          accent: '#2b4c3f',
+          accent: '#f97316',
         },
       },
       borderRadius: {
@@ -40,9 +40,9 @@ export default {
         'pill': '9999px',
       },
       boxShadow: {
-        'editorial': '0 4px 20px -2px rgba(28, 25, 23, 0.05), 0 2px 6px -1px rgba(28, 25, 23, 0.03)',
-        'book': '4px 6px 18px rgba(28, 25, 23, 0.12), 1px 1px 4px rgba(28, 25, 23, 0.08)',
-        'card': '0 2px 10px rgba(28, 25, 23, 0.04)',
+        'editorial': '0 4px 20px -2px rgba(249, 115, 22, 0.06), 0 2px 6px -1px rgba(249, 115, 22, 0.03)',
+        'book': '4px 6px 18px rgba(15, 23, 42, 0.08), 1px 1px 4px rgba(15, 23, 42, 0.04)',
+        'card': '0 2px 10px rgba(15, 23, 42, 0.04)',
       },
       keyframes: {
         shimmer: {
@@ -56,5 +56,3 @@ export default {
   },
   plugins: [],
 }
-
-
