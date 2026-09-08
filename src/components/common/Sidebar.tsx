@@ -9,14 +9,19 @@ import {
   QrCode,
   History,
   CheckSquare,
+  Sparkles,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface SidebarProps {
   isOpen?: boolean;
   onClose?: () => void;
+  onToggle?: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose, onToggle }) => {
   const { role } = useAuth().user || {};
 
   const adminNav = [
@@ -35,46 +40,96 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
   const navItems = role === 'ADMIN' ? adminNav : editorNav;
 
   return (
-    <aside
-      className={`fixed lg:static inset-y-0 left-0 z-30 w-64 bg-stone-50 border-r border-stone-200 transform transition-transform duration-200 ease-in-out ${
-        isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-      } flex flex-col justify-between backdrop-blur-md`}
-    >
-      <div className="p-4 space-y-6">
-        <div className="px-3 py-2 text-[10px] font-semibold text-stone-500 uppercase tracking-widest flex items-center gap-1.5 border-b border-stone-200">
-          {role ? `${role} WORKSPACE` : 'EDITORIAL PORTAL'}
+    <>
+      {/* Mobile Backdrop */}
+      {isOpen && (
+        <div
+          onClick={onClose}
+          className="fixed inset-0 z-20 bg-slate-900/40 backdrop-blur-xs lg:hidden transition-opacity"
+        />
+      )}
+
+      <aside
+        className={`fixed lg:static inset-y-0 left-0 z-30 w-72 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-r border-slate-200/80 dark:border-slate-800 transform transition-transform duration-300 ease-in-out ${
+          isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        } flex flex-col justify-between shadow-xl lg:shadow-none`}
+      >
+        <div className="p-5 space-y-6">
+          {/* Header section with Workspace Title and Collapse Toggle */}
+          <div className="px-3 py-2 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
+            <span className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+              {role ? `${role} WORKSPACE` : 'EDITORIAL PORTAL'}
+            </span>
+            
+            {/* Desktop Sidebar Toggle Button */}
+            {onToggle && (
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={onToggle}
+                className="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                title={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
+              >
+                {isOpen ? (
+                  <PanelLeftClose className="w-4 h-4" />
+                ) : (
+                  <PanelLeftOpen className="w-4 h-4" />
+                )}
+              </motion.button>
+            )}
+          </div>
+
+          {/* Navigation Links */}
+          <nav className="space-y-1.5">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  end={item.path === '/admin' || item.path === '/editor'}
+                  onClick={onClose}
+                  className={({ isActive }) =>
+                    `relative flex items-center gap-3.5 px-4 py-3 rounded-2xl text-xs font-semibold transition-all duration-200 group ${
+                      isActive
+                        ? 'bg-slate-900 dark:bg-orange-500 text-white shadow-md shadow-slate-900/10 dark:shadow-orange-500/25'
+                        : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-orange-50/60 dark:hover:bg-orange-950/30'
+                    }`
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      <Icon
+                        className={`w-4 h-4 shrink-0 transition-transform group-hover:scale-110 ${
+                          isActive
+                            ? 'text-orange-400 dark:text-white'
+                            : 'text-slate-400 dark:text-slate-400 group-hover:text-orange-500'
+                        }`}
+                      />
+                      <span className="tracking-wide">{item.label}</span>
+                      {isActive && (
+                        <motion.div
+                          layoutId="activeIndicator"
+                          className="absolute right-3.5 w-1.5 h-1.5 rounded-full bg-orange-400 dark:bg-white"
+                          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                        />
+                      )}
+                    </>
+                  )}
+                </NavLink>
+              );
+            })}
+          </nav>
         </div>
 
-        <nav className="space-y-1">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                end={item.path === '/admin' || item.path === '/editor'}
-                onClick={onClose}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-3.5 py-2.5 rounded-md text-xs font-medium transition-all duration-150 ${
-                    isActive
-                      ? 'bg-stone-900 text-stone-50 shadow-xs'
-                      : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/60'
-                  }`
-                }
-              >
-                <Icon className="w-4 h-4 shrink-0" />
-                <span>{item.label}</span>
-              </NavLink>
-            );
-          })}
-        </nav>
-      </div>
-
-      <div className="p-4 border-t border-stone-200 text-[11px] text-stone-500 text-center space-y-1">
-        <p className="font-semibold text-stone-800">Hopenix E-Book Portal</p>
-        <p className="text-[10px] text-stone-500 font-medium">Digital Library Platform</p>
-      </div>
-    </aside>
+        {/* Footer info badge */}
+        <div className="p-5 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 text-center space-y-1 bg-slate-50/50 dark:bg-slate-900/50">
+          <p className="font-bold text-slate-800 dark:text-slate-200">Hopenix E-Book Portal</p>
+          <p className="text-[10px] text-orange-600 dark:text-orange-400 font-semibold tracking-wider uppercase flex items-center justify-center gap-1">
+            <Sparkles className="w-3 h-3" /> Digital Library Engine
+          </p>
+        </div>
+      </aside>
+    </>
   );
 };
-
