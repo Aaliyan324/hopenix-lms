@@ -19,7 +19,9 @@ import {
   GraduationCap,
   CheckCircle2,
   XCircle,
+  Sparkles,
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export const AdminUsersPage: React.FC = () => {
   const { toast } = useToast();
@@ -129,33 +131,53 @@ export const AdminUsersPage: React.FC = () => {
   };
 
   const getRoleIcon = (userRole: Role) => {
-    if (userRole === 'ADMIN') return <Shield className="w-4 h-4 text-brand-400" />;
-    return <Edit3 className="w-4 h-4 text-amber-400" />;
+    if (userRole === 'ADMIN') return <Shield className="w-4 h-4 text-orange-500" />;
+    return <Edit3 className="w-4 h-4 text-amber-500" />;
   };
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-serif font-bold text-stone-900">User Account Management</h1>
-          <p className="text-sm text-stone-500 font-sans mt-0.5">Manage administrator and editor accounts and roles.</p>
+    <div className="space-y-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+      {/* Header Banner - Matches dashboard style */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-8 sm:p-10 shadow-editorial border border-slate-800">
+        <div className="absolute -right-16 -bottom-16 w-80 h-80 bg-orange-500/15 rounded-full blur-3xl pointer-events-none animate-pulse" />
+        <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none hidden md:block">
+          <Sparkles className="w-40 h-40 text-orange-400" />
         </div>
-        <Button onClick={openCreateModal} variant="primary" icon={<Plus className="w-4 h-4" />}>
-          Create New User
-        </Button>
+        
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+          <div className="space-y-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-bold uppercase tracking-wider backdrop-blur-md">
+              <Users className="w-3.5 h-3.5" />
+              User Management
+            </div>
+            <h1 className="font-serif text-3xl sm:text-5xl font-bold tracking-tight text-white">
+              User Account Management
+            </h1>
+            <p className="text-sm sm:text-base text-slate-300 max-w-2xl leading-relaxed font-light">
+              Manage administrator and editor accounts and roles across the platform.
+            </p>
+          </div>
+          
+          <button
+            onClick={openCreateModal}
+            className="inline-flex items-center gap-2 px-6 py-3.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-2xl transition-all shadow-lg shadow-orange-500/25 active:scale-[0.99] shrink-0"
+          >
+            <Plus className="w-4 h-4" />
+            Create New User
+          </button>
+        </div>
       </div>
 
       {/* Search & Filter Bar */}
-      <div className="flex flex-col sm:flex-row items-center gap-4">
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-4 flex flex-col sm:flex-row items-center gap-4 shadow-editorial">
         <div className="relative flex-1 w-full">
-          <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search users by name or email..."
-            className="w-full pl-10 pr-4 py-2.5 bg-white border border-stone-300 rounded-lg text-stone-900 text-sm focus:outline-none focus:border-stone-800 focus:ring-1 focus:ring-stone-800 placeholder-stone-400 transition-colors"
+            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 focus:border-orange-500 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-orange-100 placeholder-slate-400 transition-all"
           />
         </div>
 
@@ -164,10 +186,10 @@ export const AdminUsersPage: React.FC = () => {
             <button
               key={r}
               onClick={() => setRoleFilter(r)}
-              className={`px-3 py-2 text-xs font-semibold rounded-lg border transition-colors ${
+              className={`px-4 py-2 text-xs font-semibold rounded-xl border transition-all ${
                 roleFilter === r
-                  ? 'bg-stone-900 border-stone-900 text-stone-50'
-                  : 'bg-white border-stone-300 text-stone-600 hover:text-stone-900 hover:bg-stone-50'
+                  ? 'bg-orange-500 border-orange-500 text-white shadow-md shadow-orange-500/25'
+                  : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50'
               }`}
             >
               {r === '' ? 'All Roles' : r}
@@ -177,25 +199,27 @@ export const AdminUsersPage: React.FC = () => {
       </div>
 
       {/* Users Table Card */}
-      <div className="bg-white border border-stone-200 rounded-xl overflow-hidden shadow-xs">
+      <div className="bg-white border border-slate-200/80 rounded-3xl overflow-hidden shadow-editorial">
         {loading ? (
           <div className="p-6 space-y-4">
             {[...Array(5)].map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full rounded-lg" />
+              <Skeleton key={i} className="h-12 w-full rounded-xl" />
             ))}
           </div>
         ) : users.length === 0 ? (
-          <EmptyState
-            title="No users found"
-            description="No user accounts match your search or filter parameters."
-            actionText="Create User"
-            onAction={openCreateModal}
-          />
+          <div className="p-8">
+            <EmptyState
+              title="No users found"
+              description="No user accounts match your search or filter parameters."
+              actionText="Create User"
+              onAction={openCreateModal}
+            />
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-stone-50 border-b border-stone-200 text-[11px] font-semibold text-stone-500 uppercase tracking-wider">
+                <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
                   <th className="px-6 py-4">User Details</th>
                   <th className="px-6 py-4">Role</th>
                   <th className="px-6 py-4">Status</th>
@@ -203,37 +227,37 @@ export const AdminUsersPage: React.FC = () => {
                   <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-100 text-sm">
+              <tbody className="divide-y divide-slate-100 text-sm">
                 {users.map((u) => (
-                  <tr key={u.id} className="hover:bg-stone-50 transition-colors">
+                  <tr key={u.id} className="hover:bg-slate-50/80 transition-colors group">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <img
                           src={u.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.name}`}
                           alt={u.name}
-                          className="w-9 h-9 rounded-full bg-stone-200 object-cover border border-stone-200"
+                          className="w-10 h-10 rounded-xl bg-slate-200 object-cover border border-slate-200 shadow-xs"
                         />
                         <div>
-                          <p className="font-semibold text-stone-900">{u.name}</p>
-                          <p className="text-xs text-stone-500">{u.email}</p>
+                          <p className="font-semibold text-slate-900">{u.name}</p>
+                          <p className="text-xs text-slate-500">{u.email}</p>
                         </div>
                       </div>
                     </td>
 
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-1.5">
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200">
                         {getRoleIcon(u.role)}
-                        <span className="font-semibold text-xs text-stone-700">{u.role}</span>
+                        <span className="font-semibold text-xs text-slate-700">{u.role}</span>
                       </div>
                     </td>
 
                     <td className="px-6 py-4">
-                      <Badge variant={u.isActive ? 'success' : 'danger'} size="sm">
+                      <Badge variant={u.isActive ? 'success' : 'danger'} size="sm" className={u.isActive ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}>
                         {u.isActive ? 'Active' : 'Deactivated'}
                       </Badge>
                     </td>
 
-                    <td className="px-6 py-4 text-xs text-stone-500">
+                    <td className="px-6 py-4 text-xs text-slate-500 font-medium">
                       {new Date(u.createdAt).toLocaleDateString()}
                     </td>
 
@@ -241,17 +265,17 @@ export const AdminUsersPage: React.FC = () => {
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => openEditModal(u)}
-                          className="p-1.5 text-stone-500 hover:text-stone-900 hover:bg-stone-100 rounded-lg transition-colors"
+                          className="p-2 text-slate-500 hover:text-orange-600 hover:bg-orange-50 rounded-xl transition-colors border border-transparent hover:border-orange-200"
                           title="Edit User"
                         >
-                          <Edit className="w-4 h-4" />
+                          <Edit className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => setDeletingUser(u)}
-                          className="p-1.5 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                          className="p-2 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors border border-transparent hover:border-rose-200"
                           title="Delete User"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </td>
@@ -273,9 +297,9 @@ export const AdminUsersPage: React.FC = () => {
         title={editingUser ? `Edit User: ${editingUser.name}` : 'Create New User'}
         maxWidth="md"
       >
-        <form onSubmit={handleSaveUser} className="space-y-4">
+        <form onSubmit={handleSaveUser} className="space-y-5">
           <div>
-            <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
               Full Name
             </label>
             <input
@@ -283,13 +307,13 @@ export const AdminUsersPage: React.FC = () => {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. John Doe"
-              className="w-full px-4 py-2.5 bg-white border border-stone-300 rounded-lg text-stone-900 text-sm focus:outline-none focus:border-stone-800 focus:ring-1 focus:ring-stone-800 transition-colors"
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 rounded-xl text-slate-900 text-sm outline-none transition-all"
               required
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
               Email Address
             </label>
             <input
@@ -297,19 +321,19 @@ export const AdminUsersPage: React.FC = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="user@example.com"
-              className="w-full px-4 py-2.5 bg-white border border-stone-300 rounded-lg text-stone-900 text-sm focus:outline-none focus:border-stone-800 focus:ring-1 focus:ring-stone-800 transition-colors"
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 rounded-xl text-slate-900 text-sm outline-none transition-all"
               required
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
               System Role
             </label>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value as Role)}
-              className="w-full px-4 py-2.5 bg-white border border-stone-300 rounded-lg text-stone-900 text-sm focus:outline-none focus:border-stone-800 focus:ring-1 focus:ring-stone-800 transition-colors"
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 rounded-xl text-slate-900 text-sm outline-none transition-all"
             >
               <option value="EDITOR">EDITOR (Assigned Lesson Content Editor)</option>
               <option value="ADMIN">ADMIN (Full Portal Access)</option>
@@ -317,7 +341,7 @@ export const AdminUsersPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
               Password {editingUser && '(Leave blank to keep unchanged)'}
             </label>
             <input
@@ -325,7 +349,7 @@ export const AdminUsersPage: React.FC = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-4 py-2.5 bg-white border border-stone-300 rounded-lg text-stone-900 text-sm focus:outline-none focus:border-stone-800 focus:ring-1 focus:ring-stone-800 transition-colors"
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 rounded-xl text-slate-900 text-sm outline-none transition-all"
               required={!editingUser}
             />
           </div>
@@ -337,28 +361,32 @@ export const AdminUsersPage: React.FC = () => {
                 id="user-active-toggle"
                 checked={isActive}
                 onChange={(e) => setIsActive(e.target.checked)}
-                className="w-4 h-4 rounded border-stone-300 bg-white text-stone-900 focus:ring-stone-800"
+                className="w-4 h-4 rounded border-slate-300 text-orange-500 focus:ring-orange-500 bg-slate-50 cursor-pointer"
               />
-              <label htmlFor="user-active-toggle" className="text-sm text-stone-700 cursor-pointer">
+              <label htmlFor="user-active-toggle" className="text-sm font-semibold text-slate-700 cursor-pointer">
                 Account Active
               </label>
             </div>
           )}
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-stone-100">
-            <Button
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
+            <button
               type="button"
-              variant="outline"
               onClick={() => {
                 setIsCreateOpen(false);
                 setEditingUser(null);
               }}
+              className="px-4 py-2.5 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl text-sm transition-all shadow-xs"
             >
               Cancel
-            </Button>
-            <Button type="submit" variant="primary" loading={saving}>
-              {editingUser ? 'Save Changes' : 'Create User'}
-            </Button>
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl text-sm transition-all shadow-md shadow-orange-500/25 disabled:opacity-50"
+            >
+              {saving ? 'Saving...' : editingUser ? 'Save Changes' : 'Create User'}
+            </button>
           </div>
         </form>
       </Modal>
