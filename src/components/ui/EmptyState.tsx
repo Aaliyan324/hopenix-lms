@@ -18,13 +18,13 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   icon,
 }) => {
   return (
-    <div className="flex flex-col items-center justify-center p-10 md:p-14 text-center border border-dashed border-stone-300 rounded-xl bg-white my-6">
-      <div className="p-4 rounded-full bg-stone-100 text-stone-700 mb-4 border border-stone-200">
-        {icon || <BookOpen className="w-8 h-8 text-stone-700" />}
+    <div className="flex flex-col items-center justify-center p-10 md:p-14 text-center border border-dashed border-stone-300 rounded-2xl bg-white/70 my-6">
+      <div className="p-4 rounded-2xl bg-orange-50 text-orange-600 mb-4 border border-orange-100">
+        {icon || <BookOpen className="w-8 h-8 text-orange-600" />}
       </div>
 
       <h3 className="font-serif text-xl font-bold text-stone-900 mb-2">{title}</h3>
-      <p className="text-sm text-stone-600 max-w-md mb-6 leading-relaxed font-sans">{description}</p>
+      <p className="text-sm text-stone-500 max-w-md mb-6 leading-relaxed">{description}</p>
       
       {actionText && onAction && (
         <Button onClick={onAction} variant="primary">

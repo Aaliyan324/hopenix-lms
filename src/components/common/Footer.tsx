@@ -4,7 +4,7 @@ import { BookOpen, Shield, Compass, Book, Sparkles, Heart } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="mt-24 border-t border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 relative transition-colors overflow-hidden">
+    <footer className="mt-24 border-t border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 relative transition-colors overflow-hidden">
       {/* Decorative gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-orange-50/20 dark:via-orange-950/10 to-transparent pointer-events-none" />
 
@@ -13,24 +13,24 @@ export const Footer: React.FC = () => {
           {/* Brand Column */}
           <div className="space-y-4 md:col-span-2">
             <Link to="/login" className="inline-flex items-center gap-3 group">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center text-orange-500 shadow-book group-hover:scale-105 transition-transform duration-300">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-stone-900 to-stone-800 flex items-center justify-center text-orange-500 shadow-book group-hover:scale-105 transition-transform duration-300">
                 <BookOpen className="w-5 h-5 fill-current" />
               </div>
-              <span className="font-serif font-bold text-2xl tracking-tight text-slate-900 dark:text-white">
+              <span className="font-serif font-bold text-2xl tracking-tight text-stone-900 dark:text-white">
                 Hopenix<span className="text-orange-500">.</span>
               </span>
             </Link>
-            <p className="text-xs text-slate-600 dark:text-slate-400 max-w-sm leading-relaxed font-sans">
+            <p className="text-xs text-stone-600 dark:text-stone-400 max-w-sm leading-relaxed font-sans">
               A modern digital library and publishing platform for institutions. Explore interactive e-books and lessons delivered through secure QR code access.
             </p>
           </div>
 
           {/* Quick Links */}
           <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-stone-900 dark:text-white flex items-center gap-2">
               <Sparkles className="w-3.5 h-3.5 text-orange-500" /> Navigation
             </h4>
-            <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-400 font-medium">
+            <ul className="space-y-2 text-xs text-stone-600 dark:text-stone-400 font-medium">
               <li>
                 <Link to="/login" className="hover:text-orange-600 dark:hover:text-orange-400 transition-colors inline-block py-0.5">
                   Portal Login
@@ -41,8 +41,8 @@ export const Footer: React.FC = () => {
 
           {/* Platform Info */}
           <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">Platform</h4>
-            <ul className="space-y-2.5 text-xs text-slate-600 dark:text-slate-400 font-medium">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-stone-900 dark:text-white">Platform</h4>
+            <ul className="space-y-2.5 text-xs text-stone-600 dark:text-stone-400 font-medium">
               <li className="flex items-center gap-2.5 group">
                 <span className="p-1 rounded-lg bg-orange-50 dark:bg-orange-950/50 text-orange-600 dark:text-orange-400 group-hover:scale-110 transition-transform">
                   <Shield className="w-3.5 h-3.5" />
@@ -66,9 +66,9 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400 font-medium">
+        <div className="pt-8 border-t border-stone-200/80 dark:border-stone-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-500 dark:text-stone-400 font-medium">
           <p>© {new Date().getFullYear()} Hopenix Digital Publishing. All rights reserved.</p>
-          <p className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+          <p className="flex items-center gap-1.5 text-stone-500 dark:text-stone-400">
             Designed for modern reading experiences with <Heart className="w-3.5 h-3.5 text-orange-500 fill-orange-500 inline" />
           </p>
         </div>

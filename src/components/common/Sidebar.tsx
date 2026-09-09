@@ -45,18 +45,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose, onTogg
       {isOpen && (
         <div
           onClick={onClose}
-          className="fixed inset-0 z-20 bg-slate-900/40 backdrop-blur-xs lg:hidden transition-opacity"
+          className="fixed inset-0 z-20 bg-stone-900/40 backdrop-blur-xs lg:hidden transition-opacity"
         />
       )}
 
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-30 w-72 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-r border-slate-200/80 dark:border-slate-800 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed lg:static inset-y-0 left-0 z-30 w-72 bg-white/95 dark:bg-stone-900/95 backdrop-blur-xl border-r border-stone-200/80 dark:border-stone-800 transform transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         } flex flex-col justify-between shadow-xl lg:shadow-none`}
       >
         <div className="p-5 space-y-6">
           {/* Header section with Workspace Title and Collapse Toggle */}
-          <div className="px-3 py-2 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
+          <div className="px-3 py-2 text-[10px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-widest flex items-center justify-between border-b border-stone-100 dark:border-stone-800">
             <span className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
               {role ? `${role} WORKSPACE` : 'EDITORIAL PORTAL'}
@@ -67,7 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose, onTogg
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={onToggle}
-                className="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="hidden lg:flex p-1.5 rounded-lg text-stone-400 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
                 title={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
               >
                 {isOpen ? (
@@ -92,8 +92,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose, onTogg
                   className={({ isActive }) =>
                     `relative flex items-center gap-3.5 px-4 py-3 rounded-2xl text-xs font-semibold transition-all duration-200 group ${
                       isActive
-                        ? 'bg-slate-900 dark:bg-orange-500 text-white shadow-md shadow-slate-900/10 dark:shadow-orange-500/25'
-                        : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-orange-50/60 dark:hover:bg-orange-950/30'
+                        ? 'bg-stone-900 dark:bg-orange-500 text-white shadow-md shadow-stone-900/10 dark:shadow-orange-500/25'
+                        : 'text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-orange-50/60 dark:hover:bg-orange-950/30'
                     }`
                   }
                 >
@@ -103,7 +103,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose, onTogg
                         className={`w-4 h-4 shrink-0 transition-transform group-hover:scale-110 ${
                           isActive
                             ? 'text-orange-400 dark:text-white'
-                            : 'text-slate-400 dark:text-slate-400 group-hover:text-orange-500'
+                            : 'text-stone-400 dark:text-stone-400 group-hover:text-orange-500'
                         }`}
                       />
                       <span className="tracking-wide">{item.label}</span>
@@ -123,8 +123,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose, onTogg
         </div>
 
         {/* Footer info badge */}
-        <div className="p-5 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 text-center space-y-1 bg-slate-50/50 dark:bg-slate-900/50">
-          <p className="font-bold text-slate-800 dark:text-slate-200">Hopenix E-Book Portal</p>
+        <div className="p-5 border-t border-stone-100 dark:border-stone-800 text-[11px] text-stone-500 dark:text-stone-400 text-center space-y-1 bg-stone-50/50 dark:bg-stone-900/50">
+          <p className="font-bold text-stone-800 dark:text-stone-200">Hopenix E-Book Portal</p>
           <p className="text-[10px] text-orange-600 dark:text-orange-400 font-semibold tracking-wider uppercase flex items-center justify-center gap-1">
             <Sparkles className="w-3 h-3" /> Digital Library Engine
           </p>

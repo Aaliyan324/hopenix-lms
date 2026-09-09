@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Bookmark, Heart, Clock, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { BookOpen, Heart, Clock, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { Book } from '../../types';
 
 interface BookCardProps {
@@ -25,102 +25,115 @@ export const BookCard: React.FC<BookCardProps> = ({
   const defaultCover = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80';
   const coverUrl = book.coverImage || book.thumbnail || defaultCover;
   const lessonsNum = totalLessonsCount ?? book.totalLessons ?? (book.lessons?.length || 0);
+  const isComplete = progressPercent === 100;
 
   return (
-    <div
-      className={`group relative bg-white border border-stone-200/80 hover:border-stone-400 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between ${
+    <article
+      className={`group relative flex flex-col overflow-hidden rounded-2xl border border-stone-200/80 bg-white shadow-[0_1px_2px_rgba(28,25,23,0.04),0_10px_26px_-14px_rgba(28,25,23,0.16)] transition-all duration-300 ease-out hover:-translate-y-1 hover:border-orange-200 hover:shadow-[0_20px_46px_-20px_rgba(234,88,12,0.30),0_8px_18px_-8px_rgba(28,25,23,0.10)] ${
         featured ? 'md:col-span-2 md:flex-row' : ''
       }`}
     >
       {/* Save / Bookmark Button top right */}
       {onSaveToggle && (
         <button
+          type="button"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
             onSaveToggle(book.id);
           }}
-          className={`absolute top-3 right-3 z-20 p-2 rounded-full backdrop-blur-sm transition-all duration-200 shadow-sm ${
-            isSaved
-              ? 'bg-red-700 text-white border border-red-800 scale-105'
-              : 'bg-white/80 text-stone-600 hover:text-stone-900 border border-stone-200 hover:bg-white'
-          }`}
+          aria-label={isSaved ? 'Remove from saved' : 'Save book'}
+          aria-pressed={isSaved}
           title={isSaved ? 'Remove from saved' : 'Save book'}
+          className={`absolute top-3 right-3 z-20 grid h-9 w-9 place-items-center rounded-full border shadow-sm backdrop-blur transition-all duration-200 active:scale-95 ${
+            isSaved
+              ? 'border-orange-600 bg-orange-600 text-white'
+              : 'border-stone-200 bg-white/85 text-stone-500 hover:border-orange-300 hover:text-orange-600'
+          }`}
         >
-          <Heart className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
+          <Heart className={`h-4 w-4 ${isSaved ? 'fill-current' : ''}`} />
         </button>
       )}
 
-      {/* Cover Image Container */}
-      <div className={`relative bg-stone-100 overflow-hidden shrink-0 ${featured ? 'md:w-1/2 h-60 md:h-auto' : 'h-56'}`}>
+      {/* Cover Image Container — full, uncropped (object-contain) on a warm stage */}
+      <div
+        className={`relative flex shrink-0 items-center justify-center overflow-hidden bg-gradient-to-br from-stone-100 via-orange-50/50 to-stone-100 p-5 ${
+          featured ? 'h-60 md:h-auto md:w-2/5' : 'h-64'
+        }`}
+      >
         <img
           src={coverUrl}
-          alt={book.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          alt={`Cover of ${book.title}`}
+          loading="lazy"
+          className="h-full w-full object-contain drop-shadow-[0_12px_20px_rgba(28,25,23,0.20)] transition-transform duration-500 ease-out group-hover:scale-[1.04]"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-stone-900/60 via-transparent to-transparent opacity-60" />
 
         {/* Category Pill */}
         {book.category && (
-          <span className="absolute top-3 left-3 text-[11px] font-semibold tracking-wide text-stone-900 bg-white/90 backdrop-blur-sm px-2.5 py-0.5 rounded border border-stone-200 shadow-xs">
+          <span className="absolute top-3 left-3 rounded-full border border-orange-200/70 bg-white/90 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-orange-700 shadow-sm backdrop-blur">
             {book.category}
           </span>
         )}
 
         {/* Level / Status Pill */}
         {book.readingLevel && (
-          <span className="absolute bottom-3 left-3 text-[11px] font-medium text-stone-100 bg-stone-900/80 backdrop-blur-xs px-2 py-0.5 rounded">
-            Level: {book.readingLevel}
+          <span className="absolute bottom-3 left-3 rounded-full bg-stone-900/85 px-2.5 py-1 text-[11px] font-medium text-stone-50 backdrop-blur">
+            Level · {book.readingLevel}
           </span>
         )}
       </div>
 
       {/* Content Area */}
-      <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+      <div className="flex flex-1 flex-col justify-between gap-4 p-5">
         <div className="space-y-2">
-          <div className="flex items-center justify-between gap-2 text-xs text-stone-500 font-medium">
-            <span className="flex items-center gap-1.5 text-stone-600">
-              <BookOpen className="w-3.5 h-3.5 text-stone-500" />
+          <div className="flex items-center justify-between gap-2 text-xs font-medium text-stone-500">
+            <span className="inline-flex items-center gap-1.5 text-stone-600">
+              <BookOpen className="h-3.5 w-3.5 text-orange-500" />
               {lessonsNum} {lessonsNum === 1 ? 'Chapter' : 'Chapters'}
             </span>
             {book.author && (
-              <span className="text-stone-500 italic truncate max-w-[140px]">
+              <span className="max-w-[45%] truncate text-stone-400 italic">
                 by {book.author}
               </span>
             )}
           </div>
 
-          <h3 className="font-serif font-bold text-xl text-stone-900 group-hover:text-stone-700 transition-colors line-clamp-2 leading-snug">
+          <h3 className="font-serif text-lg font-bold leading-snug text-stone-900 transition-colors line-clamp-2 group-hover:text-orange-700 sm:text-xl">
             {book.title}
           </h3>
 
-          <p className="text-xs text-stone-600 line-clamp-2 leading-relaxed font-sans">
+          <p className="text-xs leading-relaxed text-stone-500 line-clamp-2">
             {book.shortDescription || book.description || 'Explore this engaging educational publication filled with interactive lessons and practice.'}
           </p>
         </div>
 
         {/* Reading Progress Indicator */}
         {typeof progressPercent === 'number' && (
-          <div className="space-y-1.5 pt-2 border-t border-stone-100">
+          <div className="space-y-1.5 border-t border-stone-100 pt-3">
             <div className="flex items-center justify-between text-xs font-medium">
-              <span className="text-stone-600 flex items-center gap-1">
-                {progressPercent === 100 ? (
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="inline-flex items-center gap-1.5 text-stone-600">
+                {isComplete ? (
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
                 ) : (
-                  <Clock className="w-3.5 h-3.5 text-stone-500" />
+                  <Clock className="h-3.5 w-3.5 text-orange-500" />
                 )}
-                {progressPercent === 100 ? 'Completed' : 'Reading Progress'}
+                {isComplete ? 'Completed' : 'Reading Progress'}
               </span>
-              <span className={progressPercent === 100 ? 'text-emerald-700 font-semibold' : 'text-stone-700'}>
+              <span className={isComplete ? 'font-semibold text-emerald-700' : 'font-semibold text-stone-700'}>
                 {progressPercent}%
               </span>
             </div>
-            <div className="w-full bg-stone-100 rounded-full h-1.5 overflow-hidden border border-stone-200">
+            <div
+              className="h-1.5 w-full overflow-hidden rounded-full bg-stone-100"
+              role="progressbar"
+              aria-valuenow={progressPercent}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label={`Reading progress for ${book.title}`}
+            >
               <div
                 className={`h-full rounded-full transition-all duration-500 ${
-                  progressPercent === 100
-                    ? 'bg-emerald-600'
-                    : 'bg-stone-900'
+                  isComplete ? 'bg-emerald-500' : 'bg-gradient-to-r from-orange-500 to-orange-600'
                 }`}
                 style={{ width: `${progressPercent}%` }}
               />
@@ -129,17 +142,16 @@ export const BookCard: React.FC<BookCardProps> = ({
         )}
 
         {/* Action Link */}
-        <div className="pt-2">
+        <div className="pt-1">
           <Link
             to={`/books/${book.slug}`}
-            className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 bg-stone-900 hover:bg-stone-800 text-stone-50 text-xs font-semibold rounded-lg transition-all duration-200 shadow-xs group/btn"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-orange-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm shadow-orange-600/20 transition-all duration-200 hover:bg-orange-700 hover:shadow-md hover:shadow-orange-600/25 focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 active:scale-[0.99] group/btn"
           >
             <span>{progressPercent && progressPercent > 0 ? 'Continue Reading' : 'Read Publication'}</span>
-            <ArrowRight className="w-4 h-4 text-stone-300 group-hover/btn:translate-x-0.5 transition-transform" />
+            <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover/btn:translate-x-0.5" />
           </Link>
         </div>
       </div>
-    </div>
+    </article>
   );
 };
-

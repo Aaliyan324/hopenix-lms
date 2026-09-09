@@ -23,6 +23,7 @@ import {
   ChevronDown,
   ChevronUp,
   Download,
+  X,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -41,7 +42,7 @@ const itemVariants = {
   visible: { 
     opacity: 1, 
     y: 0,
-    transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] }
+    transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] as const }
   },
 };
 
@@ -92,11 +93,11 @@ export const AdminActivityLogsPage: React.FC = () => {
       'PUBLISH': 'bg-purple-100 text-purple-700 border-purple-200',
       'UNPUBLISH': 'bg-amber-100 text-amber-700 border-amber-200',
       'LOGIN': 'bg-orange-100 text-orange-700 border-orange-200',
-      'LOGOUT': 'bg-slate-100 text-slate-700 border-slate-200',
+      'LOGOUT': 'bg-stone-100 text-stone-700 border-stone-200',
       'UPLOAD': 'bg-cyan-100 text-cyan-700 border-cyan-200',
       'PERMISSION': 'bg-indigo-100 text-indigo-700 border-indigo-200',
     };
-    return actionMap[action] || 'bg-slate-100 text-slate-700 border-slate-200';
+    return actionMap[action] || 'bg-stone-100 text-stone-700 border-stone-200';
   };
 
   const getEntityIcon = (entityType: string) => {
@@ -200,7 +201,7 @@ export const AdminActivityLogsPage: React.FC = () => {
         >
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <div className="relative flex-1 w-full">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={search}
@@ -209,12 +210,12 @@ export const AdminActivityLogsPage: React.FC = () => {
                   setPage(1);
                 }}
                 placeholder="Search logs by action or user name..."
-                className="w-full bg-orange-50/30 border border-slate-200/80 focus:border-orange-500 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition-colors font-['Inter',sans-serif]"
+                className="w-full bg-orange-50/30 border border-stone-200/80 focus:border-orange-500 rounded-xl pl-10 pr-4 py-2.5 text-sm text-stone-900 placeholder-stone-400 outline-none transition-colors font-['Inter',sans-serif]"
               />
               {search && (
                 <button
                   onClick={() => setSearch('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -229,7 +230,7 @@ export const AdminActivityLogsPage: React.FC = () => {
                     setActionFilter(e.target.value);
                     setPage(1);
                   }}
-                  className="bg-orange-50/30 border border-slate-200/80 focus:border-orange-500 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none transition-colors font-['Inter',sans-serif]"
+                  className="bg-orange-50/30 border border-stone-200/80 focus:border-orange-500 rounded-xl px-3 py-2.5 text-sm text-stone-700 outline-none transition-colors font-['Inter',sans-serif]"
                 >
                   <option value="">All Actions</option>
                   {uniqueActions.map(action => (
@@ -252,8 +253,8 @@ export const AdminActivityLogsPage: React.FC = () => {
               className="bg-white/90 backdrop-blur-sm border border-orange-100 rounded-3xl p-8 sm:p-12 shadow-[0_8px_30px_rgba(249,115,22,0.08)] text-center"
             >
               <Activity className="w-12 h-12 text-orange-300 mx-auto mb-4" />
-              <p className="text-lg font-['Poppins',sans-serif] font-semibold text-slate-900">No activity log entries found</p>
-              <p className="text-sm text-slate-500 mt-1 font-['Inter',sans-serif]">
+              <p className="text-lg font-['Poppins',sans-serif] font-semibold text-stone-900">No activity log entries found</p>
+              <p className="text-sm text-stone-500 mt-1 font-['Inter',sans-serif]">
                 {search || actionFilter ? 'Try adjusting your search or filter criteria.' : 'Activity will appear here as users interact with the platform.'}
               </p>
             </motion.div>
@@ -274,23 +275,23 @@ export const AdminActivityLogsPage: React.FC = () => {
                       <img
                         src={log.user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${log.user?.name || 'System'}`}
                         alt={log.user?.name || 'System'}
-                        className="w-10 h-10 rounded-xl bg-orange-100 object-cover border border-orange-200 shadow-xs flex-shrink-0"
+                        className="w-10 h-10 rounded-xl bg-orange-100 object-cover border border-orange-200 shadow-sm flex-shrink-0"
                       />
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-semibold text-slate-900 font-['Poppins',sans-serif] text-sm truncate">
+                          <span className="font-semibold text-stone-900 font-['Poppins',sans-serif] text-sm truncate">
                             {log.user?.name || 'System'}
                           </span>
                           <Badge variant="brand" size="sm" className={`font-['Inter',sans-serif] text-[10px] ${getActionColor(log.action)}`}>
                             {log.action}
                           </Badge>
                         </div>
-                        <div className="flex items-center gap-2 text-xs text-slate-500 font-['Inter',sans-serif]">
+                        <div className="flex items-center gap-2 text-xs text-stone-500 font-['Inter',sans-serif]">
                           <span className="flex items-center gap-1">
                             {getEntityIcon(log.entityType)}
                             {log.entityType}
                           </span>
-                          <span className="text-slate-300">•</span>
+                          <span className="text-stone-300">•</span>
                           <span className="flex items-center gap-1">
                             <Clock className="w-3 h-3" />
                             {new Date(log.createdAt).toLocaleString()}
@@ -301,11 +302,11 @@ export const AdminActivityLogsPage: React.FC = () => {
 
                     <div className="flex items-center gap-2 shrink-0">
                       {log.metadata && (
-                        <span className="text-[10px] text-slate-500 bg-slate-50 px-2 py-1 rounded-lg border border-slate-200 font-['Inter',sans-serif] truncate max-w-[150px] hidden sm:block">
+                        <span className="text-[10px] text-stone-500 bg-stone-50 px-2 py-1 rounded-lg border border-stone-200 font-['Inter',sans-serif] truncate max-w-[150px] hidden sm:block">
                           {log.metadata}
                         </span>
                       )}
-                      <span className="text-slate-400">
+                      <span className="text-stone-400">
                         {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                       </span>
                     </div>
@@ -322,23 +323,23 @@ export const AdminActivityLogsPage: React.FC = () => {
                     >
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                         <div>
-                          <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider font-['Poppins',sans-serif]">Log ID</p>
-                          <p className="text-xs font-mono text-slate-700 font-['Inter',sans-serif]">{log.id}</p>
+                          <p className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider font-['Poppins',sans-serif]">Log ID</p>
+                          <p className="text-xs font-mono text-stone-700 font-['Inter',sans-serif]">{log.id}</p>
                         </div>
                         <div>
-                          <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider font-['Poppins',sans-serif]">Entity ID</p>
-                          <p className="text-xs font-mono text-slate-700 font-['Inter',sans-serif]">{log.entityId || 'N/A'}</p>
+                          <p className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider font-['Poppins',sans-serif]">Entity ID</p>
+                          <p className="text-xs font-mono text-stone-700 font-['Inter',sans-serif]">{log.entityId || 'N/A'}</p>
                         </div>
                         <div className="sm:col-span-2">
-                          <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider font-['Poppins',sans-serif]">Metadata</p>
-                          <p className="text-xs text-slate-700 font-['Inter',sans-serif] bg-white/50 p-2 rounded-lg border border-slate-200 font-mono">
+                          <p className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider font-['Poppins',sans-serif]">Metadata</p>
+                          <p className="text-xs text-stone-700 font-['Inter',sans-serif] bg-white/50 p-2 rounded-lg border border-stone-200 font-mono">
                             {log.metadata || 'No additional metadata'}
                           </p>
                         </div>
                         <div className="sm:col-span-2">
-                          <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider font-['Poppins',sans-serif]">Timestamp</p>
-                          <p className="text-xs text-slate-700 font-['Inter',sans-serif] flex items-center gap-2">
-                            <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                          <p className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider font-['Poppins',sans-serif]">Timestamp</p>
+                          <p className="text-xs text-stone-700 font-['Inter',sans-serif] flex items-center gap-2">
+                            <Calendar className="w-3.5 h-3.5 text-stone-400" />
                             {new Date(log.createdAt).toLocaleString('en-US', {
                               weekday: 'long',
                               year: 'numeric',
@@ -365,24 +366,24 @@ export const AdminActivityLogsPage: React.FC = () => {
           variants={itemVariants}
           className="bg-white/90 backdrop-blur-sm border border-orange-100 rounded-2xl p-4 shadow-[0_8px_30px_rgba(249,115,22,0.08)] flex flex-col sm:flex-row items-center justify-between gap-4"
         >
-          <p className="text-sm text-slate-500 font-medium font-['Inter',sans-serif]">
-            Page <span className="font-bold text-slate-900 font-['Poppins',sans-serif]">{page}</span> of <span className="font-bold text-slate-900 font-['Poppins',sans-serif]">{totalPages}</span>
+          <p className="text-sm text-stone-500 font-medium font-['Inter',sans-serif]">
+            Page <span className="font-bold text-stone-900 font-['Poppins',sans-serif]">{page}</span> of <span className="font-bold text-stone-900 font-['Poppins',sans-serif]">{totalPages}</span>
           </p>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="p-2 rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-orange-600 hover:bg-orange-50 hover:border-orange-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-xs"
+              className="p-2 rounded-xl bg-white border border-stone-200 text-stone-600 hover:text-orange-600 hover:bg-orange-50 hover:border-orange-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
-            <span className="text-xs text-slate-400 font-medium px-2 font-['Inter',sans-serif]">
+            <span className="text-xs text-stone-400 font-medium px-2 font-['Inter',sans-serif]">
               {page} / {totalPages}
             </span>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page >= totalPages}
-              className="p-2 rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-orange-600 hover:bg-orange-50 hover:border-orange-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-xs"
+              className="p-2 rounded-xl bg-white border border-stone-200 text-stone-600 hover:text-orange-600 hover:bg-orange-50 hover:border-orange-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
             >
               <ArrowRight className="w-4 h-4" />
             </button>

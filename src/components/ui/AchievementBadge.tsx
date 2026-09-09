@@ -19,7 +19,7 @@ export const AchievementBadge: React.FC<AchievementBadgeProps> = ({
     <div
       className={`relative flex items-center gap-4 p-4 rounded-xl border transition-all duration-200 ${
         unlocked
-          ? 'bg-white border-stone-300 shadow-xs'
+          ? 'bg-white border-stone-300 shadow-sm'
           : 'bg-stone-50 border-stone-200 opacity-75'
       }`}
     >

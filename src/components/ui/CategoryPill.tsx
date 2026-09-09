@@ -20,7 +20,7 @@ export const CategoryPill: React.FC<CategoryPillProps> = ({
       onClick={onClick}
       className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-medium transition-all duration-150 cursor-pointer shrink-0 select-none ${
         active
-          ? 'bg-stone-900 text-stone-50 border border-stone-900 shadow-xs'
+          ? 'bg-stone-900 text-stone-50 border border-stone-900 shadow-sm'
           : 'bg-white hover:bg-stone-100 text-stone-700 border border-stone-200'
       }`}
     >

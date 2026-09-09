@@ -51,7 +51,7 @@ const itemVariants = {
   visible: { 
     opacity: 1, 
     y: 0,
-    transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] }
+    transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] as const }
   },
 };
 
@@ -305,8 +305,8 @@ export const AdminUsersPage: React.FC = () => {
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-medium text-slate-500 font-['Inter',sans-serif]">{stat.label}</p>
-                    <p className="text-2xl sm:text-3xl font-bold font-['Poppins',sans-serif] text-slate-900 mt-1">{stat.value}</p>
+                    <p className="text-xs font-medium text-stone-500 font-['Inter',sans-serif]">{stat.label}</p>
+                    <p className="text-2xl sm:text-3xl font-bold font-['Poppins',sans-serif] text-stone-900 mt-1">{stat.value}</p>
                   </div>
                   <div className={`p-2.5 rounded-xl border ${colors[stat.color as keyof typeof colors]}`}>
                     <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -324,18 +324,18 @@ export const AdminUsersPage: React.FC = () => {
         >
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <div className="relative flex-1 w-full">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search users by name or email..."
-                className="w-full bg-orange-50/30 border border-slate-200/80 focus:border-orange-500 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition-colors font-['Inter',sans-serif]"
+                className="w-full bg-orange-50/30 border border-stone-200/80 focus:border-orange-500 rounded-xl pl-10 pr-4 py-2.5 text-sm text-stone-900 placeholder-stone-400 outline-none transition-colors font-['Inter',sans-serif]"
               />
             </div>
 
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <div className="flex items-center gap-1 bg-orange-50/30 border border-slate-200/80 rounded-xl p-1">
+              <div className="flex items-center gap-1 bg-orange-50/30 border border-stone-200/80 rounded-xl p-1">
                 {['All', 'ADMIN', 'EDITOR'].map((label) => {
                   const value = label === 'All' ? '' : label;
                   return (
@@ -345,7 +345,7 @@ export const AdminUsersPage: React.FC = () => {
                       className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all font-['Poppins',sans-serif'] ${
                         roleFilter === value
                           ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25'
-                          : 'text-slate-600 hover:text-slate-900 hover:bg-orange-100'
+                          : 'text-stone-600 hover:text-stone-900 hover:bg-orange-100'
                       }`}
                     >
                       {label}
@@ -355,7 +355,7 @@ export const AdminUsersPage: React.FC = () => {
               </div>
               <button
                 onClick={() => fetchUsers()}
-                className="p-2.5 text-slate-500 hover:text-orange-600 hover:bg-orange-50 rounded-xl transition-colors border border-slate-200/80"
+                className="p-2.5 text-stone-500 hover:text-orange-600 hover:bg-orange-50 rounded-xl transition-colors border border-stone-200/80"
                 title="Refresh"
               >
                 <RefreshCw className="w-4 h-4" />
@@ -368,14 +368,14 @@ export const AdminUsersPage: React.FC = () => {
         {users.length > 0 && (
           <motion.div variants={itemVariants}>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-['Poppins',sans-serif] text-lg font-semibold text-slate-900 flex items-center gap-2">
+              <h2 className="font-['Poppins',sans-serif] text-lg font-semibold text-stone-900 flex items-center gap-2">
                 <Users className="w-5 h-5 text-orange-500" />
                 All Team Members
-                <span className="text-sm font-normal text-slate-500 font-['Inter',sans-serif]">
+                <span className="text-sm font-normal text-stone-500 font-['Inter',sans-serif]">
                   ({users.length} users)
                 </span>
               </h2>
-              <span className="text-xs text-slate-400 font-['Inter',sans-serif] flex items-center gap-1">
+              <span className="text-xs text-stone-400 font-['Inter',sans-serif] flex items-center gap-1">
                 <span className="hidden sm:inline">Click any card to edit</span>
                 <span className="sm:hidden">Tap to edit</span>
                 <Edit className="w-3 h-3" />
@@ -404,10 +404,10 @@ export const AdminUsersPage: React.FC = () => {
                         className="w-12 h-12 rounded-xl bg-orange-100 object-cover border-2 border-orange-200 shadow-sm"
                       />
                       <div>
-                        <h3 className="font-['Poppins',sans-serif] font-semibold text-slate-900 text-sm">
+                        <h3 className="font-['Poppins',sans-serif] font-semibold text-stone-900 text-sm">
                           {user.name}
                         </h3>
-                        <p className="text-xs text-slate-500 font-['Inter',sans-serif] flex items-center gap-1">
+                        <p className="text-xs text-stone-500 font-['Inter',sans-serif] flex items-center gap-1">
                           <Mail className="w-3 h-3" />
                           {user.email}
                         </p>
@@ -420,7 +420,7 @@ export const AdminUsersPage: React.FC = () => {
                           e.stopPropagation();
                           openEditModal(user);
                         }}
-                        className="p-1.5 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors edit-btn"
+                        className="p-1.5 text-stone-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors edit-btn"
                         title="Edit User"
                       >
                         <Edit className="w-3.5 h-3.5" />
@@ -430,7 +430,7 @@ export const AdminUsersPage: React.FC = () => {
                           e.stopPropagation();
                           setDeletingUser(user);
                         }}
-                        className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors delete-btn"
+                        className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors delete-btn"
                         title="Delete User"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -453,7 +453,7 @@ export const AdminUsersPage: React.FC = () => {
                           {user.isActive ? 'Active' : 'Deactivated'}
                         </Badge>
                       </div>
-                      <span className="text-[10px] text-slate-400 font-['Inter',sans-serif] flex items-center gap-1">
+                      <span className="text-[10px] text-stone-400 font-['Inter',sans-serif] flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
                         {new Date(user.createdAt).toLocaleDateString()}
                       </span>
@@ -494,7 +494,7 @@ export const AdminUsersPage: React.FC = () => {
         >
           <form onSubmit={handleSaveUser} className="space-y-5 font-['Inter',sans-serif]">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5 font-['Poppins',sans-serif]">
+              <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider mb-1.5 font-['Poppins',sans-serif]">
                 Full Name
               </label>
               <input
@@ -502,13 +502,13 @@ export const AdminUsersPage: React.FC = () => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. John Doe"
-                className="w-full px-4 py-2.5 bg-orange-50/30 border border-slate-200/80 focus:border-orange-500 rounded-xl text-slate-900 text-sm outline-none transition-colors font-['Inter',sans-serif]"
+                className="w-full px-4 py-2.5 bg-orange-50/30 border border-stone-200/80 focus:border-orange-500 rounded-xl text-stone-900 text-sm outline-none transition-colors font-['Inter',sans-serif]"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5 font-['Poppins',sans-serif]">
+              <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider mb-1.5 font-['Poppins',sans-serif]">
                 Email Address
               </label>
               <input
@@ -516,19 +516,19 @@ export const AdminUsersPage: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="user@example.com"
-                className="w-full px-4 py-2.5 bg-orange-50/30 border border-slate-200/80 focus:border-orange-500 rounded-xl text-slate-900 text-sm outline-none transition-colors font-['Inter',sans-serif]"
+                className="w-full px-4 py-2.5 bg-orange-50/30 border border-stone-200/80 focus:border-orange-500 rounded-xl text-stone-900 text-sm outline-none transition-colors font-['Inter',sans-serif]"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5 font-['Poppins',sans-serif]">
+              <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider mb-1.5 font-['Poppins',sans-serif]">
                 System Role
               </label>
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value as Role)}
-                className="w-full px-4 py-2.5 bg-orange-50/30 border border-slate-200/80 focus:border-orange-500 rounded-xl text-slate-900 text-sm outline-none transition-colors font-['Inter',sans-serif]"
+                className="w-full px-4 py-2.5 bg-orange-50/30 border border-stone-200/80 focus:border-orange-500 rounded-xl text-stone-900 text-sm outline-none transition-colors font-['Inter',sans-serif]"
               >
                 <option value="EDITOR">EDITOR (Assigned Lesson Content Editor)</option>
                 <option value="ADMIN">ADMIN (Full Portal Access)</option>
@@ -536,7 +536,7 @@ export const AdminUsersPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5 font-['Poppins',sans-serif]">
+              <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider mb-1.5 font-['Poppins',sans-serif]">
                 Password {editingUser && '(Leave blank to keep unchanged)'}
               </label>
               <input
@@ -544,7 +544,7 @@ export const AdminUsersPage: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-4 py-2.5 bg-orange-50/30 border border-slate-200/80 focus:border-orange-500 rounded-xl text-slate-900 text-sm outline-none transition-colors font-['Inter',sans-serif]"
+                className="w-full px-4 py-2.5 bg-orange-50/30 border border-stone-200/80 focus:border-orange-500 rounded-xl text-stone-900 text-sm outline-none transition-colors font-['Inter',sans-serif]"
                 required={!editingUser}
               />
             </div>
@@ -556,9 +556,9 @@ export const AdminUsersPage: React.FC = () => {
                   id="user-active-toggle"
                   checked={isActive}
                   onChange={(e) => setIsActive(e.target.checked)}
-                  className="w-4 h-4 rounded border-slate-300 text-orange-500 focus:ring-orange-500 bg-orange-50/30 cursor-pointer"
+                  className="w-4 h-4 rounded border-stone-300 text-orange-500 focus:ring-orange-500 bg-orange-50/30 cursor-pointer"
                 />
-                <label htmlFor="user-active-toggle" className="text-sm font-semibold text-slate-700 cursor-pointer font-['Inter',sans-serif]">
+                <label htmlFor="user-active-toggle" className="text-sm font-semibold text-stone-700 cursor-pointer font-['Inter',sans-serif]">
                   Account Active
                 </label>
               </div>
@@ -571,7 +571,7 @@ export const AdminUsersPage: React.FC = () => {
                   setIsCreateOpen(false);
                   setEditingUser(null);
                 }}
-                className="px-4 py-2.5 border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl text-sm transition-all shadow-xs font-['Inter',sans-serif]"
+                className="px-4 py-2.5 border border-stone-200/80 bg-white hover:bg-stone-50 text-stone-700 font-semibold rounded-xl text-sm transition-all shadow-sm font-['Inter',sans-serif]"
               >
                 Cancel
               </button>

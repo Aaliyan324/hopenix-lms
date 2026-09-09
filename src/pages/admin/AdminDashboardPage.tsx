@@ -39,7 +39,7 @@ const itemVariants = {
   visible: { 
     opacity: 1, 
     y: 0,
-    transition: { duration: 0.35, ease: [0.4, 0, 0.2, 1] }
+    transition: { duration: 0.35, ease: [0.4, 0, 0.2, 1] as const }
   },
 };
 
@@ -128,7 +128,7 @@ export const AdminDashboardPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-orange-100 via-orange-50 to-white text-slate-900 p-4 sm:p-6 lg:p-8 font-['Inter',sans-serif]">
+    <div className="min-h-screen bg-gradient-to-b from-orange-100 via-orange-50 to-white text-stone-900 p-4 sm:p-6 lg:p-8 font-['Inter',sans-serif]">
       <motion.div 
         variants={containerVariants}
         initial="hidden"
@@ -203,7 +203,7 @@ export const AdminDashboardPage: React.FC = () => {
               >
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <div className="flex items-center justify-between mb-3 sm:mb-4">
-                  <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider font-['Poppins',sans-serif]">
+                  <span className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider font-['Poppins',sans-serif]">
                     {item.label}
                   </span>
                   <div className={`p-2 sm:p-2.5 rounded-xl border ${item.bg} transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
@@ -211,8 +211,8 @@ export const AdminDashboardPage: React.FC = () => {
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-2xl sm:text-3xl font-bold text-slate-900 font-['Poppins',sans-serif] tracking-tight">{item.value}</p>
-                  <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-medium text-slate-500 pt-1">
+                  <p className="text-2xl sm:text-3xl font-bold text-stone-900 font-['Poppins',sans-serif] tracking-tight">{item.value}</p>
+                  <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-medium text-stone-500 pt-1">
                     <TrendingUp className="w-3 h-3 text-orange-500" />
                     <span className="font-['Inter',sans-serif]">{item.change}</span>
                   </div>
@@ -236,8 +236,8 @@ export const AdminDashboardPage: React.FC = () => {
                     <Zap className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-sm sm:text-base text-slate-900 font-['Poppins',sans-serif]">System Status</h3>
-                    <p className="text-[10px] sm:text-xs text-slate-500">All services operating normally</p>
+                    <h3 className="font-bold text-sm sm:text-base text-stone-900 font-['Poppins',sans-serif]">System Status</h3>
+                    <p className="text-[10px] sm:text-xs text-stone-500">All services operating normally</p>
                   </div>
                 </div>
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] sm:text-xs font-semibold">
@@ -248,15 +248,15 @@ export const AdminDashboardPage: React.FC = () => {
 
               <div className="space-y-2.5 pt-2 border-t border-orange-100">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-500 flex items-center gap-1.5"><Globe className="w-3.5 h-3.5 text-sky-600" /> API Gateway</span>
+                  <span className="text-stone-500 flex items-center gap-1.5"><Globe className="w-3.5 h-3.5 text-sky-600" /> API Gateway</span>
                   <span className="font-semibold text-emerald-600">24ms</span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-500 flex items-center gap-1.5"><Layers className="w-3.5 h-3.5 text-amber-600" /> Database Pool</span>
-                  <span className="font-semibold text-slate-700">12 / 50 Active</span>
+                  <span className="text-stone-500 flex items-center gap-1.5"><Layers className="w-3.5 h-3.5 text-amber-600" /> Database Pool</span>
+                  <span className="font-semibold text-stone-700">12 / 50 Active</span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-500 flex items-center gap-1.5"><BarChart3 className="w-3.5 h-3.5 text-indigo-600" /> Sync Status</span>
+                  <span className="text-stone-500 flex items-center gap-1.5"><BarChart3 className="w-3.5 h-3.5 text-indigo-600" /> Sync Status</span>
                   <span className="font-semibold text-indigo-600">Up to date</span>
                 </div>
               </div>
@@ -264,15 +264,15 @@ export const AdminDashboardPage: React.FC = () => {
 
             {/* Quick Navigation Shortcuts */}
             <div className="bg-white/90 backdrop-blur-sm border border-orange-100 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-[0_8px_30px_rgba(249,115,22,0.08)] space-y-3">
-              <h3 className="font-bold text-sm sm:text-base text-slate-900 font-['Poppins',sans-serif]">Quick Shortcuts</h3>
+              <h3 className="font-bold text-sm sm:text-base text-stone-900 font-['Poppins',sans-serif]">Quick Shortcuts</h3>
               <div className="grid grid-cols-2 gap-3">
                 <Link to="/admin/books" className="p-3 bg-orange-50/50 hover:bg-orange-50 border border-orange-100 hover:border-orange-300 rounded-xl transition-all group flex flex-col gap-1.5">
                   <BookOpen className="w-4 h-4 text-orange-600 group-hover:scale-110 transition-transform" />
-                  <span className="text-xs font-semibold text-slate-800">Catalog</span>
+                  <span className="text-xs font-semibold text-stone-800">Catalog</span>
                 </Link>
                 <Link to="/admin/activity-logs" className="p-3 bg-orange-50/50 hover:bg-orange-50 border border-orange-100 hover:border-orange-300 rounded-xl transition-all group flex flex-col gap-1.5">
                   <Activity className="w-4 h-4 text-amber-600 group-hover:scale-110 transition-transform" />
-                  <span className="text-xs font-semibold text-slate-800">Audit Logs</span>
+                  <span className="text-xs font-semibold text-stone-800">Audit Logs</span>
                 </Link>
               </div>
             </div>
@@ -291,13 +291,13 @@ export const AdminDashboardPage: React.FC = () => {
                     <Activity className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                   <div>
-                    <h3 className="text-base sm:text-lg font-['Poppins',sans-serif] font-bold text-slate-900 tracking-tight">System Audit Trail</h3>
-                    <p className="text-[10px] sm:text-xs text-slate-500 font-['Inter',sans-serif]">Real-time tracking of editorial actions and modifications</p>
+                    <h3 className="text-base sm:text-lg font-['Poppins',sans-serif] font-bold text-stone-900 tracking-tight">System Audit Trail</h3>
+                    <p className="text-[10px] sm:text-xs text-stone-500 font-['Inter',sans-serif]">Real-time tracking of editorial actions and modifications</p>
                   </div>
                 </div>
                 <Link
                   to="/admin/activity-logs"
-                  className="text-xs font-semibold text-slate-600 hover:text-orange-600 flex items-center gap-1.5 bg-orange-50/50 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-orange-100 hover:border-orange-300 hover:bg-orange-50 transition-all font-['Inter',sans-serif] whitespace-nowrap flex-shrink-0"
+                  className="text-xs font-semibold text-stone-600 hover:text-orange-600 flex items-center gap-1.5 bg-orange-50/50 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-orange-100 hover:border-orange-300 hover:bg-orange-50 transition-all font-['Inter',sans-serif] whitespace-nowrap flex-shrink-0"
                 >
                   View Full Log <ArrowUpRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 </Link>
@@ -306,8 +306,8 @@ export const AdminDashboardPage: React.FC = () => {
               {recentLogs.length === 0 ? (
                 <div className="text-center py-10 sm:py-12 px-4 rounded-2xl bg-orange-50/30 border border-dashed border-orange-200">
                   <Clock className="w-8 h-8 text-orange-300 mx-auto mb-2" />
-                  <p className="text-sm font-medium text-slate-500 font-['Poppins',sans-serif]">No activity recorded yet.</p>
-                  <p className="text-xs text-slate-400 mt-1 font-['Inter',sans-serif]">Actions performed by editors and admins will appear here.</p>
+                  <p className="text-sm font-medium text-stone-500 font-['Poppins',sans-serif]">No activity recorded yet.</p>
+                  <p className="text-xs text-stone-400 mt-1 font-['Inter',sans-serif]">Actions performed by editors and admins will appear here.</p>
                 </div>
               ) : (
                 <div className="space-y-2 sm:space-y-3 max-h-[380px] overflow-y-auto pr-1 sm:pr-2">
@@ -323,20 +323,20 @@ export const AdminDashboardPage: React.FC = () => {
                         <img
                           src={log.user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${log.user?.name || 'System'}`}
                           alt={log.user?.name || 'User'}
-                          className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-orange-100 border border-orange-200 object-cover shadow-xs flex-shrink-0"
+                          className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-orange-100 border border-orange-200 object-cover shadow-sm flex-shrink-0"
                         />
                         <div className="min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <p className="text-xs sm:text-sm font-semibold text-slate-900 font-['Poppins',sans-serif] truncate">
+                            <p className="text-xs sm:text-sm font-semibold text-stone-900 font-['Poppins',sans-serif] truncate">
                               {log.user?.name || 'System User'}
                             </p>
-                            <span className="text-xs text-slate-400 hidden sm:inline">•</span>
-                            <p className="text-[10px] sm:text-xs font-medium text-slate-500 font-['Inter',sans-serif] truncate">
+                            <span className="text-xs text-stone-400 hidden sm:inline">•</span>
+                            <p className="text-[10px] sm:text-xs font-medium text-stone-500 font-['Inter',sans-serif] truncate">
                               {log.action}
                             </p>
                           </div>
-                          <p className="text-[10px] sm:text-xs text-slate-500 mt-0.5 font-['Inter',sans-serif] truncate">
-                            Target entity: <span className="text-slate-700 font-semibold">{log.entityType}</span> <span className="text-slate-400 hidden sm:inline">({log.entityId || 'N/A'})</span>
+                          <p className="text-[10px] sm:text-xs text-stone-500 mt-0.5 font-['Inter',sans-serif] truncate">
+                            Target entity: <span className="text-stone-700 font-semibold">{log.entityType}</span> <span className="text-stone-400 hidden sm:inline">({log.entityId || 'N/A'})</span>
                           </p>
                         </div>
                       </div>
@@ -344,7 +344,7 @@ export const AdminDashboardPage: React.FC = () => {
                         <Badge variant="slate" size="sm" className="bg-orange-100 text-orange-700 border-orange-200 font-['Inter',sans-serif] text-[10px] sm:text-xs px-2 py-0.5 sm:px-2.5 sm:py-1">
                           {log.action}
                         </Badge>
-                        <span className="text-[10px] sm:text-xs font-medium text-slate-400 bg-white px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md border border-orange-100 shadow-2xs font-['Inter',sans-serif] whitespace-nowrap">
+                        <span className="text-[10px] sm:text-xs font-medium text-stone-400 bg-white px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md border border-orange-100 shadow-sm font-['Inter',sans-serif] whitespace-nowrap">
                           {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>

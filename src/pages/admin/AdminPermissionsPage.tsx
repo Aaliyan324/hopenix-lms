@@ -77,15 +77,15 @@ const BookAccordion: React.FC<BookAccordionProps> = ({
         onClick={() => setOpen((p) => !p)}
         className="w-full flex items-center gap-3 px-4 sm:px-5 py-3 sm:py-4 hover:bg-orange-50/50 transition-colors text-left group"
       >
-        <span className="shrink-0 w-5 h-5 flex items-center justify-center text-slate-400 group-hover:text-orange-500 transition-colors">
+        <span className="shrink-0 w-5 h-5 flex items-center justify-center text-stone-400 group-hover:text-orange-500 transition-colors">
           {open ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
         </span>
         <div className="p-1.5 rounded-xl bg-orange-50 border border-orange-100 text-orange-600 shrink-0">
           <BookOpen className="w-4 h-4" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-['Poppins',sans-serif] font-semibold text-slate-900 truncate">{book.title}</p>
-          <p className="text-[10px] sm:text-xs text-slate-500 flex items-center gap-1 font-['Inter',sans-serif]">
+          <p className="text-sm font-['Poppins',sans-serif] font-semibold text-stone-900 truncate">{book.title}</p>
+          <p className="text-[10px] sm:text-xs text-stone-500 flex items-center gap-1 font-['Inter',sans-serif]">
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-orange-400" />
             {book.lessons?.length || 0} lessons
           </p>
@@ -116,8 +116,8 @@ const BookAccordion: React.FC<BookAccordionProps> = ({
                 <UserCheck className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-xs font-bold text-slate-900 font-['Poppins',sans-serif]">Entire Book Access</p>
-                <p className="text-[10px] text-slate-500 leading-tight font-['Inter',sans-serif]">
+                <p className="text-xs font-bold text-stone-900 font-['Poppins',sans-serif]">Entire Book Access</p>
+                <p className="text-[10px] text-stone-500 leading-tight font-['Inter',sans-serif]">
                   Grants access to all current and future lessons in this book
                 </p>
               </div>
@@ -129,7 +129,7 @@ const BookAccordion: React.FC<BookAccordionProps> = ({
               className={`inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-xl border-2 transition-all shrink-0 ${
                 bookGranted
                   ? 'bg-orange-500 border-orange-500 text-white hover:bg-orange-600 shadow-md shadow-orange-500/25'
-                  : 'bg-white border-slate-200 text-slate-400 hover:border-orange-300 hover:text-orange-600 hover:bg-orange-50'
+                  : 'bg-white border-stone-200 text-stone-400 hover:border-orange-300 hover:text-orange-600 hover:bg-orange-50'
               }`}
             >
               {bookGranted ? <Check className="w-3.5 h-3.5" /> : <X className="w-3 h-3" />}
@@ -139,7 +139,7 @@ const BookAccordion: React.FC<BookAccordionProps> = ({
           {/* Individual lessons (only when book access is OFF) */}
           {!bookGranted && (book.lessons?.length || 0) > 0 && (
             <div className="px-4 sm:px-5 py-2 space-y-0.5">
-              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider pt-2 pb-1 flex items-center gap-2 font-['Poppins',sans-serif]">
+              <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider pt-2 pb-1 flex items-center gap-2 font-['Poppins',sans-serif]">
                 <span className="w-1.5 h-1.5 rounded-full bg-orange-400" />
                 Individual Lesson Access
               </p>
@@ -155,9 +155,9 @@ const BookAccordion: React.FC<BookAccordionProps> = ({
                       <span className="text-[10px] font-mono font-bold text-orange-600 shrink-0 w-8 bg-orange-50 px-1.5 py-0.5 rounded-md border border-orange-100 text-center font-['Inter',sans-serif]">
                         L{lesson.lessonNumber}
                       </span>
-                      <span className="text-xs sm:text-sm text-slate-800 truncate font-medium font-['Inter',sans-serif]">{lesson.title}</span>
+                      <span className="text-xs sm:text-sm text-stone-800 truncate font-medium font-['Inter',sans-serif]">{lesson.title}</span>
                       {!lesson.published && (
-                        <span className="text-[9px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200 shrink-0 font-['Inter',sans-serif]">
+                        <span className="text-[9px] font-bold text-stone-500 bg-stone-100 px-2 py-0.5 rounded-md border border-stone-200 shrink-0 font-['Inter',sans-serif]">
                           Draft
                         </span>
                       )}
@@ -169,7 +169,7 @@ const BookAccordion: React.FC<BookAccordionProps> = ({
                       className={`inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-xl border-2 transition-all shrink-0 ml-2 sm:ml-3 ${
                         granted
                           ? 'bg-emerald-500 border-emerald-500 text-white hover:bg-emerald-600 shadow-sm shadow-emerald-500/25'
-                          : 'bg-white border-slate-200 text-slate-400 hover:border-orange-300 hover:text-orange-600 hover:bg-orange-50'
+                          : 'bg-white border-stone-200 text-stone-400 hover:border-orange-300 hover:text-orange-600 hover:bg-orange-50'
                       }`}
                     >
                       {granted ? <Check className="w-3 h-3" /> : <X className="w-2.5 h-2.5" />}
@@ -178,7 +178,7 @@ const BookAccordion: React.FC<BookAccordionProps> = ({
                 );
               })}
               {filteredLessons.length === 0 && bookSearch.trim() && (
-                <p className="text-sm text-slate-500 text-center py-4 font-medium font-['Inter',sans-serif]">No lessons match your search.</p>
+                <p className="text-sm text-stone-500 text-center py-4 font-medium font-['Inter',sans-serif]">No lessons match your search.</p>
               )}
             </div>
           )}
@@ -461,7 +461,7 @@ export const AdminPermissionsPage: React.FC = () => {
 
         {/* Editor Selector Card */}
         <div className="bg-white/90 backdrop-blur-sm border border-orange-100 rounded-3xl p-4 sm:p-6 shadow-[0_8px_30px_rgba(249,115,22,0.08)]">
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2 font-['Poppins',sans-serif]">
+          <p className="text-xs font-bold text-stone-500 uppercase tracking-wider mb-3 flex items-center gap-2 font-['Poppins',sans-serif]">
             <div className="p-1 rounded-lg bg-orange-50 border border-orange-100 text-orange-600">
               <Shield className="w-3.5 h-3.5" />
             </div>
@@ -482,7 +482,7 @@ export const AdminPermissionsPage: React.FC = () => {
               <select
                 value={selectedEditorId}
                 onChange={(e) => setSelectedEditorId(e.target.value)}
-                className={`w-full bg-orange-50/30 border border-slate-200/80 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 rounded-xl py-2.5 pr-10 text-sm text-slate-900 outline-none appearance-none transition-all font-['Inter',sans-serif] ${
+                className={`w-full bg-orange-50/30 border border-stone-200/80 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 rounded-xl py-2.5 pr-10 text-sm text-stone-900 outline-none appearance-none transition-all font-['Inter',sans-serif] ${
                   selectedEditor ? 'pl-11' : 'pl-4'
                 }`}
               >
@@ -493,13 +493,13 @@ export const AdminPermissionsPage: React.FC = () => {
                   </option>
                 ))}
               </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none" />
             </div>
 
             <button
               type="button"
               onClick={() => { setAddEditorOpen(true); setUserSearch(''); }}
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 border border-slate-200/80 bg-white hover:bg-orange-50 hover:border-orange-300 text-sm font-semibold text-slate-700 hover:text-orange-700 rounded-xl transition-all shadow-xs sm:w-auto w-full font-['Poppins',sans-serif]"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 border border-stone-200/80 bg-white hover:bg-orange-50 hover:border-orange-300 text-sm font-semibold text-stone-700 hover:text-orange-700 rounded-xl transition-all shadow-sm sm:w-auto w-full font-['Poppins',sans-serif]"
             >
               <UserPlus className="w-4 h-4" />
               Add Editor
@@ -507,12 +507,12 @@ export const AdminPermissionsPage: React.FC = () => {
           </div>
 
           {selectedEditor && (
-            <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-slate-500 pt-3 border-t border-orange-100">
+            <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-stone-500 pt-3 border-t border-orange-100">
               <div className="p-1 rounded-lg bg-orange-50 border border-orange-100">
                 <Users className="w-3.5 h-3.5 text-orange-500" />
               </div>
-              <span className="font-semibold text-slate-900 font-['Poppins',sans-serif]">{selectedEditor.name}</span>
-              <span className="text-slate-300">·</span>
+              <span className="font-semibold text-stone-900 font-['Poppins',sans-serif]">{selectedEditor.name}</span>
+              <span className="text-stone-300">·</span>
               <span className="truncate font-['Inter',sans-serif]">{selectedEditor.email}</span>
               <Badge variant="slate" size="sm" className="bg-orange-100 text-orange-700 border-orange-200 font-['Inter',sans-serif]">
                 {selectedEditor.role}
@@ -525,26 +525,26 @@ export const AdminPermissionsPage: React.FC = () => {
         {selectedEditorId && (
           <div className="space-y-5">
             {loadingPerms ? (
-              <div className="flex items-center justify-center py-20 gap-3 text-slate-500 bg-white/90 backdrop-blur-sm border border-orange-100 rounded-3xl shadow-[0_8px_30px_rgba(249,115,22,0.08)]">
+              <div className="flex items-center justify-center py-20 gap-3 text-stone-500 bg-white/90 backdrop-blur-sm border border-orange-100 rounded-3xl shadow-[0_8px_30px_rgba(249,115,22,0.08)]">
                 <Loader2 className="w-5 h-5 animate-spin text-orange-500" />
                 <span className="text-sm font-medium font-['Inter',sans-serif]">Loading permissions for {selectedEditor?.name}…</span>
               </div>
             ) : (
               <>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none" />
                   <input
                     type="text"
                     placeholder="Search books or lessons…"
                     value={bookSearch}
                     onChange={(e) => setBookSearch(e.target.value)}
-                    className="w-full bg-white/90 backdrop-blur-sm border border-orange-100 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 rounded-xl pl-9 pr-10 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition-all shadow-[0_8px_30px_rgba(249,115,22,0.08)] font-['Inter',sans-serif]"
+                    className="w-full bg-white/90 backdrop-blur-sm border border-orange-100 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 rounded-xl pl-9 pr-10 py-2.5 text-sm text-stone-900 placeholder-stone-400 outline-none transition-all shadow-[0_8px_30px_rgba(249,115,22,0.08)] font-['Inter',sans-serif]"
                   />
                   {bookSearch && (
                     <button
                       type="button"
                       onClick={() => setBookSearch('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded text-slate-400 hover:text-slate-700 transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded text-stone-400 hover:text-stone-700 transition-colors"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -553,7 +553,7 @@ export const AdminPermissionsPage: React.FC = () => {
 
                 <div className="space-y-3">
                   {filteredBooks.length === 0 ? (
-                    <div className="text-center py-12 text-slate-500 text-sm font-medium bg-white/90 backdrop-blur-sm border border-orange-100 rounded-3xl shadow-[0_8px_30px_rgba(249,115,22,0.08)] font-['Inter',sans-serif]">
+                    <div className="text-center py-12 text-stone-500 text-sm font-medium bg-white/90 backdrop-blur-sm border border-orange-100 rounded-3xl shadow-[0_8px_30px_rgba(249,115,22,0.08)] font-['Inter',sans-serif]">
                       No books match your search.
                     </div>
                   ) : (
@@ -573,7 +573,7 @@ export const AdminPermissionsPage: React.FC = () => {
 
                 {/* Save Bar */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-4 border-t border-orange-100 bg-white/90 backdrop-blur-sm p-4 rounded-2xl shadow-[0_8px_30px_rgba(249,115,22,0.08)]">
-                  <p className="text-sm text-slate-500 font-medium font-['Inter',sans-serif]">
+                  <p className="text-sm text-stone-500 font-medium font-['Inter',sans-serif]">
                     {permsDirty ? (
                       <span className="text-amber-600 font-semibold flex items-center gap-2">
                         <span className="inline-block w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
@@ -608,8 +608,8 @@ export const AdminPermissionsPage: React.FC = () => {
               <Key className="w-10 h-10 text-orange-600" />
             </div>
             <div>
-              <p className="text-slate-900 font-['Poppins',sans-serif] font-bold text-xl">No editor selected</p>
-              <p className="text-slate-500 text-sm mt-1 font-medium font-['Inter',sans-serif]">
+              <p className="text-stone-900 font-['Poppins',sans-serif] font-bold text-xl">No editor selected</p>
+              <p className="text-stone-500 text-sm mt-1 font-medium font-['Inter',sans-serif]">
                 Choose an editor from the dropdown above to manage their permissions.
               </p>
             </div>
@@ -624,23 +624,23 @@ export const AdminPermissionsPage: React.FC = () => {
           maxWidth="md"
         >
           <div className="space-y-4 text-sm font-['Inter',sans-serif]">
-            <p className="text-slate-500 font-medium">
+            <p className="text-stone-500 font-medium">
               Select a user to assign as an editor. Non-editor users will be promoted to the Editor role automatically.
             </p>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none" />
               <input
                 type="text"
                 placeholder="Search by name or email…"
                 value={userSearch}
                 onChange={(e) => setUserSearch(e.target.value)}
-                className="w-full bg-orange-50/30 border border-slate-200/80 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 rounded-xl pl-9 pr-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition-all font-['Inter',sans-serif]"
+                className="w-full bg-orange-50/30 border border-stone-200/80 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 rounded-xl pl-9 pr-4 py-2.5 text-sm text-stone-900 placeholder-stone-400 outline-none transition-all font-['Inter',sans-serif]"
                 autoFocus
               />
             </div>
             <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
               {filteredUsers.length === 0 && (
-                <p className="text-center text-slate-500 text-sm py-6 font-['Inter',sans-serif]">No users found.</p>
+                <p className="text-center text-stone-500 text-sm py-6 font-['Inter',sans-serif]">No users found.</p>
               )}
               {filteredUsers.map((user) => {
                 const isAlreadyEditor = editors.some((e) => e.id === user.id);
@@ -649,7 +649,7 @@ export const AdminPermissionsPage: React.FC = () => {
                     key={user.id}
                     type="button"
                     onClick={() => handleAddEditor(user)}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-white hover:bg-orange-50 border border-slate-200 hover:border-orange-300 transition-colors text-left group shadow-xs"
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-white hover:bg-orange-50 border border-stone-200 hover:border-orange-300 transition-colors text-left group shadow-sm"
                   >
                     <img
                       src={
@@ -657,14 +657,14 @@ export const AdminPermissionsPage: React.FC = () => {
                         `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.name)}`
                       }
                       alt={user.name}
-                      className="w-10 h-10 rounded-xl object-cover bg-slate-100 shrink-0 border border-slate-200"
+                      className="w-10 h-10 rounded-xl object-cover bg-stone-100 shrink-0 border border-stone-200"
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-slate-950 truncate font-['Poppins',sans-serif]">{user.name}</p>
-                      <p className="text-xs text-slate-500 truncate font-['Inter',sans-serif]">{user.email}</p>
+                      <p className="text-sm font-semibold text-stone-950 truncate font-['Poppins',sans-serif]">{user.name}</p>
+                      <p className="text-xs text-stone-500 truncate font-['Inter',sans-serif]">{user.email}</p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <Badge variant={user.role === 'ADMIN' ? 'brand' : 'slate'} size="sm" className={user.role === 'ADMIN' ? 'bg-orange-50 text-orange-700 border-orange-200' : 'bg-slate-50 text-slate-700 border-slate-200'}>
+                      <Badge variant={user.role === 'ADMIN' ? 'brand' : 'slate'} size="sm" className={user.role === 'ADMIN' ? 'bg-orange-50 text-orange-700 border-orange-200' : 'bg-stone-50 text-stone-700 border-stone-200'}>
                         {user.role}
                       </Badge>
                       {isAlreadyEditor && (
@@ -672,7 +672,7 @@ export const AdminPermissionsPage: React.FC = () => {
                           <Check className="w-3 h-3" /> Editor
                         </span>
                       )}
-                      <UserPlus className="w-4 h-4 text-slate-400 group-hover:text-orange-600 transition-colors" />
+                      <UserPlus className="w-4 h-4 text-stone-400 group-hover:text-orange-600 transition-colors" />
                     </div>
                   </button>
                 );

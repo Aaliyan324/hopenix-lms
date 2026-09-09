@@ -19,7 +19,7 @@ export const PlayfulBanner: React.FC<PlayfulBannerProps> = ({
 }) => {
   return (
     <div
-      className="relative bg-white border border-stone-200 rounded-xl p-6 sm:p-8 md:p-10 shadow-xs overflow-hidden"
+      className="relative bg-white border border-stone-200 rounded-xl p-6 sm:p-8 md:p-10 shadow-sm overflow-hidden"
     >
       <div className="relative z-10 space-y-3">
         {badgeText && (

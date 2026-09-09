@@ -107,8 +107,8 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       onClick={onClick}
       disabled={disabled}
       className={`p-2 rounded-xl hover:bg-orange-50 hover:text-orange-600 transition-all duration-200 ${
-        isActive ? 'bg-orange-100 text-orange-700 ring-1 ring-orange-300 shadow-sm' : 'text-slate-500'
-      } ${disabled ? 'opacity-40 cursor-not-allowed hover:bg-transparent hover:text-slate-500' : ''}`}
+        isActive ? 'bg-orange-100 text-orange-700 ring-1 ring-orange-300 shadow-sm' : 'text-stone-500'
+      } ${disabled ? 'opacity-40 cursor-not-allowed hover:bg-transparent hover:text-stone-500' : ''}`}
       title={title}
     >
       {children}
@@ -116,12 +116,12 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   );
 
   // Toolbar separator
-  const Separator = () => <div className="w-px h-6 bg-slate-200 mx-0.5" />;
+  const Separator = () => <div className="w-px h-6 bg-stone-200 mx-0.5" />;
 
   return (
     <div className="border border-orange-100 rounded-2xl overflow-hidden bg-white/90 backdrop-blur-sm focus-within:border-orange-300 focus-within:ring-2 focus-within:ring-orange-100 transition-all shadow-[0_8px_30px_rgba(249,115,22,0.06)]">
       {/* Editor Toolbar */}
-      <div className="flex flex-wrap items-center gap-0.5 p-2 bg-orange-50/30 border-b border-orange-100 text-slate-600">
+      <div className="flex flex-wrap items-center gap-0.5 p-2 bg-orange-50/30 border-b border-orange-100 text-stone-600">
         {/* Text Formatting */}
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBold().run()}
@@ -242,7 +242,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       </div>
 
       {/* Character Count */}
-      <div className="px-4 sm:px-6 py-2 border-t border-orange-100 bg-orange-50/20 flex justify-between text-xs text-slate-400 font-['Inter',sans-serif]">
+      <div className="px-4 sm:px-6 py-2 border-t border-orange-100 bg-orange-50/20 flex justify-between text-xs text-stone-400 font-['Inter',sans-serif]">
         <span>
           {editor.storage.characterCount?.words || 0} words
         </span>

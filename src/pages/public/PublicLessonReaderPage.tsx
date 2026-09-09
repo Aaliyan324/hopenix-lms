@@ -95,25 +95,25 @@ export const PublicLessonReaderPage: React.FC = () => {
       {/* Main Reader Column */}
       <div className="flex-1 space-y-8 min-w-0">
         {/* Top Header & Navigation */}
-        <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+        <div className="flex items-center justify-between border-b border-stone-200 pb-4">
           <Link
             to={`/${companySlug}/books/${slug}`}
-            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-orange-600 bg-white border border-slate-200 hover:border-orange-300 hover:bg-orange-50 px-4 py-2 rounded-xl transition-all shadow-xs"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-stone-600 hover:text-orange-600 bg-white border border-stone-200 hover:border-orange-300 hover:bg-orange-50 px-4 py-2 rounded-xl transition-all shadow-sm"
           >
             <ArrowLeft className="w-4 h-4" /> Back to {book.title}
           </Link>
 
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="lg:hidden flex items-center gap-2 text-sm font-semibold text-slate-700 bg-slate-50 border border-slate-200 hover:border-orange-300 hover:bg-orange-50 px-3.5 py-2 rounded-xl transition-all"
+            className="lg:hidden flex items-center gap-2 text-sm font-semibold text-stone-700 bg-stone-50 border border-stone-200 hover:border-orange-300 hover:bg-orange-50 px-3.5 py-2 rounded-xl transition-all"
           >
             <Layers className="w-4 h-4" /> Chapter Index
           </button>
         </div>
 
         {/* Lesson Article Header */}
-        <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-10 space-y-4 shadow-editorial">
-          <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500 font-semibold uppercase tracking-widest">
+        <div className="bg-white border border-stone-200/80 rounded-3xl p-6 sm:p-10 space-y-4 shadow-editorial">
+          <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-stone-500 font-semibold uppercase tracking-widest">
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-orange-50 text-orange-700 rounded-lg border border-orange-200">
                 <Sparkles className="w-3 h-3" />
@@ -126,19 +126,19 @@ export const PublicLessonReaderPage: React.FC = () => {
             </span>
           </div>
 
-          <h1 className="font-serif text-3xl sm:text-5xl font-bold text-slate-900 leading-tight">
+          <h1 className="font-serif text-3xl sm:text-5xl font-bold text-stone-900 leading-tight">
             {lesson.title}
           </h1>
 
           {lesson.description && (
-            <p className="text-base text-slate-600 font-sans leading-relaxed border-t border-slate-100 pt-4">
+            <p className="text-base text-stone-600 font-sans leading-relaxed border-t border-stone-100 pt-4">
               {lesson.description}
             </p>
           )}
 
           {/* Minimalist Progress Line */}
           <div className="pt-2">
-            <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200">
+            <div className="w-full bg-stone-100 rounded-full h-2 overflow-hidden border border-stone-200">
               <div
                 className="bg-orange-500 h-full rounded-full transition-all duration-500"
                 style={{ width: `${readingPercent}%` }}
@@ -150,7 +150,7 @@ export const PublicLessonReaderPage: React.FC = () => {
         {/* YouTube Video Player Embed */}
         {lesson.youtubeVideoId && (
           <div className="space-y-3">
-            <h3 className="font-serif font-bold text-lg text-slate-900 flex items-center gap-2">
+            <h3 className="font-serif font-bold text-lg text-stone-900 flex items-center gap-2">
               <div className="p-1.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-600">
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
@@ -158,13 +158,13 @@ export const PublicLessonReaderPage: React.FC = () => {
               </div>
               Video Presentation
             </h3>
-            <div className="bg-slate-900 border border-slate-200 rounded-2xl overflow-hidden shadow-editorial relative w-full aspect-video p-1">
+            <div className="relative w-full aspect-video overflow-hidden rounded-2xl border border-stone-200 bg-stone-900 shadow-editorial">
               <iframe
                 src={`https://www.youtube.com/embed/${encodeURIComponent(lesson.youtubeVideoId)}`}
                 title={lesson.title}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
-                className="absolute top-1 left-1 right-1 bottom-1 w-[calc(100%-0.5rem)] h-[calc(100%-0.5rem)] rounded-xl border-0"
+                className="absolute inset-0 h-full w-full rounded-2xl border-0"
               />
             </div>
           </div>
@@ -173,7 +173,7 @@ export const PublicLessonReaderPage: React.FC = () => {
         {/* Legacy Video Attachments */}
         {videoMedia.length > 0 && (
           <div className="space-y-3">
-            <h3 className="font-serif font-bold text-lg text-slate-900 flex items-center gap-2">
+            <h3 className="font-serif font-bold text-lg text-stone-900 flex items-center gap-2">
               <div className="p-1.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-600">
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
@@ -182,9 +182,9 @@ export const PublicLessonReaderPage: React.FC = () => {
               Video Clips
             </h3>
             {videoMedia.map((v) => (
-              <div key={v.id} className="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-editorial p-2">
-                <video src={v.url} controls className="w-full max-h-[500px] object-contain rounded-xl bg-slate-950" />
-                <div className="p-3 text-sm font-medium text-slate-700 flex items-center justify-between">
+              <div key={v.id} className="bg-white border border-stone-200/80 rounded-2xl overflow-hidden shadow-editorial p-2">
+                <video src={v.url} controls className="w-full max-h-[500px] object-contain rounded-xl bg-stone-950" />
+                <div className="p-3 text-sm font-medium text-stone-700 flex items-center justify-between">
                   <span>{v.name}</span>
                   <a href={v.url} target="_blank" rel="noreferrer" className="text-orange-600 font-semibold hover:text-orange-700 underline transition-colors">
                     Download Video ↗
@@ -197,18 +197,20 @@ export const PublicLessonReaderPage: React.FC = () => {
 
         {/* Rich Editorial Article Body Content */}
         {lesson.content && (
-          <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-10 shadow-editorial">
-            <div
-              className="prose max-w-none font-serif text-slate-900 text-lg leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: lesson.content }}
-            />
+          <div className="bg-white border border-stone-200/80 rounded-3xl p-6 sm:p-10 shadow-editorial">
+            <div className="mx-auto w-full max-w-3xl">
+              <div
+                className="prose max-w-none font-serif text-stone-900 text-lg leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: lesson.content }}
+              />
+            </div>
           </div>
         )}
 
         {/* Lesson Diagrams & Visuals */}
         {imageMedia.length > 0 && (
           <div className="space-y-3">
-            <h3 className="font-serif font-bold text-lg text-slate-900 flex items-center gap-2">
+            <h3 className="font-serif font-bold text-lg text-stone-900 flex items-center gap-2">
               <div className="p-1.5 rounded-xl bg-orange-50 border border-orange-200 text-orange-600">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -218,9 +220,9 @@ export const PublicLessonReaderPage: React.FC = () => {
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {imageMedia.map((img) => (
-                <div key={img.id} className="bg-white border border-slate-200/80 rounded-2xl overflow-hidden p-2 shadow-editorial">
-                  <img src={img.url} alt={img.name} className="w-full h-56 object-cover rounded-xl" />
-                  <p className="text-sm font-medium text-slate-600 p-2 truncate text-center font-sans">{img.name}</p>
+                <div key={img.id} className="bg-white border border-stone-200/80 rounded-2xl overflow-hidden p-2 shadow-editorial">
+                  <img src={img.url} alt={img.name} loading="lazy" className="w-full h-56 object-contain rounded-xl bg-stone-50" />
+                  <p className="text-sm font-medium text-stone-600 p-2 truncate text-center font-sans">{img.name}</p>
                 </div>
               ))}
             </div>
@@ -230,7 +232,7 @@ export const PublicLessonReaderPage: React.FC = () => {
         {/* PDF Documents & Attachments */}
         {pdfMedia.length > 0 && (
           <div className="space-y-3">
-            <h3 className="font-serif font-bold text-lg text-slate-900 flex items-center gap-2">
+            <h3 className="font-serif font-bold text-lg text-stone-900 flex items-center gap-2">
               <div className="p-1.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-600">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -242,7 +244,7 @@ export const PublicLessonReaderPage: React.FC = () => {
               {pdfMedia.map((pdf) => (
                 <div
                   key={pdf.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white border border-slate-200/80 rounded-2xl shadow-editorial hover:shadow-editorial transition-all"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white border border-stone-200/80 rounded-2xl shadow-editorial hover:shadow-editorial transition-all"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-10 h-10 bg-rose-50 border border-rose-200 rounded-xl flex items-center justify-center text-lg shrink-0">
@@ -251,8 +253,8 @@ export const PublicLessonReaderPage: React.FC = () => {
                       </svg>
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-slate-900 truncate" title={pdf.name}>{pdf.name}</p>
-                      <p className="text-xs text-slate-500 font-medium">PDF Document</p>
+                      <p className="text-sm font-semibold text-stone-900 truncate" title={pdf.name}>{pdf.name}</p>
+                      <p className="text-xs text-stone-500 font-medium">PDF Document</p>
                     </div>
                   </div>
 
@@ -271,11 +273,11 @@ export const PublicLessonReaderPage: React.FC = () => {
         )}
 
         {/* Chapter Bottom Pagination Controls */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-slate-200">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-stone-200">
           {navigation.prevLesson ? (
             <Link
               to={`/${companySlug}/books/${slug}/lessons/${navigation.prevLesson.lessonNumber || navigation.prevLesson.order}`}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 hover:border-orange-300 hover:bg-orange-50 rounded-xl text-sm font-semibold text-slate-700 hover:text-orange-600 transition-all shadow-xs w-full sm:w-auto justify-center"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-stone-200 hover:border-orange-300 hover:bg-orange-50 rounded-xl text-sm font-semibold text-stone-700 hover:text-orange-600 transition-all shadow-sm w-full sm:w-auto justify-center"
             >
               <ChevronLeft className="w-4 h-4" /> Previous Chapter
             </Link>
@@ -296,21 +298,21 @@ export const PublicLessonReaderPage: React.FC = () => {
 
       {/* Table of Contents Index Drawer Sidebar */}
       <aside
-        className={`fixed lg:static inset-y-0 right-0 z-30 w-80 bg-white border-l lg:border lg:border-slate-200/80 rounded-none lg:rounded-3xl p-5 overflow-y-auto space-y-4 transform transition-transform duration-200 ${
+        className={`fixed lg:static inset-y-0 right-0 z-30 w-80 bg-white border-l lg:border lg:border-stone-200/80 rounded-none lg:rounded-3xl p-5 overflow-y-auto space-y-4 transform transition-transform duration-200 ${
           sidebarOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
         } shrink-0 shadow-lg lg:shadow-editorial`}
       >
-        <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+        <div className="flex items-center justify-between pb-3 border-b border-stone-200">
           <div>
-            <h3 className="font-serif font-bold text-sm text-slate-900 flex items-center gap-1.5 truncate">
+            <h3 className="font-serif font-bold text-sm text-stone-900 flex items-center gap-1.5 truncate">
               <div className="p-1 rounded-lg bg-orange-50 border border-orange-200 text-orange-600">
                 <BookOpen className="w-3.5 h-3.5" />
               </div>
               {book.title}
             </h3>
-            <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest mt-0.5">Chapter Syllabus</p>
+            <p className="text-[10px] font-semibold text-stone-500 uppercase tracking-widest mt-0.5">Chapter Syllabus</p>
           </div>
-          <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-slate-500 hover:text-orange-600 p-1.5 bg-slate-100 rounded-xl border border-slate-200 transition-colors hover:bg-orange-50 hover:border-orange-300">
+          <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-stone-500 hover:text-orange-600 p-1.5 bg-stone-100 rounded-xl border border-stone-200 transition-colors hover:bg-orange-50 hover:border-orange-300">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -327,14 +329,14 @@ export const PublicLessonReaderPage: React.FC = () => {
                 className={`flex items-center justify-between p-3 rounded-xl border text-sm transition-all ${
                   isActive
                     ? 'bg-orange-500 text-white border-orange-500 font-semibold shadow-md shadow-orange-500/25'
-                    : 'bg-white border-slate-200 text-slate-700 hover:bg-orange-50 hover:border-orange-300 font-medium'
+                    : 'bg-white border-stone-200 text-stone-700 hover:bg-orange-50 hover:border-orange-300 font-medium'
                 }`}
               >
                 <div className="flex items-center gap-2.5 truncate">
-                  <span className={`text-[10px] font-mono shrink-0 px-2 py-0.5 rounded-lg ${isActive ? 'bg-orange-400/30 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                  <span className={`text-[10px] font-mono shrink-0 px-2 py-0.5 rounded-lg ${isActive ? 'bg-orange-400/30 text-white' : 'bg-stone-100 text-stone-600'}`}>
                     C{num}
                   </span>
-                  <span className={`truncate ${isActive ? 'text-white' : 'text-slate-800'}`}>{s.title}</span>
+                  <span className={`truncate ${isActive ? 'text-white' : 'text-stone-800'}`}>{s.title}</span>
                 </div>
                 {isActive && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-bold text-white/90">

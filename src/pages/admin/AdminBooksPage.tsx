@@ -323,24 +323,24 @@ export const AdminBooksPage: React.FC = () => {
               }}
               className="relative flex-1 w-full"
             >
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Search by title, author, or category..."
                 value={search}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
-                className="w-full bg-orange-50/30 border border-slate-200/80 focus:border-orange-500 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition-colors font-['Inter',sans-serif]"
+                className="w-full bg-orange-50/30 border border-stone-200/80 focus:border-orange-500 rounded-xl pl-10 pr-4 py-2.5 text-sm text-stone-900 placeholder-stone-400 outline-none transition-colors font-['Inter',sans-serif]"
               />
             </form>
 
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <div className="flex items-center gap-1 bg-orange-50/30 border border-slate-200/80 rounded-xl p-1">
+              <div className="flex items-center gap-1 bg-orange-50/30 border border-stone-200/80 rounded-xl p-1">
                 <button
                   onClick={() => setViewMode('grid')}
                   className={`p-2 rounded-lg transition-all ${
                     viewMode === 'grid' 
                       ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25' 
-                      : 'text-slate-500 hover:text-slate-700 hover:bg-orange-100'
+                      : 'text-stone-500 hover:text-stone-700 hover:bg-orange-100'
                   }`}
                 >
                   <Grid className="w-4 h-4" />
@@ -350,7 +350,7 @@ export const AdminBooksPage: React.FC = () => {
                   className={`p-2 rounded-lg transition-all ${
                     viewMode === 'list' 
                       ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25' 
-                      : 'text-slate-500 hover:text-slate-700 hover:bg-orange-100'
+                      : 'text-stone-500 hover:text-stone-700 hover:bg-orange-100'
                   }`}
                 >
                   <List className="w-4 h-4" />
@@ -361,14 +361,14 @@ export const AdminBooksPage: React.FC = () => {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as any)}
-                  className="bg-orange-50/30 border border-slate-200/80 rounded-xl px-3 py-2 pr-8 text-sm text-slate-700 outline-none focus:border-orange-500 appearance-none cursor-pointer font-['Inter',sans-serif]"
+                  className="bg-orange-50/30 border border-stone-200/80 rounded-xl px-3 py-2 pr-8 text-sm text-stone-700 outline-none focus:border-orange-500 appearance-none cursor-pointer font-['Inter',sans-serif]"
                 >
                   <option value="newest">Newest</option>
                   <option value="oldest">Oldest</option>
                   <option value="title">Title</option>
                   <option value="lessons">Most Lessons</option>
                 </select>
-                <ArrowUpDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <ArrowUpDown className="w-3.5 h-3.5 text-stone-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
             </div>
           </div>
@@ -394,18 +394,18 @@ export const AdminBooksPage: React.FC = () => {
                     key={book.id}
                     className="group bg-white/90 backdrop-blur-sm border border-orange-100 rounded-2xl overflow-hidden hover:shadow-xl hover:border-orange-300 transition-all duration-300 hover:-translate-y-1"
                   >
-                    <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-orange-100 to-orange-50">
+                    <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-stone-100 via-orange-50/50 to-stone-100 p-4">
                       <img
                         src={book.coverImage || book.thumbnail || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=400&q=80'}
                         alt={book.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="h-full w-full object-contain drop-shadow-[0_10px_18px_rgba(28,25,23,0.18)] group-hover:scale-[1.04] transition-transform duration-500"
                       />
                       <div className="absolute top-2 right-2 flex gap-1.5">
                         <Badge variant={book.published ? 'success' : 'warning'} size="sm" className="shadow-md font-['Inter',sans-serif] text-[10px]">
                           {book.published ? 'Published' : 'Draft'}
                         </Badge>
                       </div>
-                      {book._count?.lessons > 0 && (
+                      {(book._count?.lessons ?? 0) > 0 && (
                         <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-sm text-white text-xs px-2.5 py-1 rounded-lg flex items-center gap-1.5">
                           <Layers className="w-3 h-3" />
                           {book._count?.lessons} Lessons
@@ -417,18 +417,18 @@ export const AdminBooksPage: React.FC = () => {
                       <div>
                         <Link
                           to={`/admin/books/${book.id}/edit`}
-                          className="font-['Poppins',sans-serif] font-semibold text-slate-900 hover:text-orange-600 transition-colors line-clamp-1 text-sm"
+                          className="font-['Poppins',sans-serif] font-semibold text-stone-900 hover:text-orange-600 transition-colors line-clamp-1 text-sm"
                         >
                           {book.title}
                         </Link>
-                        <p className="text-xs text-slate-500 font-['Inter',sans-serif]">By {book.author || 'Hopenix'}</p>
+                        <p className="text-xs text-stone-500 font-['Inter',sans-serif]">By {book.author || 'Hopenix'}</p>
                       </div>
                       
                       <div className="flex flex-wrap gap-1.5">
                         <Badge variant="slate" size="sm" className="bg-orange-100 text-orange-700 border-orange-200 text-[10px]">
                           {book.category || 'General'}
                         </Badge>
-                        <Badge variant="slate" size="sm" className="bg-slate-100 text-slate-600 border-slate-200 text-[10px]">
+                        <Badge variant="slate" size="sm" className="bg-stone-100 text-stone-600 border-stone-200 text-[10px]">
                           {book.readingLevel || 'Beginner'}
                         </Badge>
                       </div>
@@ -437,24 +437,24 @@ export const AdminBooksPage: React.FC = () => {
                         <div className="flex items-center gap-1.5">
                           <button
                             onClick={() => setQrModalBook({ id: book.id, title: book.title })}
-                            className="p-1.5 rounded-lg hover:bg-orange-50 text-slate-500 hover:text-orange-600 transition-colors"
+                            className="p-1.5 rounded-lg hover:bg-orange-50 text-stone-500 hover:text-orange-600 transition-colors"
                             title="Generate QR Code"
                           >
                             <QrCode className="w-3.5 h-3.5" />
                           </button>
                           <Link to={`/admin/books/${book.id}/edit`}>
-                            <button className="p-1.5 rounded-lg hover:bg-orange-50 text-slate-500 hover:text-orange-600 transition-colors">
+                            <button className="p-1.5 rounded-lg hover:bg-orange-50 text-stone-500 hover:text-orange-600 transition-colors">
                               <Edit className="w-3.5 h-3.5" />
                             </button>
                           </Link>
                           <button
                             onClick={() => handleDeleteBook(book.id, book.title)}
-                            className="p-1.5 rounded-lg hover:bg-rose-50 text-slate-500 hover:text-rose-600 transition-colors"
+                            className="p-1.5 rounded-lg hover:bg-rose-50 text-stone-500 hover:text-rose-600 transition-colors"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
-                        <span className="text-[10px] text-slate-400 font-['Inter',sans-serif] flex items-center gap-1">
+                        <span className="text-[10px] text-stone-400 font-['Inter',sans-serif] flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
                           {new Date(book.createdAt || '').toLocaleDateString()}
                         </span>
@@ -467,8 +467,8 @@ export const AdminBooksPage: React.FC = () => {
               // List View
               <div className="bg-white/90 backdrop-blur-sm border border-orange-100 rounded-3xl overflow-hidden shadow-[0_8px_30px_rgba(249,115,22,0.08)]">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-sm text-slate-600">
-                    <thead className="bg-orange-50/50 text-slate-500 uppercase text-[10px] tracking-wider border-b border-orange-100 font-semibold font-['Poppins',sans-serif]">
+                  <table className="w-full text-left text-sm text-stone-600">
+                    <thead className="bg-orange-50/50 text-stone-500 uppercase text-[10px] tracking-wider border-b border-orange-100 font-semibold font-['Poppins',sans-serif]">
                       <tr>
                         <th className="px-4 sm:px-6 py-3 sm:py-4">Book</th>
                         <th className="px-3 sm:px-4 py-3 sm:py-4 hidden sm:table-cell">Category</th>
@@ -485,16 +485,16 @@ export const AdminBooksPage: React.FC = () => {
                               <img
                                 src={book.coverImage || book.thumbnail || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=300&q=80'}
                                 alt={book.title}
-                                className="w-10 h-12 object-cover rounded-lg border border-orange-200 shrink-0 shadow-xs"
+                                className="w-10 h-12 object-contain rounded-lg border border-orange-200 bg-stone-50 p-0.5 shrink-0 shadow-sm"
                               />
                               <div className="min-w-0">
                                 <Link
                                   to={`/admin/books/${book.id}/edit`}
-                                  className="font-semibold text-slate-900 hover:text-orange-600 transition-colors line-clamp-1 font-['Poppins',sans-serif] text-sm"
+                                  className="font-semibold text-stone-900 hover:text-orange-600 transition-colors line-clamp-1 font-['Poppins',sans-serif] text-sm"
                                 >
                                   {book.title}
                                 </Link>
-                                <p className="text-xs text-slate-500 font-['Inter',sans-serif]">By {book.author || 'Hopenix'}</p>
+                                <p className="text-xs text-stone-500 font-['Inter',sans-serif]">By {book.author || 'Hopenix'}</p>
                               </div>
                             </div>
                           </td>
@@ -504,8 +504,8 @@ export const AdminBooksPage: React.FC = () => {
                             </Badge>
                           </td>
                           <td className="px-3 sm:px-4 py-3 sm:py-4 hidden md:table-cell">
-                            <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-900 font-['Poppins',sans-serif]">
-                              <Layers className="w-3.5 h-3.5 text-slate-600" />
+                            <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-stone-900 font-['Poppins',sans-serif]">
+                              <Layers className="w-3.5 h-3.5 text-stone-600" />
                               {book._count?.lessons ?? 0}
                             </span>
                           </td>
@@ -517,19 +517,19 @@ export const AdminBooksPage: React.FC = () => {
                           <td className="px-4 sm:px-6 py-3 sm:py-4 text-right space-x-1.5 sm:space-x-2">
                             <button
                               onClick={() => setQrModalBook({ id: book.id, title: book.title })}
-                              className="inline-flex items-center justify-center p-1.5 rounded-lg border border-orange-200 bg-white hover:bg-orange-50 hover:border-orange-300 text-slate-700 transition-all shadow-xs"
+                              className="inline-flex items-center justify-center p-1.5 rounded-lg border border-orange-200 bg-white hover:bg-orange-50 hover:border-orange-300 text-stone-700 transition-all shadow-sm"
                               title="Generate QR Code"
                             >
                               <QrCode className="w-3.5 h-3.5" />
                             </button>
                             <Link to={`/admin/books/${book.id}/edit`} className="inline-block">
-                              <span className="inline-flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-lg border border-orange-200 bg-white hover:bg-orange-50 hover:border-orange-300 text-[10px] sm:text-xs font-semibold text-slate-700 transition-all shadow-xs font-['Inter',sans-serif]">
+                              <span className="inline-flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-lg border border-orange-200 bg-white hover:bg-orange-50 hover:border-orange-300 text-[10px] sm:text-xs font-semibold text-stone-700 transition-all shadow-sm font-['Inter',sans-serif]">
                                 <Edit className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> Edit
                               </span>
                             </Link>
                             <button
                               onClick={() => handleDeleteBook(book.id, book.title)}
-                              className="inline-flex items-center justify-center p-1.5 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 transition-all shadow-xs"
+                              className="inline-flex items-center justify-center p-1.5 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 transition-all shadow-sm"
                               title="Delete Book"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -560,36 +560,36 @@ export const AdminBooksPage: React.FC = () => {
                 value={title}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
                 required
-                className="bg-orange-50/30 border-slate-200/80 focus:border-orange-500 rounded-xl font-['Inter',sans-serif]"
+                className="bg-orange-50/30 border-stone-200/80 focus:border-orange-500 rounded-xl font-['Inter',sans-serif]"
               />
               <Input
                 label="Author Name"
                 placeholder="e.g. Hopenix Editorial"
                 value={author}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAuthor(e.target.value)}
-                className="bg-orange-50/30 border-slate-200/80 focus:border-orange-500 rounded-xl font-['Inter',sans-serif]"
+                className="bg-orange-50/30 border-stone-200/80 focus:border-orange-500 rounded-xl font-['Inter',sans-serif]"
               />
             </div>
 
             <div className="relative">
-              <Building2 className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-8 pointer-events-none" />
+              <Building2 className="w-3.5 h-3.5 text-stone-500 absolute left-3 top-8 pointer-events-none" />
               <Input
                 label="Company / Publisher Name"
                 placeholder="e.g. Hopenix Inc., Acme Corp"
                 value={companyName}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCompanyName(e.target.value)}
-                className="bg-orange-50/30 border-slate-200/80 focus:border-orange-500 rounded-xl pl-9 font-['Inter',sans-serif]"
+                className="bg-orange-50/30 border-stone-200/80 focus:border-orange-500 rounded-xl pl-9 font-['Inter',sans-serif]"
               />
             </div>
 
             <div>
-              <label className="block font-semibold text-slate-700 mb-1 font-['Poppins',sans-serif] text-sm">Book Description / Overview *</label>
+              <label className="block font-semibold text-stone-700 mb-1 font-['Poppins',sans-serif] text-sm">Book Description / Overview *</label>
               <textarea
                 rows={3}
                 placeholder="Detailed description of the e-book..."
                 value={description}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
-                className="w-full bg-orange-50/30 border border-slate-200/80 focus:border-orange-500 rounded-xl p-3 text-sm text-slate-900 placeholder-slate-400 outline-none transition-colors font-['Inter',sans-serif]"
+                className="w-full bg-orange-50/30 border border-stone-200/80 focus:border-orange-500 rounded-xl p-3 text-sm text-stone-900 placeholder-stone-400 outline-none transition-colors font-['Inter',sans-serif]"
                 required
               />
             </div>
@@ -600,14 +600,14 @@ export const AdminBooksPage: React.FC = () => {
                 placeholder="1-2 sentences for book card preview..."
                 value={shortDescription}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setShortDescription(e.target.value)}
-                className="bg-orange-50/30 border-slate-200/80 focus:border-orange-500 rounded-xl font-['Inter',sans-serif]"
+                className="bg-orange-50/30 border-stone-200/80 focus:border-orange-500 rounded-xl font-['Inter',sans-serif]"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="font-semibold text-slate-700 font-['Poppins',sans-serif] text-sm">CLASS / GRADE</label>
+                  <label className="font-semibold text-stone-700 font-['Poppins',sans-serif] text-sm">CLASS / GRADE</label>
                   <button
                     type="button"
                     onClick={() => setIsAddClassModalOpen(true)}
@@ -623,7 +623,7 @@ export const AdminBooksPage: React.FC = () => {
                     const cg = classGrades.find((c) => c.id === e.target.value);
                     if (cg) setReadingLevel(cg.name);
                   }}
-                  className="w-full bg-orange-50/30 border border-slate-200/80 focus:border-orange-500 rounded-xl px-3 py-2.5 text-sm text-slate-900 outline-none font-['Inter',sans-serif]"
+                  className="w-full bg-orange-50/30 border border-stone-200/80 focus:border-orange-500 rounded-xl px-3 py-2.5 text-sm text-stone-900 outline-none font-['Inter',sans-serif]"
                 >
                   <option value="">Select Class / Grade...</option>
                   {classGrades.map((cg) => (
@@ -636,7 +636,7 @@ export const AdminBooksPage: React.FC = () => {
 
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="font-semibold text-slate-700 font-['Poppins',sans-serif] text-sm">SUBJECT</label>
+                  <label className="font-semibold text-stone-700 font-['Poppins',sans-serif] text-sm">SUBJECT</label>
                   <button
                     type="button"
                     onClick={() => setIsAddSubjectModalOpen(true)}
@@ -652,7 +652,7 @@ export const AdminBooksPage: React.FC = () => {
                     const sb = subjects.find((s) => s.id === e.target.value);
                     if (sb) setCategory(sb.name);
                   }}
-                  className="w-full bg-orange-50/30 border border-slate-200/80 focus:border-orange-500 rounded-xl px-3 py-2.5 text-sm text-slate-900 outline-none font-['Inter',sans-serif]"
+                  className="w-full bg-orange-50/30 border border-stone-200/80 focus:border-orange-500 rounded-xl px-3 py-2.5 text-sm text-stone-900 outline-none font-['Inter',sans-serif]"
                 >
                   <option value="">Select Subject...</option>
                   {subjects.map((sb) => (
@@ -667,33 +667,33 @@ export const AdminBooksPage: React.FC = () => {
                 label="Language"
                 value={language}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLanguage(e.target.value)}
-                className="bg-orange-50/30 border-slate-200/80 focus:border-orange-500 rounded-xl font-['Inter',sans-serif]"
+                className="bg-orange-50/30 border-stone-200/80 focus:border-orange-500 rounded-xl font-['Inter',sans-serif]"
               />
             </div>
 
             {/* Cover Image */}
             <div className="space-y-2">
-              <label className="block font-semibold text-slate-700 font-['Poppins',sans-serif] text-sm">Cover Image</label>
+              <label className="block font-semibold text-stone-700 font-['Poppins',sans-serif] text-sm">Cover Image</label>
               <div className="flex gap-3 items-start">
                 <div className="relative shrink-0">
                   <img
                     src={coverPreview || coverImage || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=200&q=80'}
                     alt="Cover preview"
-                    className="w-20 h-24 object-cover rounded-xl border border-orange-200 bg-slate-100 shadow-xs"
+                    className="w-20 h-24 object-contain rounded-xl border border-orange-200 bg-stone-100 p-1 shadow-sm"
                   />
                   {(coverPreview || coverImage) && (
                     <button
                       type="button"
                       onClick={() => { setCoverImage(''); setCoverPreview(null); }}
-                      className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-rose-500 hover:bg-rose-600 flex items-center justify-center transition-colors shadow-xs"
+                      className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-rose-500 hover:bg-rose-600 flex items-center justify-center transition-colors shadow-sm"
                       title="Remove cover"
                     >
                       <X className="w-3 h-3 text-white" />
                     </button>
                   )}
                   {uploadingCover && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-slate-900/50 rounded-xl">
-                      <div className="w-5 h-5 border-2 border-slate-50 border-t-transparent rounded-full animate-spin" />
+                    <div className="absolute inset-0 flex items-center justify-center bg-stone-900/50 rounded-xl">
+                      <div className="w-5 h-5 border-2 border-stone-50 border-t-transparent rounded-full animate-spin" />
                     </div>
                   )}
                 </div>
@@ -718,7 +718,7 @@ export const AdminBooksPage: React.FC = () => {
                       setCoverImage(e.target.value);
                       setCoverPreview(null);
                     }}
-                    className="w-full bg-orange-50/30 border border-slate-200/80 focus:border-orange-500 rounded-xl px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition-colors font-['Inter',sans-serif]"
+                    className="w-full bg-orange-50/30 border border-stone-200/80 focus:border-orange-500 rounded-xl px-3 py-2.5 text-sm text-stone-900 placeholder-stone-400 outline-none transition-colors font-['Inter',sans-serif]"
                   />
                 </div>
               </div>
@@ -729,7 +729,7 @@ export const AdminBooksPage: React.FC = () => {
               placeholder="978-3-16-148410-0"
               value={isbn}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setIsbn(e.target.value)}
-              className="bg-orange-50/30 border-slate-200/80 focus:border-orange-500 rounded-xl font-['Inter',sans-serif]"
+              className="bg-orange-50/30 border-stone-200/80 focus:border-orange-500 rounded-xl font-['Inter',sans-serif]"
             />
 
             <div className="flex items-center gap-2 pt-1">
@@ -738,9 +738,9 @@ export const AdminBooksPage: React.FC = () => {
                 id="published-toggle"
                 checked={published}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPublished(e.target.checked)}
-                className="w-4 h-4 rounded border-slate-300 text-orange-500 focus:ring-orange-500 bg-orange-50/30 cursor-pointer"
+                className="w-4 h-4 rounded border-stone-300 text-orange-500 focus:ring-orange-500 bg-orange-50/30 cursor-pointer"
               />
-              <label htmlFor="published-toggle" className="text-sm text-slate-700 font-semibold cursor-pointer font-['Inter',sans-serif]">
+              <label htmlFor="published-toggle" className="text-sm text-stone-700 font-semibold cursor-pointer font-['Inter',sans-serif]">
                 Publish immediately (visible in public library)
               </label>
             </div>
@@ -749,7 +749,7 @@ export const AdminBooksPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsCreateModalOpen(false)}
-                className="px-4 py-2.5 border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl text-sm transition-all shadow-xs font-['Inter',sans-serif]"
+                className="px-4 py-2.5 border border-stone-200/80 bg-white hover:bg-stone-50 text-stone-700 font-semibold rounded-xl text-sm transition-all shadow-sm font-['Inter',sans-serif]"
               >
                 Cancel
               </button>

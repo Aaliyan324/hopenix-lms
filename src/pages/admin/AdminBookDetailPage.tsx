@@ -367,7 +367,7 @@ export const AdminBookDetailPage: React.FC = () => {
         {/* Book Metadata Settings Form */}
         <form onSubmit={handleUpdateBook} className="bg-white/90 backdrop-blur-sm border border-orange-100 rounded-3xl p-6 sm:p-8 shadow-[0_8px_30px_rgba(249,115,22,0.08)] hover:shadow-[0_12px_40px_rgba(249,115,22,0.12)] transition-all duration-300">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-orange-100 pb-4">
-            <h2 className="text-lg font-['Poppins',sans-serif] font-bold text-slate-900 flex items-center gap-2">
+            <h2 className="text-lg font-['Poppins',sans-serif] font-bold text-stone-900 flex items-center gap-2">
               <BookOpen className="w-5 h-5 text-orange-600" />
               Book Information & Settings
             </h2>
@@ -383,54 +383,54 @@ export const AdminBookDetailPage: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm pt-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5 font-['Poppins',sans-serif]">Book Title</label>
+              <label className="block text-xs font-semibold text-stone-600 mb-1.5 font-['Poppins',sans-serif]">Book Title</label>
               <input
                 type="text"
                 value={title}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
-                className="w-full bg-orange-50/30 border border-slate-200/80 focus:border-orange-500 rounded-xl px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors font-['Inter',sans-serif]"
+                className="w-full bg-orange-50/30 border border-stone-200/80 focus:border-orange-500 rounded-xl px-3 py-2.5 text-sm text-stone-900 outline-none transition-colors font-['Inter',sans-serif]"
                 required
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5 font-['Poppins',sans-serif]">Author</label>
+              <label className="block text-xs font-semibold text-stone-600 mb-1.5 font-['Poppins',sans-serif]">Author</label>
               <input
                 type="text"
                 value={author}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAuthor(e.target.value)}
-                className="w-full bg-orange-50/30 border border-slate-200/80 focus:border-orange-500 rounded-xl px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors font-['Inter',sans-serif]"
+                className="w-full bg-orange-50/30 border border-stone-200/80 focus:border-orange-500 rounded-xl px-3 py-2.5 text-sm text-stone-900 outline-none transition-colors font-['Inter',sans-serif]"
               />
             </div>
           </div>
 
           <div className="relative pt-2">
-            <Building2 className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-9 pointer-events-none" />
+            <Building2 className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-9 pointer-events-none" />
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5 font-['Poppins',sans-serif]">Company / Publisher Name</label>
+              <label className="block text-xs font-semibold text-stone-600 mb-1.5 font-['Poppins',sans-serif]">Company / Publisher Name</label>
               <input
                 type="text"
                 placeholder="e.g. Hopenix Inc., Acme Corp"
                 value={companyName}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCompanyName(e.target.value)}
-                className="w-full bg-orange-50/30 border border-slate-200/80 focus:border-orange-500 rounded-xl px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors pl-9 font-['Inter',sans-serif]"
+                className="w-full bg-orange-50/30 border border-stone-200/80 focus:border-orange-500 rounded-xl px-3 py-2.5 text-sm text-stone-900 outline-none transition-colors pl-9 font-['Inter',sans-serif]"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-600 font-['Poppins',sans-serif]">Book Overview / Description</label>
+            <label className="text-xs font-semibold text-stone-600 font-['Poppins',sans-serif]">Book Overview / Description</label>
             <textarea
               rows={4}
               value={description}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
-              className="w-full bg-orange-50/30 border border-slate-200/80 focus:border-orange-500 rounded-xl p-3 text-sm text-slate-900 outline-none transition-colors font-['Inter',sans-serif]"
+              className="w-full bg-orange-50/30 border border-stone-200/80 focus:border-orange-500 rounded-xl p-3 text-sm text-stone-900 outline-none transition-colors font-['Inter',sans-serif]"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-sm">
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="font-semibold text-slate-600 font-['Poppins',sans-serif] text-xs">CLASS / GRADE</label>
+                <label className="font-semibold text-stone-600 font-['Poppins',sans-serif] text-xs">CLASS / GRADE</label>
                 <button
                   type="button"
                   onClick={() => setIsAddClassModalOpen(true)}
@@ -446,7 +446,7 @@ export const AdminBookDetailPage: React.FC = () => {
                   const cg = classGrades.find((c) => c.id === e.target.value);
                   if (cg) setReadingLevel(cg.name);
                 }}
-                className="w-full bg-orange-50/30 border border-slate-200/80 focus:border-orange-500 rounded-xl px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors font-['Inter',sans-serif]"
+                className="w-full bg-orange-50/30 border border-stone-200/80 focus:border-orange-500 rounded-xl px-3 py-2.5 text-sm text-stone-900 outline-none transition-colors font-['Inter',sans-serif]"
               >
                 <option value="">Select Class...</option>
                 {classGrades.map((cg) => (
@@ -459,7 +459,7 @@ export const AdminBookDetailPage: React.FC = () => {
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="font-semibold text-slate-600 font-['Poppins',sans-serif] text-xs">SUBJECT</label>
+                <label className="font-semibold text-stone-600 font-['Poppins',sans-serif] text-xs">SUBJECT</label>
                 <button
                   type="button"
                   onClick={() => setIsAddSubjectModalOpen(true)}
@@ -475,7 +475,7 @@ export const AdminBookDetailPage: React.FC = () => {
                   const sb = subjects.find((s) => s.id === e.target.value);
                   if (sb) setCategory(sb.name);
                 }}
-                className="w-full bg-orange-50/30 border border-slate-200/80 focus:border-orange-500 rounded-xl px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors font-['Inter',sans-serif]"
+                className="w-full bg-orange-50/30 border border-stone-200/80 focus:border-orange-500 rounded-xl px-3 py-2.5 text-sm text-stone-900 outline-none transition-colors font-['Inter',sans-serif]"
               >
                 <option value="">Select Subject...</option>
                 {subjects.map((sb) => (
@@ -487,48 +487,48 @@ export const AdminBookDetailPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5 font-['Poppins',sans-serif]">Language</label>
+              <label className="block text-xs font-semibold text-stone-600 mb-1.5 font-['Poppins',sans-serif]">Language</label>
               <input
                 type="text"
                 value={language}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLanguage(e.target.value)}
-                className="w-full bg-orange-50/30 border border-slate-200/80 focus:border-orange-500 rounded-xl px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors font-['Inter',sans-serif]"
+                className="w-full bg-orange-50/30 border border-stone-200/80 focus:border-orange-500 rounded-xl px-3 py-2.5 text-sm text-stone-900 outline-none transition-colors font-['Inter',sans-serif]"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5 font-['Poppins',sans-serif]">Published Year</label>
+              <label className="block text-xs font-semibold text-stone-600 mb-1.5 font-['Poppins',sans-serif]">Published Year</label>
               <input
                 type="text"
                 value={publicationYear}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPublicationYear(e.target.value)}
-                className="w-full bg-orange-50/30 border border-slate-200/80 focus:border-orange-500 rounded-xl px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors font-['Inter',sans-serif]"
+                className="w-full bg-orange-50/30 border border-stone-200/80 focus:border-orange-500 rounded-xl px-3 py-2.5 text-sm text-stone-900 outline-none transition-colors font-['Inter',sans-serif]"
               />
             </div>
           </div>
 
           {/* Cover Image */}
           <div className="space-y-2">
-            <label className="text-xs font-semibold text-slate-600 font-['Poppins',sans-serif]">Cover Image</label>
+            <label className="text-xs font-semibold text-stone-600 font-['Poppins',sans-serif]">Cover Image</label>
             <div className="flex gap-3 items-start">
               <div className="relative shrink-0">
                 <img
                   src={coverPreview || coverImage || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=200&q=80'}
                   alt="Cover preview"
-                  className="w-20 h-24 object-cover rounded-xl border border-orange-200 bg-slate-100 shadow-xs"
+                  className="w-20 h-24 object-contain rounded-xl border border-orange-200 bg-stone-100 p-1 shadow-sm"
                 />
                 {(coverPreview || coverImage) && (
                   <button
                     type="button"
                     onClick={() => { setCoverImage(''); setCoverPreview(null); }}
-                    className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-rose-500 hover:bg-rose-600 flex items-center justify-center transition-colors shadow-xs"
+                    className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-rose-500 hover:bg-rose-600 flex items-center justify-center transition-colors shadow-sm"
                     title="Remove cover"
                   >
                     <X className="w-3 h-3 text-white" />
                   </button>
                 )}
                 {uploadingCover && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-slate-900/50 rounded-xl">
-                    <div className="w-5 h-5 border-2 border-slate-50 border-t-transparent rounded-full animate-spin" />
+                  <div className="absolute inset-0 flex items-center justify-center bg-stone-900/50 rounded-xl">
+                    <div className="w-5 h-5 border-2 border-stone-50 border-t-transparent rounded-full animate-spin" />
                   </div>
                 )}
               </div>
@@ -552,19 +552,19 @@ export const AdminBookDetailPage: React.FC = () => {
                     setCoverImage(e.target.value);
                     setCoverPreview(null);
                   }}
-                  className="w-full bg-orange-50/30 border border-slate-200/80 focus:border-orange-500 rounded-xl px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition-colors font-['Inter',sans-serif]"
+                  className="w-full bg-orange-50/30 border border-stone-200/80 focus:border-orange-500 rounded-xl px-3 py-2.5 text-sm text-stone-900 placeholder-stone-400 outline-none transition-colors font-['Inter',sans-serif]"
                 />
               </div>
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1.5 font-['Poppins',sans-serif]">ISBN</label>
+            <label className="block text-xs font-semibold text-stone-600 mb-1.5 font-['Poppins',sans-serif]">ISBN</label>
             <input
               type="text"
               value={isbn}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setIsbn(e.target.value)}
-              className="w-full bg-orange-50/30 border border-slate-200/80 focus:border-orange-500 rounded-xl px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors font-['Inter',sans-serif]"
+              className="w-full bg-orange-50/30 border border-stone-200/80 focus:border-orange-500 rounded-xl px-3 py-2.5 text-sm text-stone-900 outline-none transition-colors font-['Inter',sans-serif]"
             />
           </div>
 
@@ -574,9 +574,9 @@ export const AdminBookDetailPage: React.FC = () => {
               id="pub-check"
               checked={published}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPublished(e.target.checked)}
-              className="w-4 h-4 rounded border-slate-300 text-orange-500 focus:ring-orange-500 bg-orange-50/30 cursor-pointer"
+              className="w-4 h-4 rounded border-stone-300 text-orange-500 focus:ring-orange-500 bg-orange-50/30 cursor-pointer"
             />
-            <label htmlFor="pub-check" className="text-sm font-semibold text-slate-700 cursor-pointer font-['Inter',sans-serif]">
+            <label htmlFor="pub-check" className="text-sm font-semibold text-stone-700 cursor-pointer font-['Inter',sans-serif]">
               Published (Visible to public guests in digital library)
             </label>
           </div>
@@ -586,11 +586,11 @@ export const AdminBookDetailPage: React.FC = () => {
         <div className="bg-white/90 backdrop-blur-sm border border-orange-100 rounded-3xl p-6 sm:p-8 shadow-[0_8px_30px_rgba(249,115,22,0.08)]">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-orange-100 pb-4">
             <div>
-              <h2 className="text-lg font-['Poppins',sans-serif] font-bold text-slate-900 flex items-center gap-2">
+              <h2 className="text-lg font-['Poppins',sans-serif] font-bold text-stone-900 flex items-center gap-2">
                 <Layers className="w-5 h-5 text-orange-600" />
                 Book Lessons
               </h2>
-              <p className="text-xs text-slate-500 font-['Inter',sans-serif]">
+              <p className="text-xs text-stone-500 font-['Inter',sans-serif]">
                 {book.lessons?.length || 0} lessons in this book
                 {filteredLessons.length !== book.lessons?.length && (
                   <span className="text-orange-600 ml-1">
@@ -615,18 +615,18 @@ export const AdminBookDetailPage: React.FC = () => {
           {/* Search and Filter Bar */}
           <div className="flex flex-col sm:flex-row items-center gap-3 pt-4 pb-3">
             <div className="relative flex-1 w-full">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Search lessons by title, description, or slug..."
                 value={lessonSearch}
                 onChange={(e) => setLessonSearch(e.target.value)}
-                className="w-full bg-orange-50/30 border border-slate-200/80 focus:border-orange-500 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition-colors font-['Inter',sans-serif]"
+                className="w-full bg-orange-50/30 border border-stone-200/80 focus:border-orange-500 rounded-xl pl-10 pr-4 py-2.5 text-sm text-stone-900 placeholder-stone-400 outline-none transition-colors font-['Inter',sans-serif]"
               />
               {lessonSearch && (
                 <button
                   onClick={() => setLessonSearch('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -634,13 +634,13 @@ export const AdminBookDetailPage: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <div className="flex items-center gap-1 bg-orange-50/30 border border-slate-200/80 rounded-xl p-1">
+              <div className="flex items-center gap-1 bg-orange-50/30 border border-stone-200/80 rounded-xl p-1">
                 <button
                   onClick={() => setFilterStatus('all')}
                   className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
                     filterStatus === 'all'
                       ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-orange-100'
+                      : 'text-stone-600 hover:text-stone-900 hover:bg-orange-100'
                   }`}
                 >
                   All
@@ -650,7 +650,7 @@ export const AdminBookDetailPage: React.FC = () => {
                   className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
                     filterStatus === 'published'
                       ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/25'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-orange-100'
+                      : 'text-stone-600 hover:text-stone-900 hover:bg-orange-100'
                   }`}
                 >
                   Published
@@ -660,7 +660,7 @@ export const AdminBookDetailPage: React.FC = () => {
                   className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
                     filterStatus === 'draft'
                       ? 'bg-amber-500 text-white shadow-md shadow-amber-500/25'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-orange-100'
+                      : 'text-stone-600 hover:text-stone-900 hover:bg-orange-100'
                   }`}
                 >
                   Draft
@@ -670,7 +670,7 @@ export const AdminBookDetailPage: React.FC = () => {
               {(lessonSearch || filterStatus !== 'all') && (
                 <button
                   onClick={clearLessonSearch}
-                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-orange-50 rounded-lg transition-colors"
+                  className="p-2 text-stone-400 hover:text-stone-600 hover:bg-orange-50 rounded-lg transition-colors"
                   title="Clear filters"
                 >
                   <X className="w-4 h-4" />
@@ -683,8 +683,8 @@ export const AdminBookDetailPage: React.FC = () => {
             {book.lessons?.length === 0 ? (
               <div className="text-center py-12 px-4 rounded-2xl bg-orange-50/30 border border-dashed border-orange-200">
                 <BookOpen className="w-8 h-8 text-orange-300 mx-auto mb-3" />
-                <p className="text-sm font-medium text-slate-500 font-['Poppins',sans-serif]">No lessons yet</p>
-                <p className="text-xs text-slate-400 mt-1 font-['Inter',sans-serif]">Start building your book content by adding lessons.</p>
+                <p className="text-sm font-medium text-stone-500 font-['Poppins',sans-serif]">No lessons yet</p>
+                <p className="text-xs text-stone-400 mt-1 font-['Inter',sans-serif]">Start building your book content by adding lessons.</p>
                 <button
                   onClick={() => {
                     resetLessonForm();
@@ -699,8 +699,8 @@ export const AdminBookDetailPage: React.FC = () => {
             ) : filteredLessons.length === 0 ? (
               <div className="text-center py-12 px-4 rounded-2xl bg-orange-50/30 border border-dashed border-orange-200">
                 <Search className="w-8 h-8 text-orange-300 mx-auto mb-3" />
-                <p className="text-sm font-medium text-slate-500 font-['Poppins',sans-serif]">No lessons found</p>
-                <p className="text-xs text-slate-400 mt-1 font-['Inter',sans-serif]">
+                <p className="text-sm font-medium text-stone-500 font-['Poppins',sans-serif]">No lessons found</p>
+                <p className="text-xs text-stone-400 mt-1 font-['Inter',sans-serif]">
                   Try adjusting your search or filter criteria
                 </p>
                 <button
@@ -725,10 +725,10 @@ export const AdminBookDetailPage: React.FC = () => {
                       </span>
 
                       <div className="min-w-0">
-                        <h3 className="text-sm font-semibold text-slate-900 font-['Poppins',sans-serif] truncate">
+                        <h3 className="text-sm font-semibold text-stone-900 font-['Poppins',sans-serif] truncate">
                           {lesson.title}
                         </h3>
-                        <div className="flex items-center gap-2 text-xs text-slate-500 font-['Inter',sans-serif]">
+                        <div className="flex items-center gap-2 text-xs text-stone-500 font-['Inter',sans-serif]">
                           <span>Slug: /{lesson.slug}</span>
                           <span className="hidden sm:inline">•</span>
                           <span className="hidden sm:inline">Media: {lesson.media?.length || 0} attachments</span>
@@ -746,7 +746,7 @@ export const AdminBookDetailPage: React.FC = () => {
                       </Badge>
 
                       <button
-                        className="p-2 text-slate-500 hover:text-orange-600 hover:bg-orange-50 rounded-xl transition-all border border-slate-200 hover:border-orange-300"
+                        className="p-2 text-stone-500 hover:text-orange-600 hover:bg-orange-50 rounded-xl transition-all border border-stone-200 hover:border-orange-300"
                         onClick={() => {
                           setLessonQrTarget({ id: lesson.id, title: lesson.title, lessonNumber: lesson.lessonNumber || idx + 1 });
                           setQrModalOpen(true);
@@ -757,7 +757,7 @@ export const AdminBookDetailPage: React.FC = () => {
                       </button>
 
                       <Link to={`/admin/lessons/${lesson.id}/edit`}>
-                        <button className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-orange-50 text-slate-700 hover:text-orange-700 text-xs font-semibold rounded-xl border border-slate-200 hover:border-orange-300 transition-all font-['Inter',sans-serif]">
+                        <button className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-orange-50 text-stone-700 hover:text-orange-700 text-xs font-semibold rounded-xl border border-stone-200 hover:border-orange-300 transition-all font-['Inter',sans-serif]">
                           <Edit className="w-3.5 h-3.5" />
                           Edit
                         </button>
@@ -788,41 +788,41 @@ export const AdminBookDetailPage: React.FC = () => {
           <form onSubmit={handleCreateLesson} className="space-y-5 text-sm font-['Inter',sans-serif]">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1.5 font-['Poppins',sans-serif]">Lesson Number</label>
+                <label className="block text-xs font-semibold text-stone-600 mb-1.5 font-['Poppins',sans-serif]">Lesson Number</label>
                 <input
                   type="number"
                   value={lessonNumber}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLessonNumber(e.target.value)}
-                  className="w-full bg-orange-50/30 border border-slate-200/80 focus:border-orange-500 rounded-xl px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors font-['Inter',sans-serif]"
+                  className="w-full bg-orange-50/30 border border-stone-200/80 focus:border-orange-500 rounded-xl px-3 py-2.5 text-sm text-stone-900 outline-none transition-colors font-['Inter',sans-serif]"
                   required
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-xs font-semibold text-slate-600 mb-1.5 font-['Poppins',sans-serif]">Lesson Title *</label>
+                <label className="block text-xs font-semibold text-stone-600 mb-1.5 font-['Poppins',sans-serif]">Lesson Title *</label>
                 <input
                   type="text"
                   placeholder="e.g. Introduction to HTML Structure"
                   value={lessonTitle}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLessonTitle(e.target.value)}
-                  className="w-full bg-orange-50/30 border border-slate-200/80 focus:border-orange-500 rounded-xl px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors font-['Inter',sans-serif]"
+                  className="w-full bg-orange-50/30 border border-stone-200/80 focus:border-orange-500 rounded-xl px-3 py-2.5 text-sm text-stone-900 outline-none transition-colors font-['Inter',sans-serif]"
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5 font-['Poppins',sans-serif]">Lesson Summary</label>
+              <label className="block text-xs font-semibold text-stone-600 mb-1.5 font-['Poppins',sans-serif]">Lesson Summary</label>
               <input
                 type="text"
                 placeholder="Brief overview..."
                 value={lessonDesc}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLessonDesc(e.target.value)}
-                className="w-full bg-orange-50/30 border border-slate-200/80 focus:border-orange-500 rounded-xl px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors font-['Inter',sans-serif]"
+                className="w-full bg-orange-50/30 border border-stone-200/80 focus:border-orange-500 rounded-xl px-3 py-2.5 text-sm text-stone-900 outline-none transition-colors font-['Inter',sans-serif]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5 font-['Poppins',sans-serif]">Rich Text Content</label>
+              <label className="block text-xs font-semibold text-stone-600 mb-1.5 font-['Poppins',sans-serif]">Rich Text Content</label>
               <RichTextEditor content={lessonContent} onChange={setLessonContent} placeholder="Write lesson article content..." />
             </div>
 
@@ -838,9 +838,9 @@ export const AdminBookDetailPage: React.FC = () => {
                 id="l-pub-check"
                 checked={lessonPublished}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLessonPublished(e.target.checked)}
-                className="w-4 h-4 rounded border-slate-300 text-orange-500 focus:ring-orange-500 bg-orange-50/30 cursor-pointer"
+                className="w-4 h-4 rounded border-stone-300 text-orange-500 focus:ring-orange-500 bg-orange-50/30 cursor-pointer"
               />
-              <label htmlFor="l-pub-check" className="text-sm font-semibold text-slate-700 cursor-pointer font-['Inter',sans-serif]">
+              <label htmlFor="l-pub-check" className="text-sm font-semibold text-stone-700 cursor-pointer font-['Inter',sans-serif]">
                 Publish lesson immediately
               </label>
             </div>
@@ -849,7 +849,7 @@ export const AdminBookDetailPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsLessonModalOpen(false)}
-                className="px-4 py-2.5 border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl text-sm transition-all shadow-xs font-['Inter',sans-serif]"
+                className="px-4 py-2.5 border border-stone-200/80 bg-white hover:bg-stone-50 text-stone-700 font-semibold rounded-xl text-sm transition-all shadow-sm font-['Inter',sans-serif]"
               >
                 Cancel
               </button>

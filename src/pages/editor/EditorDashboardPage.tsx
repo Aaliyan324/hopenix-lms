@@ -42,7 +42,7 @@ const itemVariants = {
   visible: { 
     opacity: 1, 
     y: 0,
-    transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] }
+    transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] as const }
   },
 };
 
@@ -219,8 +219,8 @@ export const EditorDashboardPage: React.FC = () => {
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-medium text-slate-500 font-['Inter',sans-serif]">{stat.label}</p>
-                    <p className="text-2xl sm:text-3xl font-bold font-['Poppins',sans-serif] text-slate-900 mt-1">{stat.value}</p>
+                    <p className="text-xs font-medium text-stone-500 font-['Inter',sans-serif]">{stat.label}</p>
+                    <p className="text-2xl sm:text-3xl font-bold font-['Poppins',sans-serif] text-stone-900 mt-1">{stat.value}</p>
                   </div>
                   <div className={`p-2.5 rounded-xl border ${colors[stat.color as keyof typeof colors]}`}>
                     <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -234,7 +234,7 @@ export const EditorDashboardPage: React.FC = () => {
         {/* Assigned Books Section */}
         <motion.div variants={itemVariants} className="space-y-5">
           <div className="flex items-center justify-between border-b border-orange-100 pb-3">
-            <h2 className="text-lg font-['Poppins',sans-serif] font-bold text-slate-900 flex items-center gap-2.5">
+            <h2 className="text-lg font-['Poppins',sans-serif] font-bold text-stone-900 flex items-center gap-2.5">
               <div className="p-2 rounded-2xl bg-orange-50 border border-orange-100 text-orange-600">
                 <BookOpen className="w-5 h-5" />
               </div>
@@ -247,7 +247,7 @@ export const EditorDashboardPage: React.FC = () => {
               <EmptyState
                 title="No assigned books"
                 description="You currently don't have entire books assigned to you by an administrator."
-                icon={<BookOpen className="w-10 h-10 text-slate-400" />}
+                icon={<BookOpen className="w-10 h-10 text-stone-400" />}
               />
             </div>
           ) : (
@@ -266,7 +266,7 @@ export const EditorDashboardPage: React.FC = () => {
                     <img
                       src={book.coverImage || book.thumbnail || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=400&q=80'}
                       alt={book.title}
-                      className="w-16 h-20 rounded-xl object-cover border border-orange-200 shrink-0 shadow-xs"
+                      className="w-16 h-20 rounded-xl object-contain border border-orange-200 bg-stone-50 p-1 shrink-0 shadow-sm"
                     />
                     <div className="min-w-0 flex-1">
                       <Badge variant={book.published ? 'success' : 'slate'} size="sm" className={`font-['Inter',sans-serif] text-[10px] ${
@@ -276,9 +276,9 @@ export const EditorDashboardPage: React.FC = () => {
                       }`}>
                         {book.published ? 'Published' : 'Draft'}
                       </Badge>
-                      <h3 className="font-['Poppins',sans-serif] font-bold text-base text-slate-900 truncate mt-1">{book.title}</h3>
-                      <p className="text-xs text-slate-500 truncate font-['Inter',sans-serif]">By {book.author || 'Editorial'}</p>
-                      <p className="text-xs text-slate-600 font-semibold mt-1 flex items-center gap-1 font-['Inter',sans-serif]">
+                      <h3 className="font-['Poppins',sans-serif] font-bold text-base text-stone-900 truncate mt-1">{book.title}</h3>
+                      <p className="text-xs text-stone-500 truncate font-['Inter',sans-serif]">By {book.author || 'Editorial'}</p>
+                      <p className="text-xs text-stone-600 font-semibold mt-1 flex items-center gap-1 font-['Inter',sans-serif]">
                         <Layers className="w-3 h-3 text-orange-500" />
                         {book.totalLessons || 0} Lessons
                       </p>
@@ -311,7 +311,7 @@ export const EditorDashboardPage: React.FC = () => {
         {/* Assigned Lessons Section */}
         <motion.div variants={itemVariants} className="space-y-5">
           <div className="flex items-center justify-between border-b border-orange-100 pb-3">
-            <h2 className="text-lg font-['Poppins',sans-serif] font-bold text-slate-900 flex items-center gap-2.5">
+            <h2 className="text-lg font-['Poppins',sans-serif] font-bold text-stone-900 flex items-center gap-2.5">
               <div className="p-2 rounded-2xl bg-orange-50 border border-orange-100 text-orange-600">
                 <Layers className="w-5 h-5" />
               </div>
@@ -324,7 +324,7 @@ export const EditorDashboardPage: React.FC = () => {
               <EmptyState
                 title="No assigned lessons"
                 description="You currently don't have individual lessons assigned to you by an administrator."
-                icon={<CheckSquare className="w-10 h-10 text-slate-400" />}
+                icon={<CheckSquare className="w-10 h-10 text-stone-400" />}
               />
             </div>
           ) : (
@@ -341,7 +341,7 @@ export const EditorDashboardPage: React.FC = () => {
                 >
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-semibold text-slate-600 flex items-center gap-1.5 truncate font-['Inter',sans-serif]">
+                      <span className="text-xs font-semibold text-stone-600 flex items-center gap-1.5 truncate font-['Inter',sans-serif]">
                         <BookOpen className="w-3.5 h-3.5 shrink-0 text-orange-500" />
                         {lesson.course?.title || lesson.book?.title || 'Book'}
                       </span>
@@ -354,11 +354,11 @@ export const EditorDashboardPage: React.FC = () => {
                       </Badge>
                     </div>
 
-                    <h3 className="font-['Poppins',sans-serif] font-bold text-base text-slate-900 mb-1">
+                    <h3 className="font-['Poppins',sans-serif] font-bold text-base text-stone-900 mb-1">
                       Lesson #{lesson.lessonNumber || lesson.order}: {lesson.title}
                     </h3>
                     {lesson.description && (
-                      <p className="text-xs text-slate-500 line-clamp-2 font-['Inter',sans-serif]">{lesson.description}</p>
+                      <p className="text-xs text-stone-500 line-clamp-2 font-['Inter',sans-serif]">{lesson.description}</p>
                     )}
                   </div>
 
@@ -395,8 +395,8 @@ export const EditorDashboardPage: React.FC = () => {
               <Sparkles className="w-4 h-4" />
             </div>
             <div>
-              <h4 className="text-sm font-semibold text-slate-900 font-['Poppins',sans-serif]">Editor Tip</h4>
-              <p className="text-xs text-slate-600 font-['Inter',sans-serif]">
+              <h4 className="text-sm font-semibold text-stone-900 font-['Poppins',sans-serif]">Editor Tip</h4>
+              <p className="text-xs text-stone-600 font-['Inter',sans-serif]">
                 You can edit content for all assigned books and lessons. Changes will be reviewed by administrators before publishing.
               </p>
             </div>

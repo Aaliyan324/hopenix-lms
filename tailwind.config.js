@@ -90,6 +90,10 @@ export default {
         '22': '5.5rem',
         '26': '6.5rem',
       },
+      maxWidth: {
+        'measure': '68ch',
+        'prose': '72ch',
+      },
       backdropBlur: {
         xs: '2px',
       },

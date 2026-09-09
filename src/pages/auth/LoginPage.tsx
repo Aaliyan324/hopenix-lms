@@ -49,7 +49,7 @@ export const LoginPage: React.FC = () => {
         <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-orange-600 text-white shadow-md">
           <BookOpen className="w-5 h-5 fill-current" />
         </div>
-        <span className="font-['Poppins',sans-serif] text-xl font-bold text-slate-900 tracking-tight">
+        <span className="font-['Poppins',sans-serif] text-xl font-bold text-stone-900 tracking-tight">
           Hopenix<span className="text-orange-600">.</span>
         </span>
       </div>
@@ -62,10 +62,10 @@ export const LoginPage: React.FC = () => {
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-orange-50 shadow-sm border border-orange-100/60 mb-1 text-orange-600">
             <LogIn className="w-6 h-6" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight font-['Poppins',sans-serif]">
+          <h1 className="text-2xl font-bold text-stone-900 tracking-tight font-['Poppins',sans-serif]">
             Sign in with email
           </h1>
-          <p className="text-xs text-slate-500 max-w-xs mx-auto leading-relaxed font-['Inter',sans-serif]">
+          <p className="text-sm text-stone-500 max-w-xs mx-auto leading-relaxed font-['Inter',sans-serif]">
             Access the editorial portal to bring your words, data, and teams together securely.
           </p>
         </div>
@@ -75,13 +75,13 @@ export const LoginPage: React.FC = () => {
           <div className="space-y-1">
             <label className="sr-only">Email Address</label>
             <div className="relative">
-              <Mail className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+              <Mail className="w-4 h-4 text-stone-400 absolute left-4 top-1/2 -translate-y-1/2" />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Email"
-                className="w-full pl-11 pr-4 py-3 bg-orange-50/30 border border-slate-200/80 rounded-2xl text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-200 font-['Inter',sans-serif]"
+                className="w-full pl-11 pr-4 py-3 bg-orange-50/30 border border-stone-200/80 rounded-2xl text-stone-900 placeholder-stone-400 text-sm focus:outline-none focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-200 font-['Inter',sans-serif]"
                 required
               />
             </div>
@@ -90,19 +90,20 @@ export const LoginPage: React.FC = () => {
           <div className="space-y-1">
             <label className="sr-only">Password</label>
             <div className="relative">
-              <Lock className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+              <Lock className="w-4 h-4 text-stone-400 absolute left-4 top-1/2 -translate-y-1/2" />
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Password"
-                className="w-full pl-11 pr-11 py-3 bg-orange-50/30 border border-slate-200/80 rounded-2xl text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-200 font-['Inter',sans-serif]"
+                className="w-full pl-11 pr-11 py-3 bg-orange-50/30 border border-stone-200/80 rounded-2xl text-stone-900 placeholder-stone-400 text-sm focus:outline-none focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-200 font-['Inter',sans-serif]"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                className="absolute right-4 top-1/2 -translate-y-1/2 rounded-lg text-stone-400 transition-colors hover:text-stone-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/50"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -124,7 +125,7 @@ export const LoginPage: React.FC = () => {
         </form>
 
         {/* Footer info text */}
-        <p className="text-center text-[11px] text-slate-400 pt-2 font-['Inter',sans-serif]">
+        <p className="text-center text-[11px] text-stone-400 pt-2 font-['Inter',sans-serif]">
           Protected editorial portal. Authorized staff only.
         </p>
       </div>
