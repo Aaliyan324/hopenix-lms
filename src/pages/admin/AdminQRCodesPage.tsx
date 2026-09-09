@@ -15,12 +15,41 @@ import {
   Sparkles, 
   CheckCircle2, 
   Clock,
-  Shield
+  Shield,
+  Download,
+  RefreshCw,
+  Grid,
+  List,
+  Search,
+  Filter,
+  TrendingUp,
+  Award,
+  Users,
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface BookWithLessons extends Book {
   lessons?: Lesson[];
 }
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] }
+  },
+};
 
 export const AdminQRCodesPage: React.FC = () => {
   const { toast } = useToast();
@@ -28,6 +57,8 @@ export const AdminQRCodesPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [bulkLoading, setBulkLoading] = useState(false);
   const [expandedBooks, setExpandedBooks] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
 
   // QR Modal state
   const [qrOpen, setQrOpen] = useState(false);
@@ -119,195 +150,328 @@ export const AdminQRCodesPage: React.FC = () => {
     });
   };
 
-  return (
-    <div className="space-y-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-      {/* Header Banner - Matches dashboard style */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-8 sm:p-10 shadow-editorial border border-slate-800">
-        <div className="absolute -right-16 -bottom-16 w-80 h-80 bg-orange-500/15 rounded-full blur-3xl pointer-events-none animate-pulse" />
-        <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none hidden md:block">
-          <Sparkles className="w-40 h-40 text-orange-400" />
-        </div>
-        
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-          <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-bold uppercase tracking-wider backdrop-blur-md">
-              <QrCode className="w-3.5 h-3.5" />
-              QR Studio
-            </div>
-            <h1 className="font-serif text-3xl sm:text-5xl font-bold tracking-tight text-white">
-              Digital Book QR Code Studio
-            </h1>
-            <p className="text-sm sm:text-base text-slate-300 max-w-2xl leading-relaxed font-light">
-              Generate, preview, customize, and download persistent QR codes for books and lessons.
-            </p>
+  // Filter books based on search
+  const filteredBooks = books.filter(book => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase();
+    return book.title.toLowerCase().includes(query) ||
+           (book.author || '').toLowerCase().includes(query) ||
+           (book.lessons || []).some(l => l.title.toLowerCase().includes(query));
+  });
+
+  // Calculate stats
+  const totalBooks = books.length;
+  const totalLessons = books.reduce((acc, book) => acc + (book.lessons?.length || 0), 0);
+  const booksWithQR = books.filter(b => b.qrCodeUrl).length;
+  const lessonsWithQR = books.reduce((acc, book) => {
+    return acc + (book.lessons?.filter(l => l.qrCodeUrl).length || 0);
+  }, 0);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50/30 p-4 sm:p-6 lg:p-8">
+        <div className="max-w-7xl mx-auto space-y-6">
+          <Skeleton className="h-56 w-full rounded-3xl" />
+          <Skeleton className="h-16 w-full rounded-2xl" />
+          <div className="space-y-4">
+            {[...Array(4)].map((_, i) => (
+              <Skeleton key={i} className="h-28 rounded-2xl" />
+            ))}
           </div>
-          
-          <button
-            onClick={handleGenerateMissingQRs}
-            disabled={bulkLoading}
-            className="inline-flex items-center gap-2 px-6 py-3.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-2xl transition-all shadow-lg shadow-orange-500/25 active:scale-[0.99] shrink-0 disabled:opacity-50"
-          >
-            <Sparkles className="w-4 h-4" />
-            {bulkLoading ? 'Generating...' : 'Generate Missing QR Codes'}
-          </button>
         </div>
       </div>
+    );
+  }
 
-      {loading ? (
-        <div className="space-y-4">
-          {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-28 rounded-2xl" />
-          ))}
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {books.map((book) => {
-            const isExpanded = expandedBooks.has(book.id);
-            const lessonCount = book.lessons?.length ?? book._count?.lessons ?? 0;
-            const hasBookQR = Boolean(book.qrCodeUrl);
-
-            return (
-              <div
-                key={book.id}
-                className="border border-slate-200/80 rounded-2xl overflow-hidden bg-white shadow-editorial hover:shadow-editorial transition-all"
-              >
-                {/* Book Row */}
-                <div className="flex items-center justify-between p-5 gap-4 hover:bg-slate-50/50 transition-colors">
-                  <div className="flex items-start gap-4 flex-1 min-w-0">
-                    <img
-                      src={
-                        book.coverImage ||
-                        book.thumbnail ||
-                        'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=400&q=80'
-                      }
-                      alt={book.title}
-                      className="w-14 h-18 rounded-xl object-cover border border-slate-200 shrink-0 shadow-xs"
-                      style={{ height: '4.5rem' }}
-                    />
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                        <BookOpen className="w-4 h-4 text-orange-600 shrink-0" />
-                        <h3 className="font-serif font-bold text-sm text-slate-900 truncate">{book.title}</h3>
-                        {hasBookQR ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            <CheckCircle2 className="w-3 h-3" /> QR Ready
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
-                            <Clock className="w-3 h-3" /> No QR
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-xs text-slate-500 font-medium flex items-center gap-1">
-                        <Layers className="w-3 h-3 text-slate-400" />
-                        {lessonCount} lessons
-                      </p>
-                      <div className="flex items-center gap-2 mt-2">
-                        <Badge variant={book.published ? 'success' : 'slate'} size="sm" className={book.published ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-orange-50 text-orange-700 border-orange-200'}>
-                          {book.published ? 'Published' : 'Draft'}
-                        </Badge>
-                      </div>
-                    </div>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50/30 p-4 sm:p-6 lg:p-8 font-['Inter',sans-serif]">
+      <motion.div 
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+        className="max-w-7xl mx-auto space-y-6 sm:space-y-8 pb-8 sm:pb-16"
+      >
+        {/* Header Banner */}
+        <motion.div 
+          variants={itemVariants}
+          className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-orange-600 via-orange-500 to-orange-400 text-white p-6 sm:p-8 lg:p-10 shadow-2xl"
+        >
+          <div className="absolute -right-20 -bottom-20 w-72 sm:w-96 h-72 sm:h-96 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none hidden md:block">
+            <QrCode className="w-48 h-48 text-white" />
+          </div>
+          <div className="absolute -left-10 -top-10 w-40 h-40 bg-white/5 rounded-full blur-2xl pointer-events-none" />
+          
+          <div className="relative z-10">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+              <div className="space-y-3">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white text-xs font-bold uppercase tracking-wider font-['Poppins',sans-serif]">
+                  <QrCode className="w-3.5 h-3.5" />
+                  QR Studio
+                </div>
+                <h1 className="font-['Poppins',sans-serif] text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
+                  QR Code Studio
+                </h1>
+                <p className="text-sm sm:text-base text-orange-100 max-w-2xl leading-relaxed">
+                  Generate, preview, customize, and download persistent QR codes for books and lessons.
+                </p>
+                
+                {/* Quick Stats */}
+                <div className="flex flex-wrap gap-4 pt-2">
+                  <div className="flex items-center gap-2 text-sm text-orange-100 bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-sm">
+                    <BookOpen className="w-4 h-4" />
+                    <span className="font-semibold text-white">{totalBooks}</span>
+                    <span>Books</span>
                   </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      onClick={() => openBookQR(book)}
-                      className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-50 hover:bg-orange-50 text-slate-700 hover:text-orange-700 text-xs font-semibold rounded-xl border border-slate-200 hover:border-orange-300 transition-all shadow-xs"
-                    >
-                      <QrCode className="w-3.5 h-3.5" />
-                      Book QR
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => toggleExpand(book.id)}
-                      className="inline-flex items-center justify-center w-9 h-9 rounded-xl border border-slate-200 bg-white hover:bg-orange-50 hover:border-orange-300 text-slate-500 hover:text-orange-600 transition-all shadow-xs"
-                      title={isExpanded ? 'Collapse lessons' : 'Expand lessons'}
-                    >
-                      {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                    </button>
+                  <div className="flex items-center gap-2 text-sm text-orange-100 bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-sm">
+                    <Layers className="w-4 h-4" />
+                    <span className="font-semibold text-white">{totalLessons}</span>
+                    <span>Lessons</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-orange-100 bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-sm">
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span className="font-semibold text-white">{booksWithQR}</span>
+                    <span>Books with QR</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-orange-100 bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-sm">
+                    <QrCode className="w-4 h-4" />
+                    <span className="font-semibold text-white">{lessonsWithQR}</span>
+                    <span>Lessons with QR</span>
                   </div>
                 </div>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-3 flex-shrink-0">
+                <button
+                  onClick={handleGenerateMissingQRs}
+                  disabled={bulkLoading}
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-orange-600 hover:bg-orange-50 text-sm font-semibold rounded-2xl transition-all shadow-lg shadow-orange-700/30 active:scale-[0.98] font-['Poppins',sans-serif] disabled:opacity-50"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  {bulkLoading ? 'Generating...' : 'Generate Missing QR'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
 
-                {/* Expanded Lessons Body */}
-                {isExpanded && (
-                  <div className="border-t border-slate-200 divide-y divide-slate-100 bg-slate-50/80">
-                    <div className="px-5 py-3.5 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="p-1.5 rounded-xl bg-orange-50 border border-orange-100 text-orange-600">
-                          <Layers className="w-4 h-4" />
+        {/* Search & Filter Bar */}
+        <motion.div 
+          variants={itemVariants}
+          className="bg-white/90 backdrop-blur-sm border border-orange-100 rounded-2xl p-4 shadow-[0_8px_30px_rgba(249,115,22,0.08)]"
+        >
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <div className="relative flex-1 w-full">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search books or lessons..."
+                className="w-full bg-orange-50/30 border border-slate-200/80 focus:border-orange-500 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition-colors font-['Inter',sans-serif]"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <button
+                onClick={() => fetchBooks()}
+                className="p-2.5 text-slate-500 hover:text-orange-600 hover:bg-orange-50 rounded-xl transition-colors border border-slate-200/80"
+                title="Refresh"
+              >
+                <RefreshCw className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Books List */}
+        <motion.div 
+          variants={containerVariants}
+          className="space-y-4"
+        >
+          {filteredBooks.length === 0 ? (
+            <motion.div 
+              variants={itemVariants}
+              className="bg-white/90 backdrop-blur-sm border border-orange-100 rounded-3xl p-8 sm:p-12 shadow-[0_8px_30px_rgba(249,115,22,0.08)] text-center"
+            >
+              <QrCode className="w-12 h-12 text-orange-300 mx-auto mb-4" />
+              <p className="text-lg font-['Poppins',sans-serif] font-semibold text-slate-900">No books found</p>
+              <p className="text-sm text-slate-500 mt-1 font-['Inter',sans-serif]">
+                {searchQuery ? 'Try adjusting your search query.' : 'Create your first book to generate QR codes.'}
+              </p>
+            </motion.div>
+          ) : (
+            filteredBooks.map((book) => {
+              const isExpanded = expandedBooks.has(book.id);
+              const lessonCount = book.lessons?.length ?? book._count?.lessons ?? 0;
+              const hasBookQR = Boolean(book.qrCodeUrl);
+
+              return (
+                <motion.div
+                  key={book.id}
+                  variants={itemVariants}
+                  className="bg-white/90 backdrop-blur-sm border border-orange-100 rounded-2xl overflow-hidden shadow-[0_8px_30px_rgba(249,115,22,0.08)] hover:shadow-[0_12px_40px_rgba(249,115,22,0.12)] transition-all duration-300"
+                >
+                  {/* Book Row */}
+                  <div className="flex items-center justify-between p-4 sm:p-5 gap-3 sm:gap-4 hover:bg-orange-50/30 transition-colors">
+                    <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+                      <img
+                        src={
+                          book.coverImage ||
+                          book.thumbnail ||
+                          'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=400&q=80'
+                        }
+                        alt={book.title}
+                        className="w-12 h-16 sm:w-14 sm:h-18 rounded-xl object-cover border border-orange-200 shrink-0 shadow-xs"
+                        style={{ height: '4.5rem' }}
+                      />
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                          <BookOpen className="w-4 h-4 text-orange-600 shrink-0" />
+                          <h3 className="font-['Poppins',sans-serif] font-semibold text-sm text-slate-900 truncate">
+                            {book.title}
+                          </h3>
+                          {hasBookQR ? (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 font-['Inter',sans-serif]">
+                              <CheckCircle2 className="w-3 h-3" /> QR Ready
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200 font-['Inter',sans-serif]">
+                              <Clock className="w-3 h-3" /> No QR
+                            </span>
+                          )}
                         </div>
-                        <div>
-                          <p className="text-xs font-bold text-slate-900">Book Lessons</p>
-                          <p className="text-[10px] text-slate-500 leading-tight">
-                            Manage individual lesson QR codes
-                          </p>
+                        <p className="text-xs text-slate-500 font-medium flex items-center gap-1 font-['Inter',sans-serif]">
+                          <Layers className="w-3 h-3 text-slate-400" />
+                          {lessonCount} lessons
+                          {book.author && (
+                            <>
+                              <span className="text-slate-300">·</span>
+                              <span>By {book.author}</span>
+                            </>
+                          )}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <Badge variant={book.published ? 'success' : 'slate'} size="sm" className={`font-['Inter',sans-serif] text-[10px] ${
+                            book.published 
+                              ? 'bg-emerald-100 text-emerald-700 border-emerald-200' 
+                              : 'bg-orange-50 text-orange-700 border-orange-200'
+                          }`}>
+                            {book.published ? 'Published' : 'Draft'}
+                          </Badge>
                         </div>
                       </div>
-                      <span className="text-xs font-semibold text-slate-500 bg-white px-3 py-1 rounded-xl border border-slate-200">
-                        {lessonCount} total
-                      </span>
                     </div>
 
-                    {(book.lessons?.length || 0) > 0 ? (
-                      <div className="px-5 py-2 space-y-0.5">
-                        {book.lessons!.map((lesson, idx) => {
-                          const hasLessonQR = Boolean(lesson.qrCodeUrl);
-                          const isLast = idx === book.lessons!.length - 1;
-
-                          return (
-                            <div
-                              key={lesson.id}
-                              className={`flex items-center justify-between py-2.5 ${!isLast ? 'border-b border-slate-100' : ''} hover:bg-white/60 rounded-lg px-2 transition-colors`}
-                            >
-                              <div className="flex items-center gap-2.5 min-w-0">
-                                <span className="text-[10px] font-mono font-bold text-orange-600 shrink-0 w-8 bg-orange-50 px-1.5 py-0.5 rounded-md border border-orange-100 text-center">
-                                  L{lesson.lessonNumber || idx + 1}
-                                </span>
-                                <span className="text-sm text-slate-800 truncate font-medium">{lesson.title}</span>
-                                {!lesson.published && (
-                                  <span className="text-[9px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200 shrink-0">
-                                    Draft
-                                  </span>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-2 shrink-0 ml-3">
-                                {hasLessonQR ? (
-                                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                                    <CheckCircle2 className="w-3 h-3 inline mr-0.5" />
-                                    QR Ready
-                                  </span>
-                                ) : (
-                                  <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
-                                    <Clock className="w-3 h-3 inline mr-0.5" />
-                                    No QR
-                                  </span>
-                                )}
-                                <button
-                                  type="button"
-                                  onClick={() => openLessonQR(book, lesson, idx)}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-orange-50 hover:border-orange-300 text-slate-700 hover:text-orange-700 text-xs font-semibold transition-all shadow-xs"
-                                >
-                                  <QrCode className="w-3.5 h-3.5" />
-                                  View QR
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <div className="px-5 py-8 text-center text-sm text-slate-500 font-medium bg-white/50">
-                        No lessons available for this book yet.
-                      </div>
-                    )}
+                    <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                      <button
+                        onClick={() => openBookQR(book)}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 sm:px-3.5 sm:py-2 bg-orange-50 hover:bg-orange-100 text-orange-700 text-xs font-semibold rounded-xl border border-orange-200 hover:border-orange-300 transition-all shadow-xs font-['Inter',sans-serif]"
+                      >
+                        <QrCode className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">Book QR</span>
+                        <span className="sm:hidden">QR</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => toggleExpand(book.id)}
+                        className="inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-xl border border-slate-200 bg-white hover:bg-orange-50 hover:border-orange-300 text-slate-500 hover:text-orange-600 transition-all shadow-xs"
+                        title={isExpanded ? 'Collapse lessons' : 'Expand lessons'}
+                      >
+                        {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                      </button>
+                    </div>
                   </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
+
+                  {/* Expanded Lessons Body */}
+                  {isExpanded && (
+                    <div className="border-t border-orange-100 divide-y divide-orange-50 bg-orange-50/20">
+                      <div className="px-4 sm:px-5 py-3 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="p-1.5 rounded-xl bg-orange-50 border border-orange-100 text-orange-600">
+                            <Layers className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-slate-900 font-['Poppins',sans-serif]">Book Lessons</p>
+                            <p className="text-[10px] text-slate-500 leading-tight font-['Inter',sans-serif]">
+                              Manage individual lesson QR codes
+                            </p>
+                          </div>
+                        </div>
+                        <span className="text-xs font-semibold text-slate-500 bg-white px-3 py-1 rounded-xl border border-slate-200 font-['Inter',sans-serif]">
+                          {lessonCount} total
+                        </span>
+                      </div>
+
+                      {(book.lessons?.length || 0) > 0 ? (
+                        <div className="px-4 sm:px-5 py-2 space-y-0.5">
+                          {book.lessons!.map((lesson, idx) => {
+                            const hasLessonQR = Boolean(lesson.qrCodeUrl);
+                            const isLast = idx === book.lessons!.length - 1;
+
+                            return (
+                              <div
+                                key={lesson.id}
+                                className={`flex items-center justify-between py-2 ${!isLast ? 'border-b border-orange-50' : ''} hover:bg-white/60 rounded-lg px-2 transition-colors`}
+                              >
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <span className="text-[10px] font-mono font-bold text-orange-600 shrink-0 w-8 bg-orange-50 px-1.5 py-0.5 rounded-md border border-orange-100 text-center font-['Inter',sans-serif]">
+                                    L{lesson.lessonNumber || idx + 1}
+                                  </span>
+                                  <span className="text-xs sm:text-sm text-slate-800 truncate font-medium font-['Inter',sans-serif]">{lesson.title}</span>
+                                  {!lesson.published && (
+                                    <span className="text-[9px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200 shrink-0 font-['Inter',sans-serif]">
+                                      Draft
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-2">
+                                  {hasLessonQR ? (
+                                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 hidden sm:inline-block font-['Inter',sans-serif]">
+                                      <CheckCircle2 className="w-3 h-3 inline mr-0.5" />
+                                      QR Ready
+                                    </span>
+                                  ) : (
+                                    <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 hidden sm:inline-block font-['Inter',sans-serif]">
+                                      <Clock className="w-3 h-3 inline mr-0.5" />
+                                      No QR
+                                    </span>
+                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={() => openLessonQR(book, lesson, idx)}
+                                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-orange-50 hover:border-orange-300 text-slate-700 hover:text-orange-700 text-xs font-semibold transition-all shadow-xs font-['Inter',sans-serif]"
+                                  >
+                                    <QrCode className="w-3.5 h-3.5" />
+                                    <span className="hidden sm:inline">View QR</span>
+                                    <span className="sm:hidden">QR</span>
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className="px-5 py-8 text-center text-sm text-slate-500 font-medium bg-white/50 font-['Inter',sans-serif]">
+                          No lessons available for this book yet.
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </motion.div>
+              );
+            })
+          )}
+        </motion.div>
+      </motion.div>
 
       {/* QR Code Modal Component */}
       <QRCodeModal
