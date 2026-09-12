@@ -59,7 +59,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
   const [confirmRegenOpen, setConfirmRegenOpen] = useState(false);
 
   // Customization Settings (Admin only)
-  const [fgColor, setFgColor] = useState('#1c1917');
+  const [fgColor, setFgColor] = useState('#000000');
   const [bgColor, setBgColor] = useState('#ffffff');
   const [qrWidth] = useState<number>(400);
 
