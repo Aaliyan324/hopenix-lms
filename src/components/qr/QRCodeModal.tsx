@@ -183,9 +183,9 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
       const size = canvas.width;
-      const logoW = Math.round(size * 0.42);
+      const logoW = Math.round(size * 0.22);
       const logoH = Math.round(logoW * (logo.height / logo.width));
-      const pad = Math.round(size * 0.025);
+      const pad = Math.round(size * 0.015);
       const x = Math.round((size - logoW) / 2);
       const y = Math.round((size - logoH) / 2);
       // Background-colored plate keeps the logo legible and the QR scannable
