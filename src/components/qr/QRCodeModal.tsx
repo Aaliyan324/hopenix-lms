@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import QRCode from 'qrcode';
+import logoSrc from '../../assets/sunlight-logo.png';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { useToast } from '../ui/Toast';
@@ -15,7 +16,50 @@ import {
   Layers,
   Save,
   AlertTriangle,
+  Image as ImageIcon,
 } from 'lucide-react';
+
+/** Cached black & white rendition of the brand logo (transparent background). */
+let bwLogoCache: HTMLCanvasElement | null = null;
+
+/** Loads the brand logo and converts it to a pure black & white silhouette. */
+const loadBwLogo = (): Promise<HTMLCanvasElement> => {
+  if (bwLogoCache) return Promise.resolve(bwLogoCache);
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const off = document.createElement('canvas');
+      off.width = img.naturalWidth;
+      off.height = img.naturalHeight;
+      const ctx = off.getContext('2d');
+      if (!ctx) {
+        reject(new Error('Canvas 2D context unavailable'));
+        return;
+      }
+      ctx.drawImage(img, 0, 0);
+      const imageData = ctx.getImageData(0, 0, off.width, off.height);
+      const px = imageData.data;
+      for (let i = 0; i < px.length; i += 4) {
+        const luminance = 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2];
+        if (luminance < 235) {
+          // Any colored or dark pixel becomes solid black
+          px[i] = 0;
+          px[i + 1] = 0;
+          px[i + 2] = 0;
+          px[i + 3] = 255;
+        } else {
+          // Near-white background becomes fully transparent
+          px[i + 3] = 0;
+        }
+      }
+      ctx.putImageData(imageData, 0, 0);
+      bwLogoCache = off;
+      resolve(off);
+    };
+    img.onerror = () => reject(new Error('Failed to load brand logo'));
+    img.src = logoSrc;
+  });
+};
 
 interface QRCodeModalProps {
   isOpen: boolean;
@@ -61,6 +105,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
   // Customization Settings (Admin only)
   const [fgColor, setFgColor] = useState('#000000');
   const [bgColor, setBgColor] = useState('#ffffff');
+  const [showLogo, setShowLogo] = useState(true);
   const [qrWidth] = useState<number>(400);
 
   useEffect(() => {
@@ -73,7 +118,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
     if (targetUrl && canvasRef.current) {
       renderQR();
     }
-  }, [targetUrl, fgColor, bgColor, qrWidth]);
+  }, [targetUrl, fgColor, bgColor, qrWidth, showLogo]);
 
   const fetchQRDetails = async () => {
     try {
@@ -91,6 +136,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
             const parsed = typeof data.logoConfig === 'string' ? JSON.parse(data.logoConfig) : data.logoConfig;
             if (parsed.fgColor) setFgColor(parsed.fgColor);
             if (parsed.bgColor) setBgColor(parsed.bgColor);
+            if (typeof parsed.showLogo === 'boolean') setShowLogo(parsed.showLogo);
           } catch {}
         }
         if (data.qrCodeUrl) {
@@ -113,6 +159,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
             const parsed = typeof data.logoConfig === 'string' ? JSON.parse(data.logoConfig) : data.logoConfig;
             if (parsed.fgColor) setFgColor(parsed.fgColor);
             if (parsed.bgColor) setBgColor(parsed.bgColor);
+            if (typeof parsed.showLogo === 'boolean') setShowLogo(parsed.showLogo);
           } catch {}
         }
         if (data.qrCodeUrl) {
@@ -126,6 +173,27 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
       toast('Failed to load QR details.', 'error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  /** Draws the black & white brand logo centered on top of the rendered QR canvas. */
+  const overlayLogo = async (canvas: HTMLCanvasElement): Promise<void> => {
+    try {
+      const logo = await loadBwLogo();
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      const size = canvas.width;
+      const logoW = Math.round(size * 0.42);
+      const logoH = Math.round(logoW * (logo.height / logo.width));
+      const pad = Math.round(size * 0.025);
+      const x = Math.round((size - logoW) / 2);
+      const y = Math.round((size - logoH) / 2);
+      // Background-colored plate keeps the logo legible and the QR scannable
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(x - pad, y - pad, logoW + pad * 2, logoH + pad * 2);
+      ctx.drawImage(logo, x, y, logoW, logoH);
+    } catch (err) {
+      console.error('Logo overlay error:', err);
     }
   };
 
@@ -143,6 +211,9 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
           light: bgColor,
         },
       });
+      if (showLogo) {
+        await overlayLogo(canvas);
+      }
     } catch (err) {
       console.error('Render QR error:', err);
     }
@@ -165,7 +236,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
         method: 'POST',
         body: JSON.stringify({
           qrDataUrl,
-          logoConfig: { fgColor, bgColor },
+          logoConfig: { fgColor, bgColor, showLogo },
           regenerate: isRegenerate,
         }),
       });
@@ -283,6 +354,34 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
                     />
                   </div>
                 </div>
+              </div>
+
+              {/* Logo Overlay Toggle */}
+              <div className="flex items-center justify-between gap-4 p-4 bg-stone-50 rounded-xl border border-stone-200">
+                <div className="flex items-start gap-2">
+                  <ImageIcon className="w-4 h-4 text-stone-600 mt-0.5" />
+                  <div>
+                    <label className="font-semibold text-stone-900 text-sm block">Brand Logo Overlay</label>
+                    <p className="text-xs text-stone-500">
+                      Centers the black & white Sunlight Ink logo on the QR code.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={showLogo}
+                  onClick={() => setShowLogo((v) => !v)}
+                  className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
+                    showLogo ? 'bg-emerald-600' : 'bg-stone-300'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                      showLogo ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
               </div>
 
               {/* Admin Save & Action Buttons */}
